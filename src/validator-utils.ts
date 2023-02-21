@@ -574,16 +574,6 @@ export function isColor(value: string): boolean {
 
   const colorNameRegex = new RegExp(`^(${colors})$`, 'i')
 
-  // console.log(
-  //   'color: ',
-  //   value,
-  //   rgbRegex.test(value),
-  //   hslRegex.test(value),
-  //   rgbHslSpaceRegex.test(value),
-  //   hexRegex.test(value),
-  //   colorNameRegex.test(value)
-  // )
-
   return (
     rgbRegex.test(value) ||
     hslRegex.test(value) ||
