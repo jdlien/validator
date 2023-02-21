@@ -5,12 +5,12 @@ export default defineConfig({
     lib: {
       entry: 'index.ts',
       name: 'Validator',
-      fileName: 'index.js',
+      fileName: 'validator',
     },
     rollupOptions: {
       input: 'index.ts',
       output: {
-        entryFileNames: 'index.js',
+        entryFileNames: 'validator.js',
         manualChunks: undefined,
       },
     },

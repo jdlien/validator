@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Validator Demo</title>
+  </head>
+
+  <body>
+    <p>
+      Here's a basic example of how to use the validator. The form won't submit if any fields are
+      invalid.
+    </p>
+
+    <form id="myForm">
+      <label for="name">Name</label>
+      <input
+        type="text"
+        name="name"
+        required
+        data-min-length="2"
+        data-max-length="10"
+        data-error-default="Please enter a name."
+      />
+      <div id="name-error"></div>
+
+      <label for="email">Email</label>
+      <input type="text" data-type="email" name="email" required />
+      <div id="email-error"></div>
+
+      <label for="phone">Phone</label>
+      <input type="text" data-type="tel" name="phone" />
+      <div id="phone-error"></div>
+
+      <input type="submit" value="Submit" />
+    </form>
+
+    <script src="./dist/validator.js"></script>
+    <script>
+      const form = document.getElementById('myForm')
+      const validator = new Validator(form)
+    </script>
+  </body>
+</html>
