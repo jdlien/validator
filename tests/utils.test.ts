@@ -151,6 +151,39 @@ describe('utils', () => {
     })
   })
 
+  describe('yearToFull', () => {
+    describe('yearToFull', () => {
+      it('converts a two-digit year to a four-digit year in the 20th century', () => {
+        expect(utils.yearToFull(87)).toBe(1987)
+      })
+
+      it('converts a two-digit year to a four-digit year in the 21st century', () => {
+        expect(utils.yearToFull(22)).toBe(2022)
+      })
+
+      it('returns a four-digit year unchanged', () => {
+        expect(utils.yearToFull(2000)).toBe(2000)
+      })
+
+      it('returns a four-digit year unchanged if year is greater than 99', () => {
+        expect(utils.yearToFull(2099)).toBe(2099)
+      })
+
+      it('handles string input with non-numeric characters', () => {
+        expect(utils.yearToFull('a22')).toBe(2022)
+      })
+
+      it('handles string input with extra spaces', () => {
+        expect(utils.yearToFull('  87  ')).toBe(1987)
+      })
+
+      it('handles years in the past as long as they are over three digits', () => {
+        expect(utils.yearToFull('203')).toBe(203)
+        expect(utils.yearToFull('1901')).toBe(1901)
+      })
+    })
+  })
+
   describe('parseDate', function () {
     let today: Date
     let yesterday: Date
@@ -181,6 +214,16 @@ describe('utils', () => {
 
     it('should return a date object', function () {
       expect(utils.parseDate('2019-01-01')).toEqual(new Date('2019-01-01 00:00:00'))
+    })
+
+    it('should return a date object with a time if only a time is set', function () {
+      const today1300 = new Date()
+      today1300.setHours(13)
+      today1300.setMinutes(0)
+      today1300.setSeconds(0)
+      today1300.setMilliseconds(0)
+
+      expect(utils.parseDate('13:00')).toEqual(today1300)
     })
 
     it('returns correct date', () => {
@@ -884,7 +927,22 @@ describe('utils', () => {
       ]
       invalidColors.forEach((value) => expect(utils.isColor(value)).toEqual(false))
     })
-  })
+
+    it('should validate a valid color name with CSS.supports', () => {
+      // Mock the CSS.supports function
+      window.CSS = window.CSS || {}
+      window.CSS.supports =
+        window.CSS.supports ||
+        function () {
+          return true
+        }
+      const supportsSpy = vi.spyOn(window.CSS, 'supports').mockImplementation(() => true)
+
+      expect(utils.isColor('red')).toBeTruthy()
+
+      expect(supportsSpy).toHaveBeenCalled()
+    })
+  }) // end isColor
 
   describe('parseColor', function () {
     it('should return hex values for valid inputs', function () {
@@ -903,5 +961,46 @@ describe('utils', () => {
         expect(utils.parseColor(value)).toEqual(expectedColors[index])
       )
     })
-  })
+  }) // end parseColor
+
+  describe('normalizeValidationResult', () => {
+    it('should return valid=true and messages=[] when input is true', () => {
+      const result = utils.normalizeValidationResult(true)
+      expect(result.valid).toBe(true)
+      expect(result.error).toBe(false)
+      expect(result.messages).toEqual([])
+    })
+
+    it('should return valid=false and messages=[input message] when input is an object with message', () => {
+      const input = { valid: false, message: 'error' }
+      const result = utils.normalizeValidationResult(input)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe(false)
+      expect(result.messages).toEqual(['error'])
+    })
+
+    it('should return valid=false and messages=[input messages] when input is an object with messages', () => {
+      const input = { valid: false, messages: ['error 1', 'error 2'] }
+      const result = utils.normalizeValidationResult(input)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe(false)
+      expect(result.messages).toEqual(['error 1', 'error 2'])
+    })
+
+    it('should return valid=false and messages=[] when input is an object with messages as a string', () => {
+      const input = { valid: false, messages: 'error' }
+      const result = utils.normalizeValidationResult(input)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe(false)
+      expect(result.messages).toEqual(['error'])
+    })
+
+    it('should return valid=false and error=true when input is an object with error=true', () => {
+      const input = { valid: false, error: true }
+      const result = utils.normalizeValidationResult(input)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe(true)
+      expect(result.messages).toEqual([])
+    })
+  }) // end normalizeValidationResult
 })
