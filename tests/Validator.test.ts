@@ -1511,5 +1511,176 @@ describe('Validator', () => {
     })
   }) // end submitHandler
 
-  //describe('inputChangeHandler', () => {
+  describe('inputChangeHandler', () => {
+    it('validates the input element when it changes', async () => {
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve())
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      formControl.dispatchEvent(event)
+
+      expect((validator as any).validateInput).toHaveBeenCalledWith(formControl)
+    })
+
+    it('clears the error messages for the input element', async () => {
+      vi.spyOn(validator as any, 'clearInputErrors')
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      await formControl.dispatchEvent(event)
+      expect((validator as any).clearInputErrors).toHaveBeenCalledWith(formControl)
+    })
+
+    it('shows the error messages for the input element', async () => {
+      vi.spyOn(validator as any, 'showInputErrors')
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      await formControl.dispatchEvent(event)
+      expect((validator as any).showInputErrors).toHaveBeenCalledWith(formControl)
+    })
+  }) // end inputChangeHandler
+
+  describe('inputInputHandler', () => {
+    it('should parse integer input values', () => {
+      formControl.type = 'text'
+      formControl.dataset.type = 'integer'
+      formControl.value = '123.45'
+
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('12345')
+
+      formControl.value = '123,45'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('12345')
+
+      formControl.value = '-12345'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('12345')
+    })
+
+    it('should parse non-native number input values', () => {
+      formControl.type = 'text'
+      formControl.dataset.type = 'number'
+
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+
+      formControl.value = '123.45'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('123.45')
+
+      formControl.value = '123,45'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('12345')
+
+      formControl.value = '-12345'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('-12345')
+
+      formControl.value = '-12345a'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('-12345')
+    })
+
+    it('should not parse native number input values', () => {
+      formControl.type = 'number'
+
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+
+      formControl.value = '123.45'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('123.45')
+
+      // This value won't be allowed and will be blanked out
+      formControl.value = '123,45'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('')
+
+      formControl.value = '-123.4'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('-123.4')
+    })
+
+    it('should call syncColorInput for color inputs', () => {
+      const syncColorInputSpy = vi.spyOn(validator as any, 'syncColorInput')
+      formControl.type = 'color'
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+
+      formControl.dispatchEvent(event)
+      expect(syncColorInputSpy).toHaveBeenCalledWith(expect.any(Event))
+
+      formControl.type = 'text'
+      formControl.dataset.type = 'color'
+      formControl.dispatchEvent(event)
+      expect(syncColorInputSpy).toHaveBeenCalledWith(expect.any(Event))
+    })
+  }) // end inputInputHandler
+
+  describe('syncColorInput', () => {
+    let colorInput: HTMLInputElement
+    let colorPicker: HTMLInputElement
+    let colorLabel: HTMLLabelElement
+
+    beforeEach(() => {
+      colorInput = document.createElement('input')
+      colorInput.type = 'text'
+      colorInput.id = 'test-color'
+      colorInput.value = '#ff0000'
+      colorInput.dataset.type = 'color'
+      form.appendChild(colorInput)
+
+      colorPicker = document.createElement('input')
+      colorPicker.type = 'color'
+      colorPicker.id = 'test-color-color'
+      colorPicker.value = '#ff0000'
+      form.appendChild(colorPicker)
+
+      colorLabel = document.createElement('label')
+      colorLabel.htmlFor = 'test-color-color'
+      colorLabel.id = 'test-color-color-label'
+      form.appendChild(colorLabel)
+
+      validator.init()
+    })
+
+    it('should update the HTML color picker input and its label background when color input changes', () => {
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: colorInput })
+      const colorLbl = form.querySelector(`#${colorInput.id}-color-label`)
+
+      colorInput.value = '#00ff00'
+      colorInput.dispatchEvent(event)
+      // validator.syncColorInput(event)
+
+      expect(colorPicker.value).toEqual('#00ff00')
+
+      const color = utils.parseColor(window.getComputedStyle(colorLabel).backgroundColor)
+
+      expect(color).toEqual('#00ff00')
+    })
+
+    it('should update the color input and label background when the HTML color picker is changed', () => {
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: colorPicker })
+
+      colorPicker.value = '#0000ff'
+      ;(validator as any).syncColorInput(event)
+
+      expect(colorInput.value).toEqual('#0000ff')
+      expect(utils.parseColor(colorLabel.style.backgroundColor)).toEqual('#0000ff')
+    })
+
+    it('should not update the HTML color picker if the color input value is not a valid color', () => {
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: colorInput })
+
+      colorInput.value = 'not-a-color'
+      ;(validator as any).syncColorInput(event)
+
+      expect(colorPicker.value).toEqual('#ff0000')
+    })
+  }) // end syncColorInput
 })
