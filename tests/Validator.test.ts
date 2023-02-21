@@ -1,4 +1,4 @@
-import Validator from '../src/Validator'
+import Validator, { ValidationErrorEvent, ValidationSuccessEvent } from '../src/Validator'
 import * as utils from '../src/validator-utils'
 import { ValidatorOptions } from '../src/types'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -1353,8 +1353,7 @@ describe('Validator', () => {
     })
 
     it('returns false if promise resolves to object with valid:false', async () => {
-      function validationPromiseFn(arg) {
-        console.log(arg)
+      function validationPromiseFn(arg: any) {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve({ valid: false, messages: ['error message'] })
@@ -1412,4 +1411,103 @@ describe('Validator', () => {
       expect(await (validator as any).validateInput(formControl)).toBe(false)
     })
   }) // end validateInput
+
+  describe('validate', () => {
+    it('returns false if validateRequired returns false', async () => {
+      vi.spyOn(validator as any, 'validateRequired').mockImplementation(() => false)
+      vi.spyOn(validator as any, 'validateLength').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve(true))
+
+      expect(await validator.validate(new Event(''))).toBe(false)
+    })
+
+    it('returns false if validateLength returns false', async () => {
+      vi.spyOn(validator as any, 'validateRequired').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateLength').mockImplementation(() => false)
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve(true))
+
+      expect(await validator.validate(new Event(''))).toBe(false)
+    })
+
+    it('returns false if validateInput returns false', async () => {
+      vi.spyOn(validator as any, 'validateRequired').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateLength').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve(false))
+
+      expect(await validator.validate(new Event(''))).toBe(false)
+    })
+
+    it('returns true if all validation functions return true', async () => {
+      vi.spyOn(validator as any, 'validateRequired').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateLength').mockImplementation(() => true)
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve(true))
+
+      expect(await validator.validate(new Event(''))).toBe(true)
+    })
+  }) // end validate
+
+  describe('submitHandler', () => {
+    it('prevents form submission if the form is already submitting', () => {
+      ;(validator as any).isSubmitting = true
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      ;(validator as any).isSubmitting = false
+      ;(validator as any).submitHandler(new Event('submit'))
+      expect(form.submit).not.toHaveBeenCalled()
+    })
+
+    it('calls clearFormErrors method before validation', () => {
+      vi.spyOn(validator as any, 'clearFormErrors')
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      ;(validator as any).submitHandler(new Event('submit'))
+      expect((validator as any).clearFormErrors).toHaveBeenCalled()
+    })
+
+    it('calls showFormErrors method after validation', async () => {
+      vi.spyOn(validator as any, 'showFormErrors')
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(false))
+      await (validator as any).submitHandler(new Event('submit'))
+      expect((validator as any).showFormErrors).toHaveBeenCalled()
+    })
+
+    it('dispatches ValidationSuccessEvent if form is valid', async () => {
+      vi.spyOn(form, 'dispatchEvent')
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
+      await (validator as any).submitHandler(new Event('submit'))
+      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationSuccessEvent))
+    })
+
+    it('dispatches ValidationErrorEvent if form is invalid', async () => {
+      vi.spyOn(form, 'dispatchEvent')
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(false))
+      await (validator as any).submitHandler(new Event('submit'))
+      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationErrorEvent))
+    })
+
+    it('calls validationSuccessCallback if form is valid and no default is prevented', async () => {
+      const validationSuccessCallback = vi.fn()
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      ;(validator as any).validationSuccessCallback = validationSuccessCallback
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
+      await (validator as any).submitHandler(new Event('submit'))
+      expect(validationSuccessCallback).toHaveBeenCalled()
+    })
+
+    it('calls validationErrorCallback if form is invalid and no default is prevented', async () => {
+      const validationErrorCallback = vi.fn()
+      ;(validator as any).validationErrorCallback = validationErrorCallback
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(false))
+      await (validator as any).submitHandler(new Event('submit'))
+      expect(validationErrorCallback).toHaveBeenCalled()
+    })
+
+    // If this.preventSubmit is true, the form will not be submitted
+    it('does not submit the form if preventSubmit is true even when validation is successful', () => {
+      validator.preventSubmit = true
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      ;(validator as any).submitHandler(new Event('submit'))
+      expect(form.submit).not.toHaveBeenCalled()
+    })
+  })
 })
