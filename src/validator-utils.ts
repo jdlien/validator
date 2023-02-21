@@ -549,7 +549,10 @@ export function isColor(value: string): boolean {
 
   // If CSS.supports isn't available, use regexes to check for valid rgb or hsl color values
   // Not as comprehensive as the CSS.supports method, but should work in older browsers
+  return isColorRegex(value)
+}
 
+function isColorRegex(value: string): boolean {
   const rgbRegex = new RegExp(
     /^rgba?\(\s*(\d{1,3}%?,\s*){2}\d{1,3}%?\s*(?:,\s*(\.\d+|0+(\.\d+)?|1(\.0+)?|0|1\.0|\d{1,2}(\.\d*)?%|100%))?\s*\)$/
   )

@@ -201,6 +201,40 @@ describe('Validator', () => {
     })
   }) // init
 
+  describe('getErrorEl', () => {
+    it('returns the error element for the input', () => {
+      const errorEl1 = (validator as any).getErrorEl(formControl)
+      expect(errorEl1).toBeTruthy()
+      expect(errorEl1.id).toBe('test-input-error')
+    })
+
+    it('returns error element by id if the input does not have a name', () => {
+      const formControl2 = document.createElement('input')
+      formControl2.type = 'text'
+      formControl2.id = 'form-control-2'
+      form.appendChild(formControl2)
+
+      const errorDiv2 = document.createElement('div')
+      errorDiv2.id = 'form-control-2-error'
+      form.appendChild(errorDiv2)
+
+      const errorEl2 = (validator as any).getErrorEl(formControl2)
+      expect(errorEl2).toBeTruthy()
+      expect(errorEl2.id).toBe('form-control-2-error')
+    })
+
+    it('returns null if the input does not have an error element', () => {
+      const formControl3 = document.createElement('input')
+      formControl3.type = 'text'
+      formControl3.name = 'form-control-3'
+      formControl3.id = 'form-control-3'
+      form.appendChild(formControl3)
+
+      const errorEl2 = (validator as any).getErrorEl(formControl3)
+      expect(errorEl2).toBeNull()
+    })
+  })
+
   describe('addErrorMain', () => {
     type MessageDictionary = { [key: string]: string }
     let messages: MessageDictionary
@@ -275,7 +309,7 @@ describe('Validator', () => {
       ;(validator as any).addInputError(formControl, 'invalid username')
       expect(console.log).toHaveBeenCalledWith('Invalid value for test-input: invalid username')
     })
-  }) // addInputError
+  }) // end addInputError
 
   describe('showInputErrors', () => {
     it('shows an error message', () => {
@@ -289,12 +323,87 @@ describe('Validator', () => {
       validator.errorInputClasses.split(' ').forEach((errorClass) => {
         expect(formControl.classList.contains(errorClass)).toBeTruthy()
       })
-
-      // Clean up
-      formControl.remove()
-      errorEl.remove()
     })
-  }) // showInputErrors
+  }) // end showInputErrors
+
+  describe('showFormErrors', () => {
+    it('should show errors for all inputs and display main error message', async () => {
+      const input1 = document.createElement('input')
+      input1.name = 'input1'
+      input1.id = 'input1'
+      input1.required = true
+      input1.value = ''
+      form.appendChild(input1)
+
+      const input1Error = document.createElement('div')
+      input1Error.id = 'input1-error'
+      form.appendChild(input1Error)
+
+      const input2 = document.createElement('input')
+      input2.name = 'input2'
+      input2.id = 'input2'
+      input2.pattern = '[0-9]+'
+      input2.value = 'abc'
+      form.appendChild(input2)
+
+      const input2Error = document.createElement('div')
+      input2Error.id = 'input2-error'
+      form.appendChild(input2Error)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      const input1Errors = validator.inputErrors[input1.id]
+      expect(input1Errors).toHaveLength(1)
+      expect(input1Error?.innerHTML).toContain(validator.messages.ERROR_REQUIRED)
+
+      const input2Errors = validator.inputErrors[input2.id]
+      expect(input2Errors).toHaveLength(1)
+      expect(input2Error?.innerHTML).toContain(validator.messages.ERROR_GENERIC)
+
+      const mainError = form.querySelectorAll('#form-error-main')
+
+      mainError.forEach((error) => {
+        expect(error).toBeTruthy()
+        expect(error?.innerHTML).toContain(validator.messages.ERROR_MAIN)
+        // Check that this uses the default hidden classes (hidden, opacity-0)
+        expect(error.classList.contains('hidden')).toBeFalsy()
+        expect(error.classList.contains('opacity-0')).toBeFalsy()
+      })
+
+      // Now that we already have a mainErrorEl, check that it doesn't get added again
+      ;(validator as any).showFormErrors()
+      expect(form.querySelectorAll('#form-error-main')).toHaveLength(1)
+
+      // Check that the messages and styling are still correct on the second addition
+      mainError.forEach((error) => {
+        expect(error).toBeTruthy()
+        expect(error?.innerHTML).toContain(validator.messages.ERROR_MAIN)
+        // Check that this uses the default hidden classes (hidden, opacity-0)
+        expect(error.classList.contains('hidden')).toBeFalsy()
+        expect(error.classList.contains('opacity-0')).toBeFalsy()
+      })
+    })
+
+    it('should not display main error message if there are no input errors', async () => {
+      const input1 = document.createElement('input')
+      input1.name = 'input1'
+      input1.id = 'input1'
+      input1.required = true
+      input1.value = 'abc'
+      form.appendChild(input1)
+
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      const input1Errors = validator.inputErrors[input1.id]
+      expect(input1Errors).toHaveLength(0)
+
+      const mainError = form.querySelector('#form-error-main')
+      expect(mainError).toBeFalsy()
+    })
+  }) // end showFormErrors
 
   describe('clearInputErrors', () => {
     it('clears an error message', () => {
@@ -308,7 +417,7 @@ describe('Validator', () => {
         expect(formControl.classList.contains(errorClass)).toBeFalsy()
       })
     })
-  }) // clearInputErrors
+  }) // end clearInputErrors
 
   describe('clearFormErrors', () => {
     it('clears all error messages', () => {
@@ -361,6 +470,22 @@ describe('Validator', () => {
         expect(formControl2.classList.contains(errorClass)).toBeFalsy()
       })
     })
+
+    it('adds hidden classes to form-error-main', async () => {
+      formControl.required = true
+      formControl.value = ''
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      const mainError = form.querySelector('#form-error-main')
+      console.log(mainError)
+      expect(mainError).toBeTruthy()
+      ;(validator as any).clearFormErrors()
+
+      const mainErrorClassList = mainError?.classList
+      expect(mainErrorClassList?.contains('hidden')).toBeTruthy()
+      expect(mainErrorClassList?.contains('opacity-0')).toBeTruthy()
+    })
   }) // end clearFormErrors
 
   describe('validateRequired', () => {
@@ -403,8 +528,8 @@ describe('Validator', () => {
       const result = (validator as any).validateRequired(formControl)
       expect(result).toBeFalsy()
 
-      // We show the generic error message if one isn't provided
-      expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_GENERIC)
+      // We show the required error message if one isn't provided
+      expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_REQUIRED)
     })
 
     it('returns false and shows the specified error if the input is required and empty', () => {
@@ -1206,47 +1331,6 @@ describe('Validator', () => {
     })
   }) // end validatePattern
 
-  describe('normalizeValidationResult', () => {
-    it('should return valid=true and messages=[] when input is true', () => {
-      const result = utils.normalizeValidationResult(true)
-      expect(result.valid).toBe(true)
-      expect(result.error).toBe(false)
-      expect(result.messages).toEqual([])
-    })
-
-    it('should return valid=false and messages=[input message] when input is an object with message', () => {
-      const input = { valid: false, message: 'error' }
-      const result = utils.normalizeValidationResult(input)
-      expect(result.valid).toBe(false)
-      expect(result.error).toBe(false)
-      expect(result.messages).toEqual(['error'])
-    })
-
-    it('should return valid=false and messages=[input messages] when input is an object with messages', () => {
-      const input = { valid: false, messages: ['error 1', 'error 2'] }
-      const result = utils.normalizeValidationResult(input)
-      expect(result.valid).toBe(false)
-      expect(result.error).toBe(false)
-      expect(result.messages).toEqual(['error 1', 'error 2'])
-    })
-
-    it('should return valid=false and messages=[] when input is an object with messages as a string', () => {
-      const input = { valid: false, messages: 'error' }
-      const result = utils.normalizeValidationResult(input)
-      expect(result.valid).toBe(false)
-      expect(result.error).toBe(false)
-      expect(result.messages).toEqual(['error'])
-    })
-
-    it('should return valid=false and error=true when input is an object with error=true', () => {
-      const input = { valid: false, error: true }
-      const result = utils.normalizeValidationResult(input)
-      expect(result.valid).toBe(false)
-      expect(result.error).toBe(true)
-      expect(result.messages).toEqual([])
-    })
-  }) // end normalizeValidationResult
-
   // Next we test validateCustom. This will be a bit more involved as we need to test a variety of
   // different functions including some that return promises and others that do not.
   // We will also test the case where the function returns a validation result object and the case
@@ -1315,6 +1399,26 @@ describe('Validator', () => {
       const result = await (validator as any).validateCustom(formControl)
       expect(result).toBe(false)
       expect(validator.inputErrors[formControl.name]).toContain('error message')
+    })
+
+    it('adds an error message if error is caught', async () => {
+      function validationFnReject(arg: any) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('error message'))
+          })
+        })
+      }
+
+      window['validationFnReject'] = validationFnReject
+      formControl.dataset.validation = 'validationFnReject'
+      formControl.value = 'test'
+
+      const result = await (validator as any).validateCustom(formControl)
+      expect(result).toBe(false)
+      expect(validator.inputErrors[formControl.name]).toContain(
+        validator.messages.ERROR_CUSTOM_VALIDATION
+      )
     })
   }) // end validateCustom
 
@@ -1740,4 +1844,38 @@ describe('Validator', () => {
       expect(validationErrorEvent.submitEvent).toEqual(submitEvent)
     })
   }) // end ValidationEvents
+
+  describe('destroy', () => {
+    it('removes all event listeners', () => {
+      const validator = new Validator(form)
+      vi.spyOn(validator, 'removeEventListeners')
+
+      validator.destroy()
+
+      expect(validator.removeEventListeners).toHaveBeenCalled()
+    })
+
+    it('removes the "novalidate" attribute from the form if it was not originally present', () => {
+      const form = document.createElement('form')
+      const validator = new Validator(form)
+      vi.spyOn(validator, 'removeEventListeners')
+
+      validator.destroy()
+
+      expect(validator.removeEventListeners).toHaveBeenCalled()
+      expect(form.hasAttribute('novalidate')).toBe(false)
+    })
+
+    it('does not remove the "novalidate" attribute from the form if it was originally present', () => {
+      const form = document.createElement('form')
+      form.setAttribute('novalidate', '')
+      const validator = new Validator(form)
+      vi.spyOn(validator, 'removeEventListeners')
+
+      validator.destroy()
+
+      expect(validator.removeEventListeners).toHaveBeenCalled()
+      expect(form.hasAttribute('novalidate')).toBe(true)
+    })
+  })
 })

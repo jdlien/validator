@@ -314,7 +314,7 @@ export default class Validator {
         }
       } else if (utils.isFormControl(el)) {
         valid = false
-        this.addInputError(el)
+        this.addInputError(el, el.dataset.errorDefault || this.messages.ERROR_REQUIRED)
       }
     }
     return valid
@@ -499,7 +499,7 @@ export default class Validator {
 
   // Validates all the fields in the form. It will show an error message
   // in all invalid fields and return false if any are invalid.
-  async validate(_e: Event): Promise<boolean> {
+  async validate(_e?: Event): Promise<boolean> {
     let valid = true
 
     for (const el of this.inputs) {
