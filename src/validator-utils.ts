@@ -539,7 +539,7 @@ export function isPostal(value: string): boolean {
 // Checks if the value is a valid CSS color
 // Falls back to a regex if CSS.supports isn't available
 export function isColor(value: string): boolean {
-  if (value === 'transparent') return true
+  if (['transparent', 'currentColor'].includes(value)) return true
 
   if (typeof value !== 'string' || !value.trim()) return false
 

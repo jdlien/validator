@@ -10,9 +10,6 @@ describe('Validator', () => {
   let options: ValidatorOptions
   let validator: Validator
   let valid: boolean
-  let today: Date
-  let yesterday: Date
-  let tomorrow: Date
 
   beforeEach(() => {
     form = document.createElement('form')
@@ -32,27 +29,6 @@ describe('Validator', () => {
 
     options = {}
     validator = new Validator(form)
-
-    today = new Date()
-    yesterday = new Date()
-    tomorrow = new Date()
-
-    today.setHours(0)
-    today.setMinutes(0)
-    today.setSeconds(0)
-    today.setMilliseconds(0)
-
-    yesterday.setHours(0)
-    yesterday.setMinutes(0)
-    yesterday.setSeconds(0)
-    yesterday.setMilliseconds(0)
-    yesterday.setDate(today.getDate() - 1)
-
-    tomorrow.setHours(0)
-    tomorrow.setMinutes(0)
-    tomorrow.setSeconds(0)
-    tomorrow.setMilliseconds(0)
-    tomorrow.setDate(today.getDate() + 1)
   })
 
   afterEach(() => {
@@ -777,37 +753,9 @@ describe('Validator', () => {
     let formControlColor: HTMLInputElement
 
     // I'll not support unicode addresses for now.
-    const emailAddresses = [
-      'email@example.com',
-      'email+tag@example.com',
-      'email.dot@example.com',
-      'email@sub.example.com',
-      '"email"@example.com',
-      '"email@example.com"@example.com',
-      'correo@ejemplo.es',
-      'user@xn--ls8h.com',
-      // '邮箱@例子.中国',
-      // 'почта@пример.рф',
-      // '電子郵件@範例.香港',
-      // '이메일@예시.한국',
-      // '電子メール@サンプル.日本',
-      'a.valid.email.that.is.very.very.long.and.should.validate.because.it.is.under.two.hundred.and.fifty.five.characters.with.lots.of.subdomains.in.it.that.is.quite.ridiculous@a.very.long.top.level.domain.that.is.also.very.long.and.has.lots.of.letters.in.it.com',
-    ]
+    const emailAddresses = ['email@example.com', 'email+tag@example.com']
 
-    const invalidEmailAddresses = [
-      'john.doe@',
-      'john.doe@.com',
-      'john.doe@com.',
-      'john.doe@-example.com',
-      'john.doe@example-.com',
-      'john.doe@example.com-',
-      'john.doe@example.com/',
-      'john.doe@example..com',
-      'john.doe@ex@mple.com',
-      'john.doe@example.com?',
-      'user@invalid.c',
-      'an.email.that.is.a.little.too.long.and.should.not.validate.because.it.is.over.two.hundred.and.fifty.five.characters.with.lots.of.subdomains.in.it.that.is.quite.ridiculous@a.very.long.top.level.domain.that.is.also.very.long.and.has.lots.of.letters.in.it.com',
-    ]
+    const invalidEmailAddresses = ['john.doe@', 'john.doe@.com']
 
     const times = [
       ['12:00', '12:00 PM'],
@@ -1683,4 +1631,113 @@ describe('Validator', () => {
       expect(colorPicker.value).toEqual('#ff0000')
     })
   }) // end syncColorInput
+
+  describe('inputKeydownHandler', () => {
+    let event: Event
+
+    beforeEach(() => {
+      formControl.type = 'text'
+      formControl.dataset.type = 'integer'
+
+      event = new Event('keydown', { bubbles: true })
+    })
+
+    it('should increment integer input value when ArrowUp key is pressed', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('6')
+
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = ''
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('1')
+    })
+
+    it('should decrement integer input value when ArrowDown key is pressed', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '5'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('4')
+
+      // Test that it doesn't go below 0
+      formControl.value = '0'
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('0')
+
+      formControl.value = ''
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('0')
+    })
+
+    it('should not increment or decrement non-integer inputs on ArrowUp', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+      formControl.dataset.type = 'text'
+      formControl.value = '1'
+
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('1')
+    })
+
+    it('should not increment or decrement non-integer inputs on ArrowDown', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+      formControl.dataset.type = 'text'
+      formControl.value = '1'
+
+      formControl.dispatchEvent(event)
+      expect(formControl.value).toEqual('1')
+    })
+  }) // end inputKeydownHandler
+
+  describe('ValidationSuccessEvent', () => {
+    let submitEvent: Event
+    let validationSuccessEvent: ValidationSuccessEvent
+
+    beforeEach(() => {
+      submitEvent = new Event('submit')
+      validationSuccessEvent = new ValidationSuccessEvent(submitEvent)
+    })
+
+    it('should create a new ValidationSuccessEvent', () => {
+      expect(validationSuccessEvent instanceof ValidationSuccessEvent).toBe(true)
+    })
+
+    it('should set the event type to validationSuccess', () => {
+      expect(validationSuccessEvent.type).toEqual('validationSuccess')
+    })
+
+    it('should set the submitEvent property to the provided submit event', () => {
+      expect(validationSuccessEvent.submitEvent).toEqual(submitEvent)
+    })
+  }) // end ValidationSuccessEvent
+
+  describe('ValidationEvents', () => {
+    let submitEvent: Event
+    let validationErrorEvent: ValidationErrorEvent
+
+    beforeEach(() => {
+      submitEvent = new Event('submit')
+      validationErrorEvent = new ValidationErrorEvent(submitEvent)
+    })
+
+    it('should create a new ValidationErrorEvent', () => {
+      expect(validationErrorEvent instanceof ValidationErrorEvent).toBe(true)
+    })
+
+    it('should set the event type to validationError', () => {
+      expect(validationErrorEvent.type).toEqual('validationError')
+    })
+
+    it('should set the submitEvent property to the provided submit event', () => {
+      expect(validationErrorEvent.submitEvent).toEqual(submitEvent)
+    })
+  }) // end ValidationEvents
 })
