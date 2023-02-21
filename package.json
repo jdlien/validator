@@ -1,0 +1,52 @@
+{
+  "name": "@jdlien/validator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Validates and sanitizes the inputs in a form using native html attributes.",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "coverage": "vitest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdlien/validator.git"
+  },
+  "keywords": [
+    "form",
+    "validation",
+    "front-end",
+    "validation",
+    "better",
+    "HTML",
+    "inputs",
+    "date",
+    "validation",
+    "time",
+    "validation",
+    "color",
+    "validation",
+    "required",
+    "field",
+    "validation"
+  ],
+  "author": "JD Lien",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jdlien/validator/issues"
+  },
+  "homepage": "https://github.com/jdlien/validator#readme",
+  "devDependencies": {
+    "@sheerun/mutationobserver-shim": "^0.3.3",
+    "@types/jsdom": "^21.1.0",
+    "jsdom": "^21.1.0",
+    "jsdom-global": "^3.0.2",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0",
+    "vitest": "^0.28.5"
+  }
+}
