@@ -1509,5 +1509,7 @@ describe('Validator', () => {
       ;(validator as any).submitHandler(new Event('submit'))
       expect(form.submit).not.toHaveBeenCalled()
     })
-  })
+  }) // end submitHandler
+
+  //describe('inputChangeHandler', () => {
 })
