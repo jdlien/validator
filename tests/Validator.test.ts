@@ -309,6 +309,33 @@ describe('Validator', () => {
       ;(validator as any).addInputError(formControl, 'invalid username')
       expect(console.log).toHaveBeenCalledWith('Invalid value for test-input: invalid username')
     })
+
+    it('does not show the same error multiple times for a set of radio buttons', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.name = 'radio-group'
+      radio1.value = '1'
+      radio1.id = 'radio1'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.name = 'radio-group'
+      radio2.value = '2'
+      radio2.id = 'radio2'
+      form.appendChild(radio2)
+      ;(validator as any).addInputError(radio1, 'invalid radio')
+      ;(validator as any).addInputError(radio2, 'invalid radio')
+
+      expect(validator.inputErrors['radio-group'].length).toBe(1)
+    })
+
+    it('shows multiple different error messages simultaneously', () => {
+      ;(validator as any).addInputError(formControl, 'error message 1')
+      ;(validator as any).addInputError(formControl, 'error message 2')
+
+      expect(validator.inputErrors[formControl.name].length).toBe(2)
+    })
   }) // end addInputError
 
   describe('showInputErrors', () => {
@@ -735,6 +762,20 @@ describe('Validator', () => {
       expect(isValidSpy).toHaveBeenCalledWith(formControl.value)
 
       expect(valid).toBeTruthy()
+    })
+
+    it('calls the correct parse and valid methods for zip', () => {
+      formControl.type = 'text'
+      formControl.dataset.type = 'zip'
+      formControl.value = '90210'
+
+      const parseSpy = vi.spyOn((validator as any).inputHandlers.zip, 'parse')
+      const isValidSpy = vi.spyOn((validator as any).inputHandlers.zip, 'isValid')
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(parseSpy).toHaveBeenCalledWith(formControl.value, formControl.dataset.dateFormat)
+      expect(isValidSpy).toHaveBeenCalledWith(formControl.value)
     })
 
     it('calls the correct parse and valid methods for postal', () => {
