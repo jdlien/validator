@@ -38,12 +38,13 @@ export default class Validator {
     ERROR_REQUIRED: 'This field is required.',
     OPTION_REQUIRED: 'An option must be selected.',
     CHECKED_REQUIRED: 'This must be checked.',
-    ERROR_MAXLENGTH: 'This must be less than ${val} characters.',
+    ERROR_MAXLENGTH: 'This must be ${val} characters or fewer.',
     ERROR_MINLENGTH: 'This must be at least ${val} characters.',
     ERROR_NUMBER: 'This must be a number.',
     ERROR_INTEGER: 'This must be a whole number.',
     ERROR_TEL: 'This is not a valid telephone number.',
     ERROR_EMAIL: 'This is not a valid email address.',
+    ERROR_ZIP: 'This is not a valid zip code.',
     ERROR_POSTAL: 'This is not a valid postal code.',
     ERROR_DATE: 'This is not a valid date.',
     ERROR_DATE_PAST: 'The date must be in the past.',
@@ -180,8 +181,6 @@ export default class Validator {
     const name = el.name || el.id
 
     if (this.debug) console.log('Invalid value for ' + name + ': ' + message)
-
-    this.inputErrors[name] = [...(this.inputErrors[name] || []), message]
 
     // init already does this, but ensure the input has an array
     if (!(name in this.inputErrors)) this.inputErrors[name] = []
@@ -375,9 +374,14 @@ export default class Validator {
       isValid: utils.isEmail,
       error: this.messages.ERROR_EMAIL,
     },
+    zip: {
+      parse: utils.parseZip,
+      isValid: utils.isZip,
+      error: this.messages.ERROR_ZIP,
+    },
     postal: {
-      parse: utils.parsePostal,
-      isValid: utils.isPostal,
+      parse: utils.parsePostalCA,
+      isValid: utils.isPostalCA,
       error: this.messages.ERROR_POSTAL,
     },
     url: {

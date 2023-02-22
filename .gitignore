@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 package-lock.json
 coverage
+demo.css
 
 node_modules
 dist

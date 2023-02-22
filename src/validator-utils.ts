@@ -520,7 +520,24 @@ export function isUrl(value: string): boolean {
   return urlRegex.test(value)
 }
 
-export function parsePostal(value: string): string {
+export function parseZip(value: string): string {
+  value = value
+    .replace(/[^0-9]/g, '')
+    .replace(/(.{5})(.*)/, '$1-$2')
+    .trim()
+
+  // If the zip code has 6 characters, remove a hyphen
+  if (value.length === 6) value = value.replace(/-/, '')
+
+  return value
+}
+
+export function isZip(value: string): boolean {
+  const zipRegex = new RegExp(/^\d{5}(-\d{4})?$/)
+  return zipRegex.test(value)
+}
+
+export function parsePostalCA(value: string): string {
   value = value
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '')
@@ -529,8 +546,8 @@ export function parsePostal(value: string): string {
   return value
 }
 
-export function isPostal(value: string): boolean {
-  var postalRegex = new RegExp(
+export function isPostalCA(value: string): boolean {
+  const postalRegex = new RegExp(
     /^[ABCEGHJKLMNPRSTVXY][0-9][ABCEGHJKLMNPRSTVWXYZ] ?[0-9][ABCEGHJKLMNPRSTVWXYZ][0-9]$/
   )
   return postalRegex.test(value)

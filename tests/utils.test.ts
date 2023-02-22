@@ -676,17 +676,51 @@ describe('utils', () => {
     })
   }) // end isNANPTel
 
-  describe('parsePostal', function () {
-    it('should return sanitized postal code for valid inputs', function () {
+  describe('parseZip', function () {
+    const validZipCodes = ['12345', '12345-1234', '12345 1234', '12345_1234', '12345-']
+    const expectedCodes = ['12345', '12345-1234', '12345-1234', '12345-1234', '12345']
+
+    validZipCodes.forEach((value, index) => {
+      it(`should return sanitized US zip code for valid input: ${value}`, function () {
+        expect(utils.parseZip(value)).toEqual(expectedCodes[index])
+      })
+    })
+  }) // end parseZip
+
+  describe('isZip', function () {
+    const validZipCodes = ['12345', '12345-1234', '99501-1234']
+    const invalidZipCodes = [
+      '1234', // too short
+      '123456', // too long
+      '12345-123', // too short
+      '12345-12345', // too long
+      '12345-1234-1234', // too long
+    ]
+
+    validZipCodes.forEach((value) => {
+      it(`should return true for valid US zip code: ${value}`, function () {
+        expect(utils.isZip(value)).toEqual(true)
+      })
+    })
+
+    invalidZipCodes.forEach((value) => {
+      it(`should return false for invalid US zip code: ${value}`, function () {
+        expect(utils.isZip(value)).toEqual(false)
+      })
+    })
+  }) // end isZip
+
+  describe('parsePostalCA', function () {
+    it('should return sanitized Canadian postal code for valid inputs', function () {
       const validPostalCodes = ['A1A 1A1', 'a1a1a1', 'A1A-1A1', 'A1a1A1']
       const expectedCodes = ['A1A 1A1', 'A1A 1A1', 'A1A 1A1', 'A1A 1A1']
       validPostalCodes.forEach((value, index) =>
-        expect(utils.parsePostal(value)).toEqual(expectedCodes[index])
+        expect(utils.parsePostalCA(value)).toEqual(expectedCodes[index])
       )
     })
   })
 
-  describe('isPostal', function () {
+  describe('isPostalCA', function () {
     it('should return true for valid Canadian postal codes', function () {
       const validPostalCodes = [
         'A1A 1A1',
@@ -698,7 +732,7 @@ describe('utils', () => {
         'Y1Y 1Y1',
         'T6H 4T9',
       ]
-      validPostalCodes.forEach((value) => expect(utils.isPostal(value)).toEqual(true))
+      validPostalCodes.forEach((value) => expect(utils.isPostalCA(value)).toEqual(true))
     })
 
     it('should return false for invalid Canadian postal codes', function () {
@@ -714,7 +748,7 @@ describe('utils', () => {
         'A1U 1A1',
         'Z9Z 9Z9',
       ]
-      invalidPostalCodes.forEach((value) => expect(utils.isPostal(value)).toEqual(false))
+      invalidPostalCodes.forEach((value) => expect(utils.isPostalCA(value)).toEqual(false))
     })
   })
 

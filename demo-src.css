@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  [type='text'],
+  [type='email'],
+  [type='url'],
+  [type='password'],
+  [type='number'],
+  [type='date'],
+  [type='datetime-local'],
+  [type='month'],
+  [type='search'],
+  [type='tel'],
+  [type='time'],
+  [type='week'],
+  [type='color'],
+  [multiple],
+  textarea,
+  select,
+  .chosen-container .chosen-single,
+  .chosen-container-multi .chosen-choices {
+    @apply border border-zinc-300 bg-zinc-50 px-1 py-0.5 text-zinc-700
+        placeholder-zinc-500 placeholder-opacity-50 shadow-inner
+        focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/50
+        focus:ring-offset-0 focus:ring-offset-transparent;
+
+    @apply dark:border-zinc-500 dark:bg-zinc-900 dark:text-white dark:focus:bg-zinc-800;
+
+    @apply disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-300;
+  }
+
+  /* Form input variants (do not apply when disabled) */
+  [type='text']:not([disabled]),
+  [type='email']:not([disabled]),
+  [type='url']:not([disabled]),
+  [type='password']:not([disabled]),
+  [type='number']:not([disabled]),
+  [type='date']:not([disabled]),
+  [type='datetime-local']:not([disabled]),
+  [type='month']:not([disabled]),
+  [type='search']:not([disabled]),
+  [type='tel']:not([disabled]),
+  [type='time']:not([disabled]),
+  [type='week']:not([disabled]),
+  [type='color']:not([disabled]),
+  [multiple]:not([disabled]),
+  textarea:not([disabled]),
+  select:not([disabled]) {
+    @apply hover:bg-white dark:hover:bg-zinc-800;
+  }
+
+  [type='checkbox'],
+  [type='radio'] {
+    @apply border border-zinc-300 bg-zinc-50 text-blue-600 shadow-sm
+        checked:border checked:border-zinc-400 checked:bg-blue-600 focus:outline-none
+        focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:checked:bg-blue-500;
+
+    @apply dark:border-zinc-500 dark:bg-zinc-400 dark:checked:bg-blue-600 dark:focus:checked:bg-blue-400;
+
+    @apply disabled:opacity-60 disabled:checked:hover:bg-blue-600;
+
+    /* Prevents border change when disabled and hovered */
+    @apply disabled:checked:hover:border-zinc-400 disabled:dark:checked:bg-blue-600 dark:disabled:checked:hover:border-zinc-500;
+  }
+
+  [type='checkbox']:not([disabled]),
+  [type='radio']:not([disabled]) {
+    @apply hover:bg-zinc-200 checked:hover:bg-blue-500
+        dark:hover:bg-zinc-300 dark:hover:checked:bg-blue-400 dark:hover:focus:checked:bg-blue-400;
+  }
+
+  [type='radio'] {
+    @apply rounded-full;
+  }
+
+  select {
+    @apply pr-6;
+    /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='rgb(120 113 108)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important; */
+    background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(120 113 108)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E') !important;
+    background-size: 1.2rem;
+    background-position: right 0.1rem center;
+  }
+}
+
+@layer components {
+  .checked-label {
+    @apply ml-1.5 mr-1;
+    /* no styles are directly applied unless this is used with a checked input */
+  }
+
+  input:checked + .checked-label {
+    @apply text-black dark:text-white;
+    /* This is only really visible in dark mode, giving the text a subtle glow */
+    text-shadow: 0 0 5px hsl(0 0% 100%/25%);
+  }
+
+  /* Apply checked-border to labels for checkboxes and radio buttons for a label that colors up automatically when checked */
+  .checked-border {
+    @apply inline-flex items-center border border-zinc-300/30 bg-zinc-50 px-1 text-zinc-700 shadow-inner;
+    @apply hover:bg-white dark:border-zinc-500/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
+  }
+
+  .checked-border:has([type='checkbox']:checked, [type='radio']:checked) {
+    @apply border-blue-600 text-black hover:border-blue-500 dark:text-white;
+  }
+}

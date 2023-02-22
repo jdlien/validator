@@ -72,6 +72,8 @@ Then create a new Validator instance and pass it the form element as the first a
   <input type="submit" value="Submit" />
 </form>
 
+<!-- Include the validator.js file if you are not using a module bundler -->
+<script src="./dist/validator.js"></script>
 <script>
   const form = document.getElementById('myForm')
   const validator = new Validator(form)
@@ -81,6 +83,10 @@ Then create a new Validator instance and pass it the form element as the first a
 When Validator is initialized, it will disable the built-in browser validation and show error messages from Validator in the divs with the id of the input name + `-error`.
 
 You can also pass in a custom default error message for a field using `data-error-default`.
+
+## Demo
+
+For a working demo, see the [demo page](./demo.html).
 
 ## Contributing
 
