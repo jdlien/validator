@@ -1,17 +1,5 @@
 # Validator
 
-// TODO: Fix the links below
-[![Build Status](https://travis-ci.org/validatorjs/validator.js.svg?branch=master)](https://travis-ci.org/validatorjs/validator.js)
-[![Coverage Status](https://coveralls.io/repos/github/validatorjs/validator.js/badge.svg?branch=master)](https://coveralls.io/github/validatorjs/validator.js?branch=master)
-[![npm version](https://badge.fury.io/js/validator.svg)](https://badge.fury.io/js/validator)
-[![npm](https://img.shields.io/npm/dm/validator.svg)](https://www.npmjs.com/package/validator)
-[![npm](https://img.shields.io/npm/dt/validator.svg)](https://www.npmjs.com/package/validator)
-[![Known Vulnerabilities](https://snyk.io/test/github/validatorjs/validator.js/badge.svg)](https://snyk.io/test/github/validatorjs/validator.js)
-[![Greenkeeper badge](https://badges.greenkeeper.io/validatorjs/validator.js.svg)](https://greenkeeper.io/)
-[![dependencies Status](https://david-dm.org/validatorjs/validator.js/status.svg)](https://david-dm.org/validatorjs/validator.js)
-[![devDependencies Status](https://david-dm.org/validatorjs/validator.js/dev-status.svg)](https://david-dm.org/validatorjs/validator.js?type=dev)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fvalidatorjs%2Fvalidator.js.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fvalidatorjs%2Fvalidator.js?ref=badge_shield)
-
 ## Introduction
 
 Validator is a utility class that you can use to add validation to your application that works much like native HTML5 form validation provided by browsers, but it is much more powerful, flexible, and customizable.
