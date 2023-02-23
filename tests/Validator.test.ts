@@ -305,9 +305,10 @@ describe('Validator', () => {
 
     it('logs a debugging message if debug is enabled', () => {
       validator.debug = true
-      vi.spyOn(console, 'log')
+      const mockLog = vi.fn()
+      console.log = mockLog
       ;(validator as any).addInputError(formControl, 'invalid username')
-      expect(console.log).toHaveBeenCalledWith('Invalid value for test-input: invalid username')
+      expect(mockLog).toHaveBeenCalledWith('Invalid value for test-input: invalid username')
     })
 
     it('does not show the same error multiple times for a set of radio buttons', () => {
@@ -505,7 +506,6 @@ describe('Validator', () => {
       ;(validator as any).showFormErrors()
 
       const mainError = form.querySelector('#form-error-main')
-      console.log(mainError)
       expect(mainError).toBeTruthy()
       ;(validator as any).clearFormErrors()
 

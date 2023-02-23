@@ -448,7 +448,7 @@ export default class Validator {
   private validatePattern(el: FormControl): boolean {
     const pattern = el.dataset.pattern || (el instanceof HTMLInputElement && el.pattern) || null
     if (pattern && !new RegExp(pattern).test(el.value)) {
-      this.addInputError(el, el.dataset.message)
+      this.addInputError(el) // Use the default error message
       return false
     }
 

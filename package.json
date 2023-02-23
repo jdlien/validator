@@ -25,6 +25,9 @@
     "type": "git",
     "url": "git+https://github.com/jdlien/validator.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "form",
     "validation",
