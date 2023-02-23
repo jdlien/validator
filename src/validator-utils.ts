@@ -638,10 +638,14 @@ export function parseColor(value: string): string {
 // Homogenizes the return of a custom validation function to a ValidationResult
 // that has a boolean valid property and messages array of strings
 export function normalizeValidationResult(
-  res: boolean | { valid: boolean; message?: string; messages?: string | string[]; error?: boolean }
+  res:
+    | boolean
+    | string
+    | { valid: boolean; message?: string; messages?: string | string[]; error?: boolean }
 ): ValidationResult {
   let result: ValidationResult = { valid: false, error: false, messages: [] }
   if (typeof res === 'boolean') return { valid: res, error: false, messages: [] }
+  if (typeof res === 'string') return { valid: false, error: false, messages: [res] }
   if (typeof res.valid === 'boolean') result.valid = res.valid
   if (typeof res.message === 'string') result.messages = [res.message]
   if (typeof res.messages === 'string') result.messages = [res.messages]

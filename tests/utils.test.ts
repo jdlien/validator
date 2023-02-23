@@ -1036,5 +1036,13 @@ describe('utils', () => {
       expect(result.error).toBe(true)
       expect(result.messages).toEqual([])
     })
+
+    it('should return valid=false and messages with the string input is a string', () => {
+      const input = 'error'
+      const result = utils.normalizeValidationResult(input)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe(false)
+      expect(result.messages).toEqual(['error'])
+    })
   }) // end normalizeValidationResult
 })

@@ -2,11 +2,13 @@
 
 ## Introduction
 
-Validator is a utility class that you can use to add validation to your application that works much like native HTML5 form validation provided by browsers, but it is much more powerful, flexible, and customizable.
+Validator is a utility class that adds automatic validation to your HTML forms that works much like
+the HTML5 form validation provided by browsers, but it is much more powerful, flexible, and
+customizable.
 
-It is meant to sanitize and validate user input in forms, resulting in clean, consistent output that
-is done in a very use-friendly way without unnecessarily constraining the user from entering data
-in a way that is convenient for them.
+It can sanitize and check user input in forms, resulting in clean, consistent submissions that
+are very user-friendly without unnecessarily constraining the user from entering data in ways that
+are convenient for them.
 
 Validator includes the following built-in validation types:
 
@@ -26,6 +28,8 @@ Validator includes the following built-in validation types:
 
 You can also add custom validation, and can customize error messages per field or for the whole form.
 
+Validator has no dependencies and is written in TypeScript. It is compatible with all modern browsers.
+
 ## Installation
 
 ```bash
@@ -38,26 +42,34 @@ yarn add @jdlien/validator
 
 ## Basic Usage
 
-Create a form as you normally would, speciyfing parameters for each input to control how Validator will check the input. You can use the data-type attribute instead of type if you do not want users to be limited by the browser's built-in input fields.
+Create a form as you normally would, adding attributes for inputs to control how Validator will
+check the input, such as `required`, `type`, or `data-type`. Native HTML5 attributes are supported,
+although often the browser's built-in validation is problematic or inflexible. In those cases, you
+can use a `data-` variant of these attributes to avoid the browser's built-in validation.
 
-Then create a new Validator instance and pass it the form element as the first argument. An optional second argument allows you to pass in options.
+Any input that you want to validate should have a unique name attribute. If you want to display error messages for the input, you must also have a div with an id that is the name of the input + `-error`.
+
+Then create a new Validator instance and pass it the form element as the first argument. An optional second argument allows you to pass in options. Here is a simplified example:
 
 ```html
 <form id="myForm">
+  <label for="name">Name</label>
   <input
     type="text"
     name="name"
+    id="name"
     required
     data-min-length="2"
     data-max-length="20"
-    data-error-default="Please enter a name."
+    data-error-default="Enter between 2 and 20 characters."
   />
   <div id="name-error"></div>
 
-  <input type="text" data-type="email" name="email" required />
+  <label for="email">Email</label>
+  <input type="email" name="email" id="email" required />
   <div id="email-error"></div>
 
-  <input type="text" data-type="tel" name="phone" />
+  <input type="text" data-type="tel" name="phone" id="phone" />
   <div id="phone-error"></div>
 
   <input type="submit" value="Submit" />
@@ -79,7 +91,7 @@ You can also pass in a custom default error message for a field using `data-erro
 
 For a working demo, see the [demo page](./demo.html).
 
-## Structuring A Form for Validator
+## Supported Input Types and Atributes
 
 Validator works by checking for certain attributes on the form inputs and applying validation based on those.
 In many cases you can use the native HTML5 attributes, but you can also use the `data-` attributes if you do not want the behavior to be affected by built-in browser validation behavior (eg for min-length, max-length, and input types such as date and time).
@@ -115,28 +127,36 @@ On input (and sometimes select and textarea) elements the following attributes a
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
 
-A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns an object, the `message` property will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
+A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns string, an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
 
-A promise that resolves to such an object can also be used for asynchronous validation.
+You may also use a promise that resolves to such an object for asynchronous validation.
 
 An example of such a function is:
 
 ```javascript
 function customValidation(value) {
-  if (value === 'foo') {
-    return {
-      valid: false,
-      message: 'The value cannot be foo.',
-    }
-  }
+  if (value === 'foo') return 'The value cannot be foo.'
 
   return true
 }
 ```
 
+Here is an example of a custom validation function that uses a promise:
+
+```javascript
+function customValidationPromise(value) {
+  return fetch(`https://api.example.com/validate-username?username=${value}`)
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.valid) return true
+      else return 'Email is invalid'
+    })
+}
+```
+
 ## Displaying Error Messages
 
-Validator will display error messages in the divs with the name of the input + `-error`. For example, if the input name is `name`, the error message will be displayed in the div with the id `name-error`. You will need to create these divs in your HTML. They should initially be hidden with a class that sets `display: none;`, `visibility: hidden;`, or `opacity: 0;`.
+Validator will display error messages in the divs with the name of the input + `-error`. For example, if the input name is `name`, the error message will be displayed in the div with the id `name-error`. You will need to create these divs in your HTML. They should initially be hidden with a class that sets properties such as `display: none;`, `visibility: hidden;`, or `opacity: 0;`.
 
 You can customize the class(es) that Validator uses to hide the error messages by passing in a `hideErrorClass` option to the Validator constructor. The default is `hidden opacity-0`.
 
