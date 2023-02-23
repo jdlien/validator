@@ -4,25 +4,27 @@
 
 Validator is a utility class that you can use to add validation to your application that works much like native HTML5 form validation provided by browsers, but it is much more powerful, flexible, and customizable.
 
-It is meant to validate user input in forms, and it includes the following built-in validators:
+It is meant to sanitize and validate user input in forms, resulting in clean, consistent output that
+is done in a very use-friendly way without unnecessarily constraining the user from entering data
+in a way that is convenient for them.
 
-- `required`
-- `minlength`
-- `maxlength`
-- `pattern`
-- `number`
-- `integer`
-- `tel` (North-American Phone Numbers)
-- `zip` (US Zip Codes)
-- `email`
-- `postal` (Canadian Postal Codes)
-- `color`
-- `date`
-- `date-range`
-- `time`
-- `url`
+Validator includes the following built-in validation types:
 
-It is easy to add your own custom validators, and you can easily add your own custom error messages for each field or any given validation for the whole class.
+- Required
+- Minimum or maximum length
+- Pattern (regular expression)
+- Numbers (with decimals and negative values)
+- Integers (positive whole numbers)
+- North-American Phone Numbers
+- US Zip Codes
+- Email Addresses
+- Canadian Postal Codes
+- Colors (CSS colors, with color picker support)
+- Dates (optionally constrained to past or future dates)
+- Time of day
+- URLs
+
+You can also add custom validation, and can customize error messages per field or for the whole form.
 
 ## Installation
 
