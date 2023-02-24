@@ -89,7 +89,7 @@ You can also pass in a custom default error message for a field using `data-erro
 
 ## Demo
 
-For a working demo, see the [demo page](./demo.html).
+[Working demo](https://jdlien.com/validator/demo.html) [source on GitHub](./demo.html).
 
 ## Supported Input Types and Atributes
 
