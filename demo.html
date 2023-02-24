@@ -581,7 +581,6 @@
               ></div>
             </div>
           </div>
-          <!--end cf_input type=select-->
         </div>
 
         <p class="text-gray-500 dark:text-gray-400">
@@ -661,8 +660,8 @@
 
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
           <label
-            for="input-n9Q633b3o"
-            id="input-n9Q633b3o-label"
+            for="input-radio"
+            id="input-radio-label"
             class="block font-medium sm:mt-px sm:pt-1"
             >Radio button group</label
           >
@@ -671,11 +670,11 @@
               <div class="mb-3 sm:col-span-2 space-y-3">
                 <div class="pt-2">
                   <div class="flex items-start h-5">
-                    <label class="checked-border rounded-full" for="input-n9Q633b3o-1-red">
+                    <label class="checked-border rounded-full" for="input-radio-1-red">
                       <input
-                        id="input-n9Q633b3o-1-red"
+                        id="input-radio-1-red"
                         required=""
-                        name="input-n9Q633b3o"
+                        name="input-radio"
                         type="radio"
                         value="red"
                         class="block transition"
@@ -686,11 +685,11 @@
                 </div>
                 <div class="pt-2">
                   <div class="flex items-start h-5">
-                    <label class="checked-border rounded-full" for="input-n9Q633b3o-2-green">
+                    <label class="checked-border rounded-full" for="input-radio-2-green">
                       <input
-                        id="input-n9Q633b3o-2-green"
+                        id="input-radio-2-green"
                         required=""
-                        name="input-n9Q633b3o"
+                        name="input-radio"
                         type="radio"
                         value="green"
                         class="block transition"
@@ -701,11 +700,11 @@
                 </div>
                 <div class="pt-2">
                   <div class="flex items-start h-5">
-                    <label class="checked-border rounded-full" for="input-n9Q633b3o-3-blue">
+                    <label class="checked-border rounded-full" for="input-radio-3-blue">
                       <input
-                        id="input-n9Q633b3o-3-blue"
+                        id="input-radio-3-blue"
                         required=""
-                        name="input-n9Q633b3o"
+                        name="input-radio"
                         type="radio"
                         value="blue"
                         class="block transition"
@@ -720,7 +719,39 @@
             <div style="min-height: 20px">
               <div
                 class="error hidden text-sm text-red-600 transition dark:text-red-500"
-                id="input-n9Q633b3o-error"
+                id="input-radio-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-500 dark:text-gray-400">
+          Textarea elements can have min and max lengths as well as be required.
+        </p>
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-textarea"
+            id="input-textarea-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Multiple Text Lines</label
+          >
+          <div class="mt-1 sm:mt-0 sm:col-span-2">
+            <textarea
+              required="true"
+              data-min-length="2"
+              data-max-length="50"
+              id="input-textarea"
+              class="w-full"
+              name="input-textarea"
+              data-error-default=""
+              aria-labelledby="input-textarea-label"
+              placeholder="Between 2 and 50 characters"
+            ></textarea>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-textarea-error"
               ></div>
             </div>
           </div>
