@@ -18,10 +18,8 @@
   [type='color'],
   [multiple],
   textarea,
-  select,
-  .chosen-container .chosen-single,
-  .chosen-container-multi .chosen-choices {
-    @apply border border-zinc-300 bg-zinc-50 px-1 py-0.5 text-zinc-700
+  select {
+    @apply border border-zinc-300 rounded bg-zinc-50 px-2 py-1.5 text-zinc-700
         placeholder-zinc-500 placeholder-opacity-50 shadow-inner
         focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/50
         focus:ring-offset-0 focus:ring-offset-transparent;
