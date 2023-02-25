@@ -292,7 +292,7 @@ Install dev dependencies:
 npm install
 ```
 
-You may get an error like
+When running Vite you may get an error like
 
 ```
 Module did not self-register: '...\node_modules\canvas\build\Release\canvas.node'
