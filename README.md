@@ -1,4 +1,4 @@
-# Validator
+# Validator - HTML Form Validation Made Easy
 
 ## Introduction
 
