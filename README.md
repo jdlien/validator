@@ -162,7 +162,7 @@ You can customize the class(es) that Validator uses to hide the error messages b
 
 ## Color Picker Support
 
-If you need to allow a user to pick a color, you can use data-type="color" and the input will be required to be any valid CSS color supported by the browser. This type can also work in conjunction with a native color input. If you do this, you will need to add an input with the name of the data-color input + `-color`, and this should be inside a linked label which will become the color preview swatch. Such a label should have a label of the color input's name + `-color-label`.
+If you need to allow a user to pick a color, you can use data-type="color" and the input will be required to be any valid CSS color supported by the browser. This type can also work in conjunction with a native color input. If you do this, you will need to add an input with `type="color"` and the name of the data-color input + `-color`. This should be inside a linked label which will become the color preview swatch. Such a label should have an ID of the color input's name + `-color-label` so that Validator can change the background to the specified color.
 
 A basic example that would work:
 
