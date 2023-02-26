@@ -299,4 +299,4 @@ Module did not self-register: '...\node_modules\canvas\build\Release\canvas.node
 ```
 
 If that happens, you
-need to install the canvas module manually: `bash npm rebuild canvas --update-binary `
+need to install the canvas module manually: `bash npm rebuild canvas --update-binary`

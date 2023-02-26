@@ -6,7 +6,8 @@
  */
 
 // Import the validator utility functions
-import * as utils from './validator-utils'
+import * as utils from '@jdlien/validator-utils'
+
 import { FormControl, ValidatorOptions, InputHandlers } from './types'
 
 export class ValidationSuccessEvent extends Event {
