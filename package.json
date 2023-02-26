@@ -1,6 +1,6 @@
 {
   "name": "@jdlien/validator",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "module": "dist/validator.js",
   "description": "Validates and sanitizes the inputs in a form using native html attributes.",
