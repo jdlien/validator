@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Validator Demo</title>
+    <link rel="stylesheet" href="demo.css" />
+  </head>
+
+  <body class="p-6 bg-gray-400 dark:bg-gray-800 dark:text-white">
+    <main class="max-w-3xl mx-auto bg-gray-200 dark:bg-gray-900 rounded-xl p-8 shadow-xl">
+      <h1 class="text-4xl font-semibold text-center text-gray-200">Validator Demo</h1>
+      <div class="text-center">
+        <p class="my-8">
+          Validator has been applied to this form to help sanitize and validate user input.<br />
+          This form won't submit if any fields are invalid and helpful errors will be shown or
+          hidden as the user changes fields.
+        </p>
+
+        <div>Install this Validator through npm:</div>
+
+        <div>
+          <code>npm install @jdlien/validator</code>
+        </div>
+
+        <p class="my-8">
+          Source code and documentation at
+          <a
+            href="https://github.com/jdlien/validator/"
+            class="text-blue-700 dark:text-blue-400 hover:underline"
+            >github.com/jdlien/validator</a
+          >.
+        </p>
+      </div>
+      <form id="demo-form" class="space-y-3 max-w-2xl mx-auto mb-12">
+        <p class="text-gray-500 dark:text-gray-400">
+          Fields can be required, have a minimum or maximum length, or a pattern.<br />
+          Numeric inputs won't even allow invalid values to be typed in.
+        </p>
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-required"
+            id="input-required-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Required</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                required="true"
+                minlength="8"
+                id="input-required"
+                name="input-required"
+                data-error-default=""
+                aria-labelledby="input-required-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-required-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-pattern"
+            id="input-pattern-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Regex Pattern</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                pattern="^[a-zA-Z]\d+$"
+                data-error-default="^[a-zA-Z]\d+$ (A letter followed by one or more numbers)"
+                id="input-pattern"
+                data-pattern="^[a-zA-Z]\d+$"
+                name="input-pattern"
+                aria-labelledby="input-pattern-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A letter followed by numbers <strong>(^[a-zA-Z]\d+$)</strong>
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-pattern-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-min" id="input-min-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Minimum 8 chars</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                minlength="8"
+                id="input-min"
+                name="input-min"
+                data-error-default=""
+                aria-labelledby="input-min-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-min-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-max" id="input-max-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Maximum</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                data-max-length="3"
+                id="input-max"
+                name="input-max"
+                data-error-default=""
+                aria-labelledby="input-max-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-max-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-integer"
+            id="input-integer-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Positive Integers</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                id="input-integer"
+                data-type="integer"
+                name="input-integer"
+                data-error-default=""
+                aria-labelledby="input-integer-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Up/down arrow keys increment &amp; decrement
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-integer-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-number"
+            id="input-number-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Any Number</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                id="input-number"
+                data-type="number"
+                name="input-number"
+                data-error-default=""
+                aria-labelledby="input-number-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Negative numbers and decimals are allowed
+            </p>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-number-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-500 dark:text-gray-400">
+          Dates can be entered by users in almost any format, and will be converted
+          to the format specified in the data-date-format attribute.<br>
+          Dates can also be constrained to past or future dates.<br>
+          These features are compatible with datepickers like
+          <a href="https://flatpickr.js.org/"
+            class="text-blue-700 dark:text-blue-400 hover:underline"
+          >Flatpickr</a>.
+          </p>
+        </p>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-date" id="input-date-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Date</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                value="2021-Jan-01"
+                id="input-date"
+                data-date-format="YYYY-MMM-DD"
+                data-type="date"
+                placeholder="YYYY-Mmm-D"
+                name="input-date"
+                data-error-default=""
+                aria-labelledby="input-date-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Any date will be converted to the <em>YYYY-MMM-DD</em> format
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-date-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-past-date"
+            id="input-past-date-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Past date</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                data-date-range="past"
+                value="2021-01-01"
+                id="input-past-date"
+                data-date-format="YYYY-MM-DD"
+                data-type="date"
+                placeholder="YYYY-Mmm-D"
+                name="input-past-date"
+                data-error-default=""
+                aria-labelledby="input-past-date-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              YYYY-MM-DD format is enforced
+            </p>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-past-date-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-future-date"
+            id="input-future-date-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Enter Future date</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                data-date-range="future"
+                id="input-future-date"
+                data-date-format="YYYY-MM-DD"
+                data-type="date"
+                placeholder="YYYY-Mmm-D"
+                name="input-future-date"
+                data-error-default=""
+                aria-labelledby="input-future-date-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-future-date-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-url" id="input-url-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Web Address</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="url"
+                required="true"
+                id="input-url"
+                inputmode="url"
+                placeholder="https://____.___"
+                name="input-url"
+                data-error-default="You have to put text here."
+                aria-describedby="input-url-error"
+                aria-labelledby="input-url-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              This is a text input with a provided error
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-url-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-tel" id="input-tel-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Tel</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="tel"
+                required="true"
+                id="input-tel"
+                inputmode="tel"
+                data-type="tel"
+                placeholder="___-___-____"
+                name="input-tel"
+                data-error-default=""
+                aria-labelledby="input-tel-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A North-American phone number will be formatted on change
+            </p>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-tel-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-JmMZ56f26"
+            id="input-JmMZ56f26-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Email</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="email"
+                required="true"
+                id="input-JmMZ56f26"
+                inputmode="email"
+                data-type="email"
+                placeholder="____@____.___"
+                name="input-JmMZ56f26"
+                data-error-default=""
+                aria-labelledby="input-JmMZ56f26-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-JmMZ56f26-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-y371jQeI5"
+            id="input-y371jQeI5-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >US Zip Code</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                id="input-y371jQeI5"
+                data-type="zip"
+                name="input-y371jQeI5"
+                data-error-default=""
+                aria-labelledby="input-y371jQeI5-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-y371jQeI5-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-1RE0Iv460"
+            id="input-1RE0Iv460-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Canadian Postal Code</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                id="input-1RE0Iv460"
+                data-type="postal"
+                name="input-1RE0Iv460"
+                data-error-default=""
+                aria-labelledby="input-1RE0Iv460-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-1RE0Iv460-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-Iju9bFf25"
+            id="input-Iju9bFf25-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Time of Day</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                data-time-format="h:mm A"
+                id="input-Iju9bFf25"
+                data-type="time"
+                placeholder="H:MM AM"
+                name="input-Iju9bFf25"
+                data-error-default=""
+                aria-labelledby="input-Iju9bFf25-label"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Anything resembling a time will be converted into the specified format
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-Iju9bFf25-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-color" id="input-color-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Color value with picker</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition rounded-r-none"
+                type="text"
+                id="input-color"
+                data-type="color"
+                name="input-color"
+                data-error-default=""
+                aria-labelledby="input-color-label"
+              />
+              <label
+                id="input-color-color-label"
+                for="input-color-color"
+                class="border border-l-0 border-gray-350 dark:border-gray-500 cursor-pointer w-20 rounded-r"
+                style="background-color: #888888"
+              >
+                <input
+                  type="color"
+                  id="input-color-color"
+                  class="invisible w-full h-full"
+                  value="#888888"
+                />
+              </label>
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              The label will show a swatch of any valid color
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-1Au5G5fdg-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accept an array of basic options for a select -->
+        <p class="text-gray-500 dark:text-gray-400">Selects can be required as well.</p>
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-2A59h7jYl"
+            id="input-2A59h7jYl-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Select an option</label
+          >
+          <div class="mt-1 sm:mt-0 sm:col-span-2">
+            <select
+              class="block w-full sm:max-w-sm"
+              required="true"
+              id="input-2A59h7jYl"
+              name="input-2A59h7jYl"
+              data-error-default=""
+              aria-labelledby="input-2A59h7jYl-label"
+            >
+              <option value=""></option>
+              <option value="red">Red</option>
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+            </select>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-2A59h7jYl-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-500 dark:text-gray-400">
+          You can require groups of radio buttons or checkboxes so one must be selected.
+        </p>
+
+        <!-- Accept an array of basic options for a radio button group -->
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="checkboxGroup"
+            id="checkboxGroup-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Checkbox group</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <div class="mb-3 sm:col-span-2 space-y-3">
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border" for="checkboxGroup-1-red">
+                      <input
+                        id="checkboxGroup-1-red"
+                        required=""
+                        name="checkboxGroup"
+                        type="checkbox"
+                        value="red"
+                        data-error-default="You have to check at least one box."
+                        class="block transition"
+                      />
+                      <span class="checked-label">Red</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border" for="checkboxGroup-2-green">
+                      <input
+                        id="checkboxGroup-2-green"
+                        required=""
+                        name="checkboxGroup"
+                        type="checkbox"
+                        value="green"
+                        data-error-default="You have to check at least one box."
+                        class="block transition"
+                      />
+                      <span class="checked-label">Green</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border" for="checkboxGroup-3-blue">
+                      <input
+                        id="checkboxGroup-3-blue"
+                        required=""
+                        name="checkboxGroup"
+                        type="checkbox"
+                        value="blue"
+                        data-error-default="You have to check at least one box."
+                        class="block transition"
+                      />
+                      <span class="checked-label">Blue</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="checkboxGroup-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-radio"
+            id="input-radio-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Radio button group</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <div class="mb-3 sm:col-span-2 space-y-3">
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border rounded-full" for="input-radio-1-red">
+                      <input
+                        id="input-radio-1-red"
+                        required=""
+                        name="input-radio"
+                        type="radio"
+                        value="red"
+                        class="block transition"
+                      />
+                      <span class="checked-label">red</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border rounded-full" for="input-radio-2-green">
+                      <input
+                        id="input-radio-2-green"
+                        required=""
+                        name="input-radio"
+                        type="radio"
+                        value="green"
+                        class="block transition"
+                      />
+                      <span class="checked-label">green</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <div class="flex items-start h-5">
+                    <label class="checked-border rounded-full" for="input-radio-3-blue">
+                      <input
+                        id="input-radio-3-blue"
+                        required=""
+                        name="input-radio"
+                        type="radio"
+                        value="blue"
+                        class="block transition"
+                      />
+                      <span class="checked-label">blue</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-radio-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-500 dark:text-gray-400">
+          Textarea elements can have min and max lengths as well as be required.
+        </p>
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-textarea"
+            id="input-textarea-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Multiple Text Lines</label
+          >
+          <div class="mt-1 sm:mt-0 sm:col-span-2">
+            <textarea
+              required="true"
+              data-min-length="2"
+              data-max-length="50"
+              id="input-textarea"
+              class="w-full"
+              name="input-textarea"
+              data-error-default=""
+              aria-labelledby="input-textarea-label"
+              placeholder="Between 2 and 50 characters"
+            ></textarea>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-textarea-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <input
+            class="bg-blue-600 rounded hover:bg-blue-500 py-1 active:bg-blue-700 text-white text-lg w-60"
+            type="submit"
+          />
+        </div>
+      </form>
+
+      <p class="text-center">
+        If the form is invalid when submitted, 'form-error-main' will be displayed above.
+      </p>
+
+      <script src="../dist/validator.js"></script>
+      <script>
+        const form = document.getElementById('demo-form')
+        const validator = new Validator(form)
+      </script>
+    </main>
+  </body>
+</html>
