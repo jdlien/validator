@@ -1,6 +1,6 @@
 {
   "name": "@jdlien/validator",
-  "version": "1.1.3",
+  "version": "1.1.6",
   "type": "module",
   "module": "dist/validator.js",
   "types": "dist/Validator.d.ts",
@@ -10,7 +10,7 @@
   "description": "Validates and sanitizes the inputs in a form using native HTML attributes.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --emitDeclarationOnly && tailwindcss -i demo/demo-src.css -o demo/demo.css -m",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
@@ -58,7 +58,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@jdlien/validator-utils": "^1.1.4",
-    "happy-dom": "^8.9.0"
+    "@jdlien/validator-utils": "^1.1.6"
   }
 }

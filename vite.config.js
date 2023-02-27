@@ -30,7 +30,6 @@ export default defineConfig({
     },
     threads: false, // suppresses errors from canvas when starting tests
     deps: {
-      // external: ['@jdlien/validator-utils'],
       inline: ['@jdlien/validator-utils'],
     },
   }

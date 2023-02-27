@@ -340,6 +340,34 @@ describe('Validator', () => {
   }) // end addInputError
 
   describe('showInputErrors', () => {
+    it('returns if the input has no name or id', () => {
+      formControl.name = ''
+      formControl.id = ''
+      ;(validator as any).showInputErrors(formControl)
+      expect(formControl.classList.contains('error')).toBeFalsy()
+    })
+
+    it('uses id as error key if name is not provided', () => {
+      formControl.name = ''
+      formControl.id = 'input-id'
+      validator.init()
+      // Add input error and show it
+      ;(validator as any).addInputError(formControl)
+      ;(validator as any).showInputErrors(formControl)
+      expect(validator.inputErrors['input-id']).toBeTruthy()
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(formControl.classList.contains(errorClass)).toBeTruthy()
+      })
+    })
+
+    it('adds an empty array for the element if no inputError array already exists', () => {
+      formControl.name = 'test-input'
+      validator.inputErrors = {}
+      console.log(validator.inputErrors)
+      ;(validator as any).showInputErrors(formControl)
+      expect(validator.inputErrors['test-input']).toBeFalsy()
+    })
+
     it('shows an error message', () => {
       // First add an error
       ;(validator as any).addInputError(formControl)
@@ -431,6 +459,21 @@ describe('Validator', () => {
       const mainError = form.querySelector('#form-error-main')
       expect(mainError).toBeFalsy()
     })
+
+    it('should show the the main error message if the mailErrorEl is empty', () => {
+      // Ensure the mainErrorEl already exists. We need an error for it to show
+      ;(validator as any).addInputError(formControl)
+      ;(validator as any).showFormErrors()
+      document.querySelectorAll('#form-error-main').forEach((error) => {
+        error.innerHTML = ''
+      })
+
+      // Now call showFormErrors again
+      ;(validator as any).showFormErrors()
+      document.querySelectorAll('#form-error-main').forEach((error) => {
+        expect(error.innerHTML).toContain(validator.messages.ERROR_MAIN)
+      })
+    })
   }) // end showFormErrors
 
   describe('clearInputErrors', () => {
@@ -444,6 +487,21 @@ describe('Validator', () => {
       validator.errorInputClasses.split(' ').forEach((errorClass) => {
         expect(formControl.classList.contains(errorClass)).toBeFalsy()
       })
+    })
+
+    it('clears the correct error message if an input has no name but has an id', () => {
+      formControl.name = ''
+      formControl.id = 'input-id'
+      validator.init()
+      // Add input error and show it
+      ;(validator as any).addInputError(formControl)
+      ;(validator as any).showInputErrors(formControl)
+      expect(validator.inputErrors['input-id']).toBeTruthy()
+
+      // Now clear the error
+      ;(validator as any).clearInputErrors(formControl)
+      expect(validator.inputErrors['input-id']).toEqual([])
+      // Note: also checks that clearInputErrors will return if there's no errorEl
     })
   }) // end clearInputErrors
 
@@ -622,6 +680,23 @@ describe('Validator', () => {
       if (radioError) expect(radioError.classList.contains('hidden')).toBeTruthy()
       if (radioError) expect(radioError.textContent).toBe('')
     })
+
+    it('uses the errorDefault attribute as the error message for required group error if set', () => {
+      radio1.required = true
+      radio2.required = true
+      const errorMessage = 'This is a custom error message'
+      radio1.setAttribute('data-error-default', errorMessage)
+      radio2.setAttribute('data-error-default', errorMessage)
+
+      const result = (validator as any).validateRequired(radio1)
+      const result2 = (validator as any).validateRequired(radio2)
+      expect(result).toBeFalsy()
+      expect(result2).toBeFalsy()
+
+      expect(validator.inputErrors[radio1.name]).toContain(errorMessage)
+      // Check that the message was not duplicated
+      expect(validator.inputErrors[radio1.name].length).toBe(1)
+    })
   }) // end validateRequired
 
   describe('validate Min/Max Length', () => {
@@ -693,6 +768,34 @@ describe('Validator', () => {
       expect(result).toBeFalsy()
       expect(validator.inputErrors[formControl.name]).toContain(
         validator.messages.ERROR_MAXLENGTH.replace('${val}', '3')
+      )
+    })
+
+    it('validates min/max length for a textarea', () => {
+      const textarea = document.createElement('textarea')
+      textarea.name = 'textarea'
+      textarea.value = 'this is ok'
+      textarea.setAttribute('data-min-length', '3')
+      textarea.setAttribute('data-max-length', '10')
+      form.appendChild(textarea)
+      validator.init()
+
+      const result = (validator as any).validateLength(textarea)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[textarea.name]).toEqual([])
+
+      textarea.value = 'as'
+      const result2 = (validator as any).validateLength(textarea)
+      expect(result2).toBeFalsy()
+      expect(validator.inputErrors[textarea.name]).toContain(
+        validator.messages.ERROR_MINLENGTH.replace('${val}', '3')
+      )
+
+      textarea.value = 'this is too long of a string'
+      const result3 = (validator as any).validateLength(textarea)
+      expect(result3).toBeFalsy()
+      expect(validator.inputErrors[textarea.name]).toContain(
+        validator.messages.ERROR_MAXLENGTH.replace('${val}', '10')
       )
     })
   }) // end validate Min/Max Length
@@ -1540,6 +1643,13 @@ describe('Validator', () => {
   }) // end validate
 
   describe('submitHandler', () => {
+    it('returns if isSubmitting is true', () => {
+      ;(validator as any).isSubmitting = true
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      ;(validator as any).submitHandler(new Event('submit'))
+      expect(form.submit).not.toHaveBeenCalled()
+    })
+
     it('prevents form submission if the form is already submitting', () => {
       ;(validator as any).isSubmitting = true
       vi.spyOn(form, 'submit').mockImplementation(() => {})
@@ -1605,6 +1715,14 @@ describe('Validator', () => {
   }) // end submitHandler
 
   describe('inputChangeHandler', () => {
+    it('returns if event target is not an input element', () => {
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: form })
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve())
+      ;(validator as any).inputChangeHandler(event)
+      expect((validator as any).validateInput).not.toHaveBeenCalled()
+    })
+
     it('validates the input element when it changes', async () => {
       vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve())
       const event = new Event('change', { bubbles: true })
@@ -1785,6 +1903,12 @@ describe('Validator', () => {
       formControl.dataset.type = 'integer'
 
       event = new Event('keydown', { bubbles: true })
+    })
+
+    it('should return if the event target is not an input element', () => {
+      Object.defineProperty(event, 'target', { value: form })
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('')
     })
 
     it('should increment integer input value when ArrowUp key is pressed', () => {
