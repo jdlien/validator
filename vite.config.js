@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ['@jdlien/validator-utils'],
+  },
   build: {
     lib: {
       entry: 'index.ts',
@@ -26,5 +29,9 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
     },
     threads: false, // suppresses errors from canvas when starting tests
+    deps: {
+      // external: ['@jdlien/validator-utils'],
+      inline: ['@jdlien/validator-utils'],
+    },
   }
 })

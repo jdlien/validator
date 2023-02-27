@@ -1,5 +1,5 @@
 import Validator, { ValidationErrorEvent, ValidationSuccessEvent } from '../src/Validator'
-import * as utils from '@jdlien/validator-utils'
+import { parseColor } from '@jdlien/validator-utils'
 import { ValidatorOptions } from '../src/types'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -1750,7 +1750,7 @@ describe('Validator', () => {
 
       expect(colorPicker.value).toEqual('#00ff00')
 
-      const color = utils.parseColor(window.getComputedStyle(colorLabel).backgroundColor)
+      const color = parseColor(window.getComputedStyle(colorLabel).backgroundColor)
 
       expect(color).toEqual('#00ff00')
     })
@@ -1763,7 +1763,7 @@ describe('Validator', () => {
       ;(validator as any).syncColorInput(event)
 
       expect(colorInput.value).toEqual('#0000ff')
-      expect(utils.parseColor(colorLabel.style.backgroundColor)).toEqual('#0000ff')
+      expect(parseColor(colorLabel.style.backgroundColor)).toEqual('#0000ff')
     })
 
     it('should not update the HTML color picker if the color input value is not a valid color', () => {
