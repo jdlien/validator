@@ -9,12 +9,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "noEmit": true,
+    "noEmit": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "baseUrl": "./node_modules"
+    "declaration": true,
+    "outDir": "dist"
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "src/types.d.ts"]
 }
