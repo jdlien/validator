@@ -1,6 +1,6 @@
 {
   "name": "@jdlien/validator",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "type": "module",
   "module": "dist/validator.js",
   "types": "dist/Validator.d.ts",
