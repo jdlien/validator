@@ -572,6 +572,7 @@ export default class Validator {
 
     // Clear and reset error messages for the input
     this.clearInputErrors(e.target)
+    this.validateLength(e.target)
     await this.validateInput(e.target)
     // Show any error messages for the input after validation
     this.showInputErrors(e.target)

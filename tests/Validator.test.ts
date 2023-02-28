@@ -1747,6 +1747,18 @@ describe('Validator', () => {
       await formControl.dispatchEvent(event)
       expect((validator as any).showInputErrors).toHaveBeenCalledWith(formControl)
     })
+
+    it('validates min and max length on input elements', async () => {
+      formControl.dataset.minLength = '2'
+      formControl.dataset.maxLength = '4'
+      formControl.value = '123'
+
+      vi.spyOn(validator as any, 'validateLength')
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      await formControl.dispatchEvent(event)
+      expect((validator as any).validateLength).toHaveBeenCalledWith(formControl)
+    })
   }) // end inputChangeHandler
 
   describe('inputInputHandler', () => {
