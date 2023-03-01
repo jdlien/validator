@@ -28,7 +28,7 @@ Validator includes the following built-in validation types:
 
 You can also add custom validation, and can customize error messages per field or for the whole form.
 
-Validator has no dependencies and is written in TypeScript. It is compatible with all modern browsers.
+Validator is compatible with all modern browsers, has no dependencies (other than its validator-utils package). It is written in TypeScript with 100% test coverage.
 
 ## Installation
 
@@ -243,13 +243,15 @@ const myValidator = new Validator(myForm, {
 
 ## Utility Functions
 
-Validator includes several utility functions that may be useful in your own code, so they are exported as part of the module.
+Validator uses its own `@jdlien/validator-utils` for several utility functions that may be useful in your own code. You may use this package directly if you need any of these functions without using the Validator class.
+
 If you wish to use these, you may import the functions directly from the module as an object that contains all the functions:
 
 ```javascript
-import { validatorUtils } from '@jdlien/validator'
-// you could assign the functions you need to more convenient variables
-const { dateFormat, formatDateTime } = validatorUtils
+// Import all the functions into a validatorUtils object
+import * as validatorUtils from '@jdlien/validator-utils'
+// Or just import the functions you need
+import { dateFormat, formatDateTime } from '@jdlien/validator-utils'
 ```
 
 Here is a list of the utility functions:
