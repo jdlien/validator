@@ -28,7 +28,7 @@ Validator includes the following built-in validation types:
 
 You can also add custom validation, and can customize error messages per field or for the whole form.
 
-Validator is compatible with all modern browsers, has no dependencies (other than its validator-utils package). It is written in TypeScript with 100% test coverage.
+Validator is compatible with all modern browsers. It has no dependencies (other than its validator-utils package). It is written in TypeScript with 100% test coverage.
 
 ## Installation
 
