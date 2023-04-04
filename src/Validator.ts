@@ -116,7 +116,9 @@ export default class Validator {
     Object.assign(this.messages, options.messages || {})
     this.debug = options.debug || false
     this.autoInit = options.autoInit === false ? false : true
-    this.preventSubmit = options.preventSubmit === false ? false : this.preventSubmit
+    this.preventSubmit =
+      options.preventSubmit !== undefined ? options.preventSubmit : this.preventSubmit
+
     this.hiddenClasses = options.hiddenClasses || 'hidden opacity-0'
     this.errorMainClasses =
       options.errorMainClasses ||

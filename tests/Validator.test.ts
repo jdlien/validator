@@ -64,11 +64,18 @@ describe('Validator', () => {
       expect(validator.preventSubmit).toBeTruthy()
     })
 
-    it('overrides the preventSubmit property if set in the options argument', () => {
+    it('overrides the preventSubmit property if set to false in the options argument', () => {
       form.dataset.preventSubmit = ''
       options.preventSubmit = false
       const validator = new Validator(form, options)
       expect(validator.preventSubmit).toBeFalsy()
+    })
+
+    it('overrides the preventSubmit property if set to true in the options argument', () => {
+      form.dataset.preventSubmit = ''
+      options.preventSubmit = true
+      const validator = new Validator(form, options)
+      expect(validator.preventSubmit).toBeTruthy()
     })
 
     it('merges the messages option with the default messages', () => {
