@@ -36,6 +36,7 @@
           Fields can be required, have a minimum or maximum length, or a pattern.<br />
           Numeric inputs won't even allow invalid values to be typed in.
         </p>
+
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
           <label
             for="input-required"
@@ -61,6 +62,37 @@
               <div
                 class="error hidden text-sm text-red-600 transition dark:text-red-500"
                 id="input-required-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-required-disabled"
+            id="input-required-disabled-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Required But Disabled</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                disabled
+                required="true"
+                minlength="8"
+                id="input-required-disabled"
+                name="input-required-disabled"
+                data-error-default=""
+                aria-labelledby="input-required-disabled-label"
+              />
+            </div>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-required-disabled-error"
               ></div>
             </div>
           </div>
@@ -772,7 +804,7 @@
       <script src="../dist/validator.js"></script>
       <script>
         const form = document.getElementById('demo-form')
-        const validator = new Validator(form)
+        const validator = new Validator(form, {debug: true})
       </script>
     </main>
   </body>
