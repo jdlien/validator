@@ -345,6 +345,7 @@ export default class Validator {
   // Validates a min and max length
   private validateLength(el: FormControl): boolean {
     let valid = true
+    if (el.disabled) return valid
 
     if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.value.length) {
       // prettier-ignore
@@ -490,6 +491,7 @@ export default class Validator {
    * - optionaly, a boolean error property that is true if something went wrong
    */
   private async validateCustom(el: FormControl): Promise<boolean> {
+    if (el.disabled) return true
     const validation = el.dataset.validation
     if (!validation || typeof validation !== 'string') return true
     const validationFn: Function = window[validation as keyof Window] as Function
@@ -516,6 +518,9 @@ export default class Validator {
     if (!(el instanceof HTMLInputElement) || !el.value.length) return true
 
     let valid = true
+
+    // Skip disabled inputs
+    if (el.disabled) return valid
     valid = this.validateInputType(el) && valid
     valid = this.validateDateRange(el) && valid
     valid = this.validatePattern(el) && valid
@@ -530,6 +535,8 @@ export default class Validator {
     let valid = true
 
     for (const el of this.inputs) {
+      // Skip disabled inputs
+      if (el.disabled) continue
       valid = this.validateRequired(el) && valid
       valid = this.validateLength(el) && valid
       valid = (await this.validateInput(el)) && valid
