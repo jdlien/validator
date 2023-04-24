@@ -805,6 +805,17 @@ describe('Validator', () => {
         validator.messages.ERROR_MAXLENGTH.replace('${val}', '10')
       )
     })
+
+    it('does not validate min/max length for a disabled input', () => {
+      formControl.value = 'test'
+      formControl.setAttribute('data-min-length', '3')
+      formControl.setAttribute('data-max-length', '3')
+      formControl.disabled = true
+
+      const result = (validator as any).validateLength(formControl)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[formControl.name]).toEqual([])
+    })
   }) // end validate Min/Max Length
 
   // This version only tests the base functionality of the validateInputType method
@@ -1571,6 +1582,14 @@ describe('Validator', () => {
         validator.messages.ERROR_CUSTOM_VALIDATION
       )
     })
+
+    it('returns true if input is disabled', async () => {
+      formControl.disabled = true
+      window['validationFnFalse'] = validationFnFalse
+      formControl.dataset.validation = 'validationFnFalse'
+      const result = await (validator as any).validateCustom(formControl)
+      expect(result).toBe(true)
+    })
   }) // end validateCustom
 
   describe('validateInput', () => {
@@ -1613,9 +1632,37 @@ describe('Validator', () => {
 
       expect(await (validator as any).validateInput(formControl)).toBe(false)
     })
+
+    it('returns true if input is disabled', async () => {
+      formControl.disabled = true
+      formControl.value = 'test'
+
+      const spy1 = vi.spyOn(validator as any, 'validateInputType').mockImplementation(() => false)
+      const spy2 = vi.spyOn(validator as any, 'validateDateRange').mockImplementation(() => false)
+      const spy3 = vi.spyOn(validator as any, 'validatePattern').mockImplementation(() => false)
+      const spy4 = vi
+        .spyOn(validator as any, 'validateCustom')
+        .mockImplementation(() => Promise.resolve(false))
+
+      expect(await (validator as any).validateInput(formControl)).toBe(true)
+    })
   }) // end validateInput
 
   describe('validate', () => {
+    it('returns true if input is disabled, even if validation would otherwise fail', async () => {
+      formControl.required = true
+      formControl.value = ''
+      formControl.disabled = true
+      expect(await validator.validate(new Event(''))).toBe(true)
+    })
+
+    it('validation fails for same field when required and empty but not disabled', async () => {
+      formControl.required = true
+      formControl.value = ''
+      formControl.disabled = false
+      expect(await validator.validate(new Event(''))).toBe(false)
+    })
+
     it('returns false if validateRequired returns false', async () => {
       vi.spyOn(validator as any, 'validateRequired').mockImplementation(() => false)
       vi.spyOn(validator as any, 'validateLength').mockImplementation(() => true)
