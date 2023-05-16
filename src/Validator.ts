@@ -540,6 +540,9 @@ export default class Validator {
       valid = this.validateRequired(el) && valid
       valid = this.validateLength(el) && valid
       valid = (await this.validateInput(el)) && valid
+      // Validate custom functions here if value is empty, as they won't be
+      // evaluated by validateInput, which only checks inputs with a value.
+      if (!el.value.length) valid = (await this.validateCustom(el)) && valid
     }
 
     return valid

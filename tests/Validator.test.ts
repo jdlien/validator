@@ -1694,6 +1694,14 @@ describe('Validator', () => {
 
       expect(await validator.validate(new Event(''))).toBe(true)
     })
+
+    it('returns false with custom validation even if input is empty and not required', async () => {
+      window['validationFnFalse'] = vi.fn(() => false)
+      formControl.value = ''
+      formControl.dataset.validation = 'validationFnFalse'
+      const result = await (validator as any).validate(formControl)
+      expect(result).toBe(false)
+    })
   }) // end validate
 
   describe('submitHandler', () => {
