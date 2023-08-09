@@ -1,9 +1,4 @@
-/**
- * Form Validator used by EPL apps and www2.
- * © 2023 JD Lien
- *
- * @format
- */
+/** Form Validator used by EPL apps and www2. ©2023 JD Lien */
 
 // Import the validator utility functions
 import * as utils from '@jdlien/validator-utils'
