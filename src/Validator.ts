@@ -574,8 +574,16 @@ export default class Validator {
     }
   }
 
+  // Skip inputs that have a data-novalidate attribute
+  // Useful when you don't want to return a validationSuccess event when a specific input is changed
+  private shouldSkipValidation(target: HTMLElement): boolean {
+    if (typeof target.dataset.novalidate === 'undefined') return false
+    if (target.dataset.novalidate === '') return true
+    return target.dataset.novalidate === 'true'
+  }
+
   private async inputChangeHandler(e: Event): Promise<void> {
-    if (!(e.target instanceof HTMLInputElement)) return
+    if (!(e.target instanceof HTMLInputElement) || this.shouldSkipValidation(e.target)) return
 
     // Clear and reset error messages for the input
     this.clearInputErrors(e.target)
@@ -587,6 +595,8 @@ export default class Validator {
 
   private inputInputHandler(e: Event) {
     const input = e.target as HTMLInputElement
+
+    if (this.shouldSkipValidation(input)) return
 
     // Ensure that a user cannot type non-numerics into an integer input
     if (utils.isType(input, 'integer')) input.value = utils.parseInteger(input.value)

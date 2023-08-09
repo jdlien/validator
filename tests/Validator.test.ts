@@ -1794,6 +1794,35 @@ describe('Validator', () => {
       expect((validator as any).validateInput).toHaveBeenCalledWith(formControl)
     })
 
+    it('does not validate the input element when it changes if data-novalidate is set', async () => {
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve())
+      formControl.dataset.novalidate = 'true'
+      const event = new Event('change', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      formControl.dispatchEvent(event)
+
+      expect((validator as any).validateInput).not.toHaveBeenCalledWith(formControl)
+
+      formControl.dataset.novalidate = ''
+      formControl.dispatchEvent(event)
+      expect((validator as any).validateInput).not.toHaveBeenCalledWith(formControl)
+    })
+
+    // rewrite the above test but for the input event
+    it('does not validate the input element on input if data-novalidate is set', async () => {
+      vi.spyOn(validator as any, 'validateInput').mockImplementation(() => Promise.resolve())
+      formControl.dataset.novalidate = 'true'
+      const event = new Event('input', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: formControl })
+      formControl.dispatchEvent(event)
+
+      expect((validator as any).validateInput).not.toHaveBeenCalledWith(formControl)
+
+      formControl.dataset.novalidate = ''
+      formControl.dispatchEvent(event)
+      expect((validator as any).validateInput).not.toHaveBeenCalledWith(formControl)
+    })
+
     it('clears the error messages for the input element', async () => {
       vi.spyOn(validator as any, 'clearInputErrors')
       const event = new Event('change', { bubbles: true })

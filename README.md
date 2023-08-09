@@ -126,6 +126,7 @@ On input (and sometimes select and textarea) elements the following attributes a
 - `date-range` - Applies to date input types. Supported values are `past` and `future`.
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
+- `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
 
 A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns string, an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
 
