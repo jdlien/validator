@@ -175,7 +175,11 @@ export default class Validator {
     const errorEl = document.getElementById(input.name + '-error')
     if (errorEl) return errorEl
 
-    return document.getElementById(input.id + '-error') || null
+    const errorElById = document.getElementById(input.id + '-error')
+    if (errorElById) return errorElById
+
+    const describedById = input.getAttribute('aria-describedby')
+    return describedById ? document.getElementById(describedById) : null
   }
 
   private addErrorMain(message?: string): void {
