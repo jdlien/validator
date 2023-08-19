@@ -157,7 +157,9 @@ function customValidationPromise(value) {
 
 ## Displaying Error Messages
 
-Validator will display error messages in the divs with the name of the input + `-error`. For example, if the input name is `name`, the error message will be displayed in the div with the id `name-error`. You will need to create these divs in your HTML. They should initially be hidden with a class that sets properties such as `display: none;`, `visibility: hidden;`, or `opacity: 0;`.
+Validator will display error messages in the divs with the id of the input + `-error`. For example, if the input id is `inputid`, the error message will be displayed in the div with the id `inputid-error`. If this finds nothing, Validator will fall back to looking for an input with an id of the input's name + `-error`, and if that finds nothing, it will attempt to use the `aria-describedby` value of the input. You will need to create these divs in your HTML. They should initially be hidden with a class that sets properties such as `display: none;`, `visibility: hidden;`, or `opacity: 0;`.
+
+Additionally, it is a good practice to add an `aria-describedby` attribute to each input that references the error message div's id. If all else fails, such as in the case of multiple checkbox/radio elements, Validator can use this to associate the error element to the input or input group. This will also allow screen readers to announce the error message when the input is focused.
 
 You can customize the class(es) that Validator uses to hide the error messages by passing in a `hideErrorClass` option to the Validator constructor. The default is `hidden opacity-0`.
 
