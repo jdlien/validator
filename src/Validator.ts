@@ -172,14 +172,23 @@ export default class Validator {
   } // end init()
 
   private getErrorEl(input: FormControl): HTMLElement | null {
-    const errorEl = document.getElementById(input.name + '-error')
-    if (errorEl) return errorEl
-
-    const errorElById = document.getElementById(input.id + '-error')
-    if (errorElById) return errorElById
+    // Scope search to current form. I originally used getElementById to search the
+    // entire document, but that caused issues when there were multiple forms on a page.
+    const getElById = (id: string): HTMLElement | null => {
+      return this.form.querySelector(`#${id}`) || document.getElementById(id) || null
+    }
 
     const describedById = input.getAttribute('aria-describedby')
-    return describedById ? document.getElementById(describedById) : null
+    if (describedById) {
+      const errorElByDescribedBy = getElById(describedById)
+      if (errorElByDescribedBy) return errorElByDescribedBy
+    }
+
+    const errorElById = getElById(input.id + '-error')
+    if (errorElById) return errorElById
+
+    const errorElByName = getElById(input.name + '-error')
+    return errorElByName || null
   }
 
   private addErrorMain(message?: string): void {
