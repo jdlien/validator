@@ -54,7 +54,7 @@
                 id="input-required"
                 name="input-required"
                 data-error-default=""
-                aria-labelledby="input-required-label"
+                aria-describedby="input-required-error"
               />
             </div>
 
@@ -85,7 +85,7 @@
                 id="input-required-disabled"
                 name="input-required-disabled"
                 data-error-default=""
-                aria-labelledby="input-required-disabled-label"
+                aria-describedby="input-required-disabled-error"
               />
             </div>
 
@@ -115,7 +115,7 @@
                 id="input-pattern"
                 data-pattern="^[a-zA-Z]\d+$"
                 name="input-pattern"
-                aria-labelledby="input-pattern-label"
+                aria-describedby="input-pattern-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -143,7 +143,7 @@
                 id="input-min"
                 name="input-min"
                 data-error-default=""
-                aria-labelledby="input-min-label"
+                aria-describedby="input-min-error"
               />
             </div>
 
@@ -169,7 +169,7 @@
                 id="input-max"
                 name="input-max"
                 data-error-default=""
-                aria-labelledby="input-max-label"
+                aria-describedby="input-max-error"
               />
             </div>
 
@@ -198,7 +198,7 @@
                 data-type="integer"
                 name="input-integer"
                 data-error-default=""
-                aria-labelledby="input-integer-label"
+                aria-describedby="input-integer-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -229,7 +229,7 @@
                 data-type="number"
                 name="input-number"
                 data-error-default=""
-                aria-labelledby="input-number-label"
+                aria-describedby="input-number-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -272,7 +272,7 @@
                 placeholder="YYYY-Mmm-D"
                 name="input-date"
                 data-error-default=""
-                aria-labelledby="input-date-label"
+                aria-describedby="input-date-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -307,7 +307,7 @@
                 placeholder="YYYY-Mmm-D"
                 name="input-past-date"
                 data-error-default=""
-                aria-labelledby="input-past-date-label"
+                aria-describedby="input-past-date-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -342,7 +342,7 @@
                 placeholder="YYYY-Mmm-D"
                 name="input-future-date"
                 data-error-default=""
-                aria-labelledby="input-future-date-label"
+                aria-describedby="input-future-date-error"
               />
             </div>
 
@@ -371,7 +371,6 @@
                 name="input-url"
                 data-error-default="You have to put text here."
                 aria-describedby="input-url-error"
-                aria-labelledby="input-url-label"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -402,7 +401,7 @@
                 placeholder="___-___-____"
                 name="input-tel"
                 data-error-default=""
-                aria-labelledby="input-tel-label"
+                aria-describedby="input-tel-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -437,7 +436,7 @@
                 placeholder="____@____.___"
                 name="input-JmMZ56f26"
                 data-error-default=""
-                aria-labelledby="input-JmMZ56f26-label"
+                aria-describedby="input-JmMZ56f26-error"
               />
             </div>
 
@@ -466,7 +465,7 @@
                 data-type="zip"
                 name="input-y371jQeI5"
                 data-error-default=""
-                aria-labelledby="input-y371jQeI5-label"
+                aria-describedby="input-y371jQeI5-error"
               />
             </div>
 
@@ -495,7 +494,7 @@
                 data-type="postal"
                 name="input-1RE0Iv460"
                 data-error-default=""
-                aria-labelledby="input-1RE0Iv460-label"
+                aria-describedby="input-1RE0Iv460-error"
               />
             </div>
 
@@ -526,7 +525,7 @@
                 placeholder="H:MM AM"
                 name="input-Iju9bFf25"
                 data-error-default=""
-                aria-labelledby="input-Iju9bFf25-label"
+                aria-describedby="input-Iju9bFf25-error"
               />
             </div>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -554,7 +553,7 @@
                 data-type="color"
                 name="input-color"
                 data-error-default=""
-                aria-labelledby="input-color-label"
+                aria-describedby="input-color-error"
               />
               <label
                 id="input-color-color-label"
@@ -598,7 +597,7 @@
               id="input-select"
               name="input-select"
               data-error-default=""
-              aria-labelledby="input-select-label"
+              aria-describedby="input-select-error"
             >
               <option value=""></option>
               <option value="red">Red</option>
@@ -641,6 +640,7 @@
                         value="red"
                         data-error-default="You have to check at least one box."
                         class="block transition"
+                        aria-describedby="checkboxGroup-error"
                       />
                       <span class="checked-label">Red</span>
                     </label>
@@ -657,6 +657,7 @@
                         value="green"
                         data-error-default="You have to check at least one box."
                         class="block transition"
+                        aria-describedby="checkboxGroup-error"
                       />
                       <span class="checked-label">Green</span>
                     </label>
@@ -673,6 +674,7 @@
                         value="blue"
                         data-error-default="You have to check at least one box."
                         class="block transition"
+                        aria-describedby="checkboxGroup-error"
                       />
                       <span class="checked-label">Blue</span>
                     </label>
@@ -710,6 +712,7 @@
                         type="radio"
                         value="red"
                         class="block transition"
+                        aria-describedby="input-radio-error"
                       />
                       <span class="checked-label">red</span>
                     </label>
@@ -725,6 +728,7 @@
                         type="radio"
                         value="green"
                         class="block transition"
+                        aria-describedby="input-radio-error"
                       />
                       <span class="checked-label">green</span>
                     </label>
@@ -740,6 +744,7 @@
                         type="radio"
                         value="blue"
                         class="block transition"
+                        aria-describedby="input-radio-error"
                       />
                       <span class="checked-label">blue</span>
                     </label>
@@ -776,7 +781,7 @@
               class="w-full"
               name="input-textarea"
               data-error-default=""
-              aria-labelledby="input-textarea-label"
+              aria-describedby="input-textarea-error"
               placeholder="Between 2 and 50 characters"
             ></textarea>
 
