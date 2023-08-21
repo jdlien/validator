@@ -62,6 +62,7 @@ Then create a new Validator instance and pass it the form element as the first a
     data-min-length="2"
     data-max-length="20"
     data-error-default="Enter between 2 and 20 characters."
+    aria-describedby="name-error"
   />
   <div id="name-error"></div>
 
@@ -83,9 +84,15 @@ Then create a new Validator instance and pass it the form element as the first a
 </script>
 ```
 
-When Validator is initialized, it will disable the built-in browser validation and show error messages from Validator in the divs with the id of the input name + `-error`.
+When initialized, Validator disables browser validation and displays error messages in an associated page element. It identifies the appropriate element by searching for an ID in the following order:
 
-You can also pass in a custom default error message for a field using `data-error-default`.
+1. The value in the input's `aria-describedby` attribute, if it exists
+2. The ID of the input + `-error`
+3. The name of the input + `-error`
+
+Using the aria-describedby attribute to link an error message with an input is the most robust and effective method, and also enhances accessibility by enabling screen readers to announce the error when the input is focused.
+
+If you wish to customize the default error message, you can also set one for a field using `data-error-default`.
 
 ## Demo
 
