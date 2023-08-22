@@ -258,7 +258,24 @@ describe('Validator', () => {
       const errorEl2 = (validator as any).getErrorEl(formControl3)
       expect(errorEl2).toBeNull()
     })
-  })
+
+    it('handles ids with special characters', () => {
+      const formControl4 = document.createElement('input')
+      formControl4.type = 'text'
+      // Set aria-describedby
+      formControl4.name = 'input[1].test'
+      formControl4.id = 'input[1].test-1'
+      form.appendChild(formControl4)
+
+      const errorDiv4 = document.createElement('div')
+      errorDiv4.id = 'input[1].test-1-error'
+      form.appendChild(errorDiv4)
+
+      const errorEl4 = (validator as any).getErrorEl(formControl4)
+      expect(errorEl4).toBeTruthy()
+      expect(errorEl4.id).toBe('input[1].test-1-error')
+    })
+  }) // getErrorEl
 
   describe('addErrorMain', () => {
     type MessageDictionary = { [key: string]: string }

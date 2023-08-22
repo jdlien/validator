@@ -175,7 +175,8 @@ export default class Validator {
     // Scope search to current form. I originally used getElementById to search the
     // entire document, but that caused issues when there were multiple forms on a page.
     const getElById = (id: string): HTMLElement | null => {
-      return this.form.querySelector(`#${id}`) || document.getElementById(id) || null
+      const escapedId = id.replace(/([.#{}()\\?*[\]-])/g, '\\$1')
+      return this.form.querySelector(`#${escapedId}`) || document.getElementById(id) || null
     }
 
     const describedById = input.getAttribute('aria-describedby')
