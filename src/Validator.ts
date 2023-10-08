@@ -154,7 +154,14 @@ export default class Validator {
 
   // Adds event listeners to all formFields in a specified form
   init(): void {
-    this.inputs = Array.from(this.form.elements) as FormControl[]
+    // Get all the inputs in the form but ensure we don't include button, fieldset, or output elements
+    this.inputs = Array.from(this.form.elements).filter(
+      (element) =>
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLTextAreaElement ||
+        element instanceof HTMLSelectElement
+    ) as FormControl[]
+
     // Ensure each input has a unique ID and an empty array in inputErrors
     this.inputs.forEach((input) => {
       if (!input.name && !input.id) input.id = `vl-input-${Math.random().toString(36).slice(2)}`
