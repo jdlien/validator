@@ -1035,7 +1035,6 @@ describe('Validator', () => {
     it('calls the correct parse and valid methods for datetime', () => {
       formControl.type = 'text'
       formControl.dataset.type = 'datetime'
-      // This is weird, this shouldn't be changed
       const value = '2024-01-01 20:01'
       formControl.value = value
       formControl.dataset.dateFormat = 'YYYY-MMM-DD h:mm A'
