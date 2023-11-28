@@ -364,10 +364,9 @@
               <input
                 class="block w-full px-1.5 transition flatpickr-input"
                 type="text"
-                value="2021-Jan-01 1:00 PM"
                 id="input-datetime"
                 data-date-format="YYYY-MMM-DD h:mm A"
-                data-type="date"
+                data-type="datetime"
                 placeholder="YYYY-Mmm-D h:mm AM"
                 name="input-datetime"
                 data-error-default=""
@@ -381,6 +380,37 @@
               <div
                 class="error hidden text-sm text-red-600 transition dark:text-red-500"
                 id="input-datetime-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-datetime-past" id="input-datetime-past-label" class="block font-medium sm:mt-px sm:pt-1"
+            >Past Date Time</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                data-date-range="past"
+                id="input-datetime-past"
+                data-date-format="YYYY-MMM-DD h:mm A"
+                data-type="date"
+                placeholder="YYYY-Mmm-D h:mm AM"
+                name="input-datetime-past"
+                data-error-default=""
+                aria-describedby="input-datetime-past-error"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Datetime can be used to also include a time with a date
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-datetime-past-error"
               ></div>
             </div>
           </div>

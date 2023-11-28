@@ -1381,6 +1381,37 @@ describe('Validator', () => {
       expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_DATE)
     })
 
+    it('should parse and validate datetimes', () => {
+      formControl.type = 'text'
+      formControl.dataset.type = 'datetime'
+      formControl.value = '2019-01-01'
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(valid).toBeTruthy()
+      expect(formControl.value).toBe('2019-Jan-01 12:00 AM')
+
+      formControl.value = '2019-01-01 17:00'
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(valid).toBeTruthy()
+      expect(formControl.value).toBe('2019-Jan-01 5:00 PM')
+
+      formControl.value = '2019-01-01 5:0P'
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(valid).toBeTruthy()
+      expect(formControl.value).toBe('2019-Jan-01 5:00 PM')
+
+      formControl.value = '2019-01-32'
+      valid = (validator as any).validateInputType(formControl)
+      expect(valid).toBeFalsy()
+      expect(formControl.value).toBe('2019-01-32')
+      expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_DATETIME)
+    })
+
     it('should parse and validate times', () => {
       formControl.type = 'text'
       formControl.dataset.type = 'time'
