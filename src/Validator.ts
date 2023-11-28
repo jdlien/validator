@@ -66,6 +66,7 @@ export default class Validator {
     ERROR_DATE_PAST: 'The date must be in the past.',
     ERROR_DATE_FUTURE: 'The date must be in the future.',
     ERROR_DATE_RANGE: 'The date is outside the allowed range.',
+    ERROR_DATETIME: 'This is not a valid date and time.',
     ERROR_TIME: 'This is not a valid time.',
     ERROR_TIME_RANGE: 'The time is outside the allowed range.',
     ERROR_URL: 'This is not a valid URL.',
@@ -433,6 +434,11 @@ export default class Validator {
       parse: utils.parseDateToString,
       isValid: utils.isDate,
       error: this.messages.ERROR_DATE,
+    },
+    datetime: {
+      parse: utils.parseDateTimeToString,
+      isValid: utils.isDateTime,
+      error: this.messages.ERROR_DATETIME,
     },
     time: {
       parse: utils.parseTimeToString,
