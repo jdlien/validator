@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Validator DateTime Demo</title>
+    <link rel="stylesheet" href="demo.css" />
+  </head>
+
+  <body class="p-6 bg-gray-400 dark:bg-gray-800 dark:text-white">
+    <main class="max-w-3xl mx-auto bg-gray-200 dark:bg-gray-900 rounded-xl p-8 shadow-xl">
+      <h1 class="text-4xl font-semibold text-center text-gray-200">Validator DateTime Demo</h1>
+      <div class="text-center">
+        <p class="my-8">
+          This is a simple test of the datetime combo validation in validator.
+        </p>
+      </div>
+      <form id="demo-form" class="space-y-3 max-w-2xl mx-auto mb-12">
+
+        <p class="text-gray-500 dark:text-gray-400">
+          Dates can be entered by users in almost any format, and will be converted
+          to the format specified in the data-date-format attribute.<br>
+          Dates can also be constrained to past or future dates.<br>
+          These features are compatible with datepickers like
+          <a href="https://flatpickr.js.org/"
+            class="text-blue-700 dark:text-blue-400 hover:underline">Flatpickr</a>.
+        </p>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label for="input-datetime" id="input-datetime-label" class="block font-medium sm:mt-px sm:pt-1">Date
+            Time</label>
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition flatpickr-input"
+                type="text"
+                id="input-datetime"
+                data-type="datetime"
+                placeholder="YYYY-Mmm-D h:mm A"
+                name="input-datetime"
+                data-error-default
+                aria-describedby="input-datetime-error" />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Any valid date and/or time will be converted to the <em>YYYY-MMM-DD h:mm A</em> format
+            </p>
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-datetime-error"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <input
+            class="bg-blue-600 rounded hover:bg-blue-500 py-1 active:bg-blue-700 text-white text-lg w-60"
+            type="submit" />
+        </div>
+      </form>
+    </main>
+
+    <script src="../dist/validator.js"></script>
+    <script>
+      const form = document.getElementById('demo-form')
+      const validator = new Validator(form, {debug: true})
+    </script>
+  </body>
+</html>
