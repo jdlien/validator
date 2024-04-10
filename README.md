@@ -101,7 +101,7 @@ If you wish to customize the default error message, you can also set one for a f
 ## Supported Input Types and Atributes
 
 Validator works by checking for certain attributes on the form inputs and applying validation based on those.
-In many cases you can use the native HTML5 attributes, but you can also use the `data-` attributes if you do not want the behavior to be affected by built-in browser validation behavior (eg for min-length, max-length, and input types such as date and time).
+In many cases you can use the native HTML5 attributes, but you can also use the `data-` attributes if you do not want the behavior to be affected by built-in browser validation behavior (e.g., for min-length, max-length, and input types such as date and time).
 
 There are a few attributes that Validator looks for on the form element:
 
@@ -226,7 +226,7 @@ messages = {
 - `debug` - A boolean indicating whether or not to show debug messages in the console. Defaults to false.
 - `autoInit` - A boolean indicating whether or not to automatically initialize the Validator instance on page load. Defaults to true.
 - `preventSubmit` - A boolean indicating whether or not to prevent form submission if validation is successful. Defaults to false.
-- `hiddenClasses` - A string containing one or more space-separated classes to toggle the hidden mode (eg `display: none` CSS property) on hidden elements. Defaults to `hidden opacity-0`.
+- `hiddenClasses` - A string containing one or more space-separated classes to toggle the hidden mode (e.g., `display: none` CSS property) on hidden elements. Defaults to `hidden opacity-0`.
 - `errorMainClasses` - A string containing one or more space-separated classes to apply to the main error message.
 - `errorInputClasses` - A string containing one or more space-separated classes to apply to invalid `inputs.
 - `validationSuccessCallback` - A function to be called when validation is successful.
