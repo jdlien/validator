@@ -105,7 +105,7 @@ In many cases you can use the native HTML5 attributes, but you can also use the 
 
 There are a few attributes that Validator looks for on the form element:
 
-- `data-prevent-submit` - If this attribute is present, the form will never be submitted, even is valid. This is useful if you want to handle the submission yourself. (By default the form will be submitted if it is valid and not if it is invalid.)
+- `data-prevent-submit` - If this attribute is present, the form will never be submitted, even if it is valid. This is useful if you want to handle the submission yourself. (By default the form will be submitted if it is valid and not if it is invalid.)
 
 - `novalidate` - This is a native HTML5 attribute that will disable browser validation on the form. If this attribute is present. Validator adds this by default and remove it if `destroy()` is called. If you add it yourself, it will not be added back by Validator.
 
