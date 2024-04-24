@@ -89,6 +89,9 @@ export default class Validator {
   // Timeout for dispatching events on input (used by syncColorInput)
   private dispatchTimeout: number = 0
 
+  private timeoutId: number = 0
+  private debouncedInit: () => void
+
   // Whether the original form has a novalidate attribute
   private originalNoValidate: boolean = false
 
@@ -124,10 +127,23 @@ export default class Validator {
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
 
+    this.debouncedInit = this.debounce(this.init.bind(this), 45)
     if (this.autoInit) this.init()
 
     // Re-initialize the form if it altered in the DOM
-    new MutationObserver(() => this.autoInit && this.init()).observe(form, { childList: true })
+    new MutationObserver(() => this.autoInit && this.debouncedInit()).observe(form, {
+      childList: true,
+    })
+  }
+
+  debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+  ): (...funcArgs: Parameters<T>) => void {
+    return (...args: Parameters<T>): void => {
+      clearTimeout(this.timeoutId as number)
+      this.timeoutId = window.setTimeout(() => func(...args), wait)
+    }
   }
 
   // Event handler references

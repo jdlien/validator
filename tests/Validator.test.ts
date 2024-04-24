@@ -127,13 +127,13 @@ describe('Validator', () => {
       form.appendChild(input)
 
       // The observer should have been triggered, adding a new input to the inputs array
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       if (!form.lastChild) throw new Error('lastChild is null')
 
       expect(validator.inputs.length).toEqual(inputCount + 1)
       form.removeChild(form.lastChild)
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      await new Promise((resolve) => setTimeout(resolve, 50))
     })
   }) // Validator observer
 
@@ -524,6 +524,9 @@ describe('Validator', () => {
       input1.required = true
       input1.value = 'abc'
       form.appendChild(input1)
+
+      // Wait 60ms for debounce of init after adding new input
+      await new Promise((resolve) => setTimeout(resolve, 50))
 
       valid = await validator.validate()
       ;(validator as any).showFormErrors()
