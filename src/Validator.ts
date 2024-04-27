@@ -131,6 +131,7 @@ export default class Validator {
     if (this.autoInit) this.init()
 
     // Re-initialize the form if it altered in the DOM
+    // FIXME: This doesn't seem to work well if I add a lot of things at once. Needs more testing.
     new MutationObserver(() => this.autoInit && this.debouncedInit()).observe(form, {
       childList: true,
     })
