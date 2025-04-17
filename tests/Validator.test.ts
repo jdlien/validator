@@ -1496,8 +1496,6 @@ describe('Validator', () => {
     })
 
     // Test a bunch of valid but odd-looking colors
-    // This is currently broken with the latest JS DOM so I'm commenting these tests out for now
-    /*
     colors.forEach((color) => {
       it(`should parse and validate the color "${color.name}" correctly`, () => {
         formControl.type = 'text'
@@ -1538,7 +1536,6 @@ describe('Validator', () => {
         expect(formControlColor.value).toBe(color.value)
       })
     })
-    */
 
     invalidColors.forEach((color) => {
       it(`should fail the string "${color}" as an invalid color`, () => {
@@ -2083,8 +2080,6 @@ describe('Validator', () => {
       validator.init()
     })
 
-    // This test is currently broken with the latest JS DOM so I'm commenting it out for now
-    /*
     it('should update the HTML color picker input and its label background when color input changes', () => {
       const event = new Event('input', { bubbles: true })
       Object.defineProperty(event, 'target', { value: colorInput })
@@ -2111,7 +2106,6 @@ describe('Validator', () => {
       expect(colorInput.value).toEqual('#0000ff')
       expect(parseColor(colorLabel.style.backgroundColor)).toEqual('#0000ff')
     })
-    */
 
     it('should not update the HTML color picker if the color input value is not a valid color', () => {
       const event = new Event('input', { bubbles: true })
