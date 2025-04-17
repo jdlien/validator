@@ -58,6 +58,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@jdlien/validator-utils": "^1.2.7"
+    "@jdlien/validator-utils": "^1.2.8"
   }
 }
