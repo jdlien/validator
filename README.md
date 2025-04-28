@@ -17,7 +17,7 @@ Validator includes the following built-in validation types:
 - Pattern (regular expression)
 - Numbers (with decimals and negative values)
 - Integers (positive whole numbers)
-- North-American Phone Numbers
+- North American Phone Numbers
 - US Zip Codes
 - Email Addresses
 - Canadian Postal Codes
@@ -26,7 +26,7 @@ Validator includes the following built-in validation types:
 - Time of day
 - URLs
 
-You can also add custom validation, and can customize error messages per field or for the whole form.
+You can also add custom validation and customize error messages per field or for the whole form.
 
 Validator is compatible with all modern browsers. It has no dependencies (other than its validator-utils package). It is written in TypeScript with 100% test coverage.
 
@@ -44,12 +44,12 @@ yarn add @jdlien/validator
 
 Create a form as you normally would, adding attributes for inputs to control how Validator will
 check the input, such as `required`, `type`, or `data-type`. Native HTML5 attributes are supported,
-although often the browser's built-in validation is problematic or inflexible. In those cases, you
+although often, the browser's built-in validation is problematic or inflexible. In those cases, you
 can use a `data-` variant of these attributes to avoid the browser's built-in validation.
 
 Any input that you want to validate should have a unique name attribute. If you want to display error messages for the input, you must also have a div with an id that is the name of the input + `-error`.
 
-Then create a new Validator instance and pass it the form element as the first argument. An optional second argument allows you to pass in options. Here is a simplified example:
+Then, create a new Validator instance and pass it the form element as the first argument. An optional second argument allows you to pass in options. Here is a simplified example:
 
 ```html
 <form id="myForm">
@@ -90,7 +90,7 @@ When initialized, Validator disables browser validation and displays error messa
 2. The ID of the input + `-error`
 3. The name of the input + `-error`
 
-Using the aria-describedby attribute to link an error message with an input is the most robust and effective method, and also enhances accessibility by enabling screen readers to announce the error when the input is focused.
+Using the aria-describedby attribute to link an error message with an input is the most robust and effective method. Also, this enhances accessibility by enabling screen readers to announce the error when the input is focused.
 
 If you wish to customize the default error message, you can also set one for a field using `data-error-default`.
 
@@ -98,18 +98,18 @@ If you wish to customize the default error message, you can also set one for a f
 
 [Working demo on jdlien.com](https://jdlien.com/validator/demo/).
 
-## Supported Input Types and Atributes
+## Supported Input Types and Attributes
 
 Validator works by checking for certain attributes on the form inputs and applying validation based on those.
-In many cases you can use the native HTML5 attributes, but you can also use the `data-` attributes if you do not want the behavior to be affected by built-in browser validation behavior (e.g., for min-length, max-length, and input types such as date and time).
+In many cases, you can use the native HTML5 attributes, but you can also use the `data-` attributes if you do not want the behavior to be affected by built-in browser validation behavior (e.g., for min-length, max-length, and input types such as date and time).
 
 There are a few attributes that Validator looks for on the form element:
 
-- `data-prevent-submit` - If this attribute is present, the form will never be submitted, even if it is valid. This is useful if you want to handle the submission yourself. (By default the form will be submitted if it is valid and not if it is invalid.)
+- `data-prevent-submit` - If this attribute is present, the form will never be submitted, even if it is valid. This is useful if you want to handle the submission yourself. (By default, the form will be submitted if it is valid and not if it is invalid.)
 
 - `novalidate` - This is a native HTML5 attribute that will disable browser validation on the form. If this attribute is present. Validator adds this by default and removes it if `destroy()` is called. If you add it yourself, it will not be added back by Validator.
 
-On input (and sometimes select and textarea) elements the following attributes are supported:
+On input (and sometimes select and textarea) elements, the following attributes are supported:
 
 - `required` - The input must have a value.
 - `minlength`/`data-min-length` - The input must be at least the specified number of characters.
@@ -119,7 +119,7 @@ On input (and sometimes select and textarea) elements the following attributes a
 
   - `number` - The input must be a number (use `data-type` to avoid quirky browser behavior)
   - `integer` - The input must be a positive whole number.
-  - `tel` - The input must be a valid North-American phone number.
+  - `tel` - The input must be a valid North American phone number.
   - `email` - The input must be a valid email address.
   - `zip` - The input must be a valid US zip code.
   - `postal` - The input must be a valid Canadian postal code.
@@ -135,7 +135,7 @@ On input (and sometimes select and textarea) elements the following attributes a
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
 
-A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns string, an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
+A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns a string or an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
 
 You may also use a promise that resolves to such an object for asynchronous validation.
 
@@ -174,7 +174,7 @@ You can customize the class(es) that Validator uses to hide the error messages b
 
 ## Color Picker Support
 
-If you need to allow a user to pick a color, you can use data-type="color" and the input will be required to be any valid CSS color supported by the browser. This type can also work in conjunction with a native color input. If you do this, you will need to add an input with `type="color"` and the name of the data-color input + `-color`. This should be inside a linked label which will become the color preview swatch. Such a label should have an ID of the color input's name + `-color-label` so that Validator can change the background to the specified color.
+If you need to allow a user to pick a color, you can use data-type="color" and the input will be required to be any valid CSS color supported by the browser. This type can also work in conjunction with a native color input. If you do this, you will need to add an input with `type="color"` and the name of the data-color input + `-color`. This should be inside a linked label, which will become the color preview swatch. Such a label should have an ID of the color input's name + `-color-label` so that Validator can change the background to the specified color.
 
 A basic example that would work:
 
