@@ -14,6 +14,8 @@ export default defineConfig({
     environment: 'jsdom',
     coverage: { reporter: ['text', 'json', 'html'] },
     threads: false, // suppresses errors from canvas when starting tests
-    deps: { inline: ['@jdlien/validator-utils'] },
+    server: {
+      deps: { inline: ['@jdlien/validator-utils'] },
+    },
   },
 })
