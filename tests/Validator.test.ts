@@ -263,6 +263,38 @@ describe('Validator', () => {
       expect(errorEl2.id).toBe('form-control-2-error')
     })
 
+    // Flux error messages
+    it('returns error element using flux-style error elements', () => {
+      // Create a flux-style field structure
+      const fluxField = document.createElement('div')
+      fluxField.setAttribute('data-flux-field', '')
+      form.appendChild(fluxField)
+
+      // Create the input element
+      const inputContainer = document.createElement('div')
+      inputContainer.setAttribute('data-flux-input', '')
+      fluxField.appendChild(inputContainer)
+
+      const fluxInput = document.createElement('input')
+      fluxInput.type = 'text'
+      fluxInput.setAttribute('data-flux-control', '')
+      fluxInput.name = 'flux-input'
+      fluxInput.id = 'flux-input-id'
+      inputContainer.appendChild(fluxInput)
+
+      // Create the error element
+      const fluxError = document.createElement('div')
+      fluxError.setAttribute('data-flux-error', '')
+      fluxError.id = 'flux-error-id'
+      fluxField.appendChild(fluxError)
+
+      // Test that the validator finds the error element
+      const errorEl = (validator as any).getErrorEl(fluxInput)
+      expect(errorEl).toBeTruthy()
+      expect(errorEl).toBe(fluxError)
+      expect(errorEl.getAttribute('data-flux-error')).toBe('')
+    })
+
     it('returns error element by aria-describedby if not found by name or id', () => {
       const formControl3 = document.createElement('input')
       formControl3.type = 'text'
