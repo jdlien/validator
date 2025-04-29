@@ -204,12 +204,23 @@ export default class Validator {
       return this.form.querySelector(`#${escapedId}`) || document.getElementById(id) || null
     }
 
+    // Support for Flux-style error messages. Must come before the aria-describedby check,
+    // since the aria-describedby attribute is used for detail descriptions in Flux, not errors.
+    const fluxField = input.closest('[data-flux-field]')
+    if (fluxField) {
+      const fluxError = fluxField.querySelector('[data-flux-error]')
+      if (fluxError) return fluxError as HTMLElement
+    }
+
+    // JD's AppInput component uses the aria-describedby attribute to display error messages.
+    // This could be problematic if a form uses the aria-describedby attribute for other purposes.
     const describedById = input.getAttribute('aria-describedby')
     if (describedById) {
       const errorElByDescribedBy = getElById(describedById)
       if (errorElByDescribedBy) return errorElByDescribedBy
     }
 
+    // Next, check for an element with the id of the input's id suffixed with -error.
     const errorElById = getElById(input.id + '-error')
     if (errorElById) return errorElById
 
