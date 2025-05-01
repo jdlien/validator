@@ -13,6 +13,7 @@ export interface ValidatorOptions {
   hiddenClasses?: string
   errorMainClasses?: string
   errorInputClasses?: string
+  showMainError?: boolean
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
 }
@@ -81,6 +82,8 @@ export default class Validator {
   preventSubmit: boolean = false
   // Class toggled hide an element (eg display:none)
   hiddenClasses: string
+  // Whether to show the main error message
+  showMainError: boolean = true
 
   // Classes to apply to the main error message (space-separated)
   errorMainClasses: string
@@ -124,6 +127,7 @@ export default class Validator {
       'm-2 border border-red-500 bg-red-100 p-3 dark:bg-red-900/80 text-center'
 
     this.errorInputClasses = options.errorInputClasses || 'border-red-600 dark:border-red-500'
+    this.showMainError = options.showMainError !== undefined ? options.showMainError : true
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
 
@@ -229,16 +233,40 @@ export default class Validator {
   }
 
   private addErrorMain(message?: string): void {
-    const errorEl = document.createElement('div')
-    errorEl.id = 'form-error-main'
+    let errorEl = this._getMainErrorElement()
+
+    // If no main error element exists (neither form-specific nor generic), create the generic one.
+    if (!errorEl) {
+      errorEl = document.createElement('div')
+      errorEl.id = 'form-error-main' // Always create the generic ID for fallback
+      this.form.appendChild(errorEl)
+    }
+
+    // Apply classes and message
     this.errorMainClasses.split(' ').forEach((className) => {
       errorEl.classList.add(className)
     })
 
-    if (message) errorEl.innerHTML = message
-    else errorEl.innerHTML = this.messages.ERROR_MAIN
-    // Add the error message to the bottom of the form
-    this.form.appendChild(errorEl)
+    errorEl.innerHTML = message || this.messages.ERROR_MAIN
+
+    // Ensure it's visible (might have been hidden previously)
+    this.hiddenClasses.split(' ').forEach((className) => {
+      errorEl.classList.remove(className)
+    })
+  }
+
+  // Helper method to find the main error element
+  private _getMainErrorElement(): HTMLElement | null {
+    if (this.form.id) {
+      const formSpecificErrorId = `${this.form.id}-error-main`
+      const formSpecificError = document.getElementById(formSpecificErrorId)
+      if (formSpecificError) {
+        return formSpecificError as HTMLElement
+      }
+    }
+
+    // Fallback to the generic error element
+    return this.form.querySelector('#form-error-main') as HTMLElement | null
   }
 
   // Adds an error to the array of strings to be displayed by an input that failed
@@ -291,20 +319,25 @@ export default class Validator {
     // Show any errors from validation
     this.inputs.forEach((el) => this.showInputErrors(el))
 
-    // If if any of the inputs have error messages, show the main error message
-    // One could show all the errors in the main message, but it might get long
-    // Should this be in the same branch of code that does the dispatch and callback?
-    if (Object.values(this.inputErrors).some((el) => Array.isArray(el) && el.length)) {
-      const mainErrorEl = this.form.querySelectorAll('#form-error-main')
-      if (mainErrorEl.length) {
-        mainErrorEl.forEach((el) => {
-          // If there are no contents, add the default message
-          if (!el.innerHTML) el.innerHTML = this.messages.ERROR_MAIN
-          this.hiddenClasses.split(' ').forEach((className) => {
-            el.classList.remove(className)
-          })
+    // If there are any input errors and we should show the main error
+    if (
+      this.showMainError &&
+      Object.values(this.inputErrors).some((el) => Array.isArray(el) && el.length)
+    ) {
+      let mainErrorElement = this._getMainErrorElement()
+
+      if (mainErrorElement) {
+        // If the element exists, ensure it has content and is visible
+        if (!mainErrorElement.innerHTML) {
+          mainErrorElement.innerHTML = this.messages.ERROR_MAIN
+        }
+        this.hiddenClasses.split(' ').forEach((className) => {
+          mainErrorElement.classList.remove(className)
         })
-      } else this.addErrorMain()
+      } else {
+        // If no main error element exists, add it (which also makes it visible)
+        this.addErrorMain()
+      }
     }
   }
 
@@ -334,14 +367,17 @@ export default class Validator {
   }
 
   private clearFormErrors(): void {
-    // If there's a big error message, hide it
-    this.form.querySelectorAll('#form-error-main').forEach((el) => {
+    // Find the main error element (form-specific or generic) and hide it
+    const mainErrorElement = this._getMainErrorElement()
+    if (mainErrorElement) {
       this.hiddenClasses.split(' ').forEach((className) => {
-        el.classList.add(className)
+        mainErrorElement.classList.add(className)
       })
-    })
+      // Optionally clear the content after hiding
+      // mainErrorElement.innerHTML = ''
+    }
 
-    // Clear any previous errors
+    // Clear any previous input errors
     this.inputs.forEach((el) => this.clearInputErrors(el))
   }
 

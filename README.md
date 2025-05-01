@@ -164,7 +164,11 @@ function customValidationPromise(value) {
 
 ## Displaying Error Messages
 
-It is recommended to create an error message element (likely a div) with a unique id and then use its id in an `aria-describedby` attribute in each associated input. This will ensure that Validator knows exactly what error element is associated with each input, and this works seamlessly for groups of inputs, like radio buttons. This will also confer improved accessibility and allow screen readers to announce the error message when the input is focused.
+If any form validation fails on submission, Validator displays a main error message near the top of the form. By default, it looks for an element with the ID `form-error-main`. However, if the form itself has an `id` attribute (e.g., `<form id="contact-form">`), Validator will first look for a main error element with the ID `{form.id}-error-main` (e.g., `contact-form-error-main`). If that form-specific element is not found, it falls back to looking for `form-error-main`.
+
+This allows for more targeted styling and placement of the main error message per form. You can disable the display of this main error message entirely by setting the `showMainError` option to `false`.
+
+For individual input errors, it is recommended to create an error message element (likely a div) with a unique id and then use its id in an `aria-describedby` attribute in each associated input. This will ensure that Validator knows exactly what error element is associated with each input, and this works seamlessly for groups of inputs, like radio buttons. This will also confer improved accessibility and allow screen readers to announce the error message when the input is focused.
 
 If you do not use `aria-describedby`, Validator will fall back to displaying error messages in the first element having the id or name of the input + `-error`. For example, if the input id is `inputid`, the error message will be displayed in the div with the id `inputid-error`.
 
@@ -229,6 +233,7 @@ messages = {
 - `hiddenClasses` - A string containing one or more space-separated classes to toggle the hidden mode (e.g., `display: none` CSS property) on hidden elements. Defaults to `hidden opacity-0`.
 - `errorMainClasses` - A string containing one or more space-separated classes to apply to the main error message.
 - `errorInputClasses` - A string containing one or more space-separated classes to apply to invalid `inputs.
+- `showMainError` - A boolean indicating whether or not to show the main error message. Defaults to `true`.
 - `validationSuccessCallback` - A function to be called when validation is successful.
 - `validationErrorCallback` - A function to be called when validation fails.
 

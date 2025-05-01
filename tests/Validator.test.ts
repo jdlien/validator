@@ -1,6 +1,7 @@
 import Validator, { ValidationErrorEvent, ValidationSuccessEvent } from '../src/Validator'
 import { parseColor } from '@jdlien/validator-utils'
-import { ValidatorOptions } from '../src/types'
+import MainValidator from '..'
+import { ValidatorOptions } from '../src/Validator'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('Validator', () => {
@@ -113,6 +114,18 @@ describe('Validator', () => {
       options.errorInputClasses = 'custom-error-input-class'
       const validator = new Validator(form, options)
       expect(validator.errorInputClasses).toBe('custom-error-input-class')
+    })
+
+    it('sets the showMainError property to the value in the options argument', () => {
+      options.showMainError = false
+      const validator = new Validator(form, options)
+      expect(validator.showMainError).toBe(false)
+    })
+
+    it('defaults showMainError to true when not specified in options', () => {
+      delete options.showMainError
+      const validator = new Validator(form, options)
+      expect(validator.showMainError).toBe(true)
     })
   }) // constructor
 
@@ -583,6 +596,160 @@ describe('Validator', () => {
       document.querySelectorAll('#form-error-main').forEach((error) => {
         expect(error.innerHTML).toContain(validator.messages.ERROR_MAIN)
       })
+    })
+
+    it('should not display main error message if showMainError is false', async () => {
+      // Create a validator with showMainError set to false
+      options.showMainError = false
+      validator = new Validator(form, options)
+
+      const input1 = document.createElement('input')
+      input1.name = 'input1'
+      input1.id = 'input1'
+      input1.required = true
+      input1.value = ''
+      form.appendChild(input1)
+
+      const input1Error = document.createElement('div')
+      input1Error.id = 'input1-error'
+      form.appendChild(input1Error)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify the input error is shown
+      const input1Errors = validator.inputErrors[input1.id]
+      expect(input1Errors).toHaveLength(1)
+      expect(input1Error?.innerHTML).toContain(validator.messages.ERROR_REQUIRED)
+
+      // Verify the main error is not shown
+      const mainError = form.querySelector('#form-error-main')
+      expect(mainError).toBeFalsy()
+    })
+
+    it('should display main error message if showMainError is true', async () => {
+      // Create a validator with showMainError explicitly set to true
+      options.showMainError = true
+      validator = new Validator(form, options)
+
+      const input1 = document.createElement('input')
+      input1.name = 'input1'
+      input1.id = 'input1'
+      input1.required = true
+      input1.value = ''
+      form.appendChild(input1)
+
+      const input1Error = document.createElement('div')
+      input1Error.id = 'input1-error'
+      form.appendChild(input1Error)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify the input error is shown
+      const input1Errors = validator.inputErrors[input1.id]
+      expect(input1Errors).toHaveLength(1)
+      expect(input1Error?.innerHTML).toContain(validator.messages.ERROR_REQUIRED)
+
+      // Verify the main error is shown
+      const mainError = form.querySelector('#form-error-main')
+      expect(mainError).toBeTruthy()
+      expect(mainError?.innerHTML).toContain(validator.messages.ERROR_MAIN)
+    })
+
+    it('should use form-id-error-main element if form has an ID and the element exists', async () => {
+      // Set up a form with an ID
+      form.id = 'test-form-with-id'
+
+      // Create a form-specific error element
+      const formSpecificError = document.createElement('div')
+      formSpecificError.id = 'test-form-with-id-error-main'
+      formSpecificError.classList.add('hidden', 'opacity-0')
+      form.appendChild(formSpecificError)
+
+      // Add an invalid input to trigger error display
+      const input = document.createElement('input')
+      input.required = true
+      input.value = ''
+      form.appendChild(input)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify the form-specific error is shown
+      expect(formSpecificError.classList.contains('hidden')).toBeFalsy()
+      expect(formSpecificError.innerHTML).toContain(validator.messages.ERROR_MAIN)
+
+      // Verify no generic form-error-main was created
+      expect(form.querySelectorAll('#form-error-main')).toHaveLength(0)
+    })
+
+    it('should fall back to form-error-main if form has ID but form-id-error-main element does not exist', async () => {
+      // Set up a form with an ID but no corresponding error element
+      form.id = 'test-form-fallback'
+
+      // Add an invalid input to trigger error display
+      const input = document.createElement('input')
+      input.required = true
+      input.value = ''
+      form.appendChild(input)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify a generic form-error-main was created
+      const fallbackError = form.querySelector('#form-error-main')
+      expect(fallbackError).toBeTruthy()
+      expect(fallbackError?.innerHTML).toContain(validator.messages.ERROR_MAIN)
+    })
+
+    it('should use form-error-main if form has no ID', async () => {
+      // Ensure form has no ID
+      form.removeAttribute('id')
+
+      // Add an invalid input to trigger error display
+      const input = document.createElement('input')
+      input.required = true
+      input.value = ''
+      form.appendChild(input)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify a generic form-error-main was created
+      const genericError = form.querySelector('#form-error-main')
+      expect(genericError).toBeTruthy()
+      expect(genericError?.innerHTML).toContain(validator.messages.ERROR_MAIN)
+    })
+
+    it('should use existing form-specific error element if present', async () => {
+      // Set up a form with an ID
+      form.id = 'test-form-both'
+
+      // Create a form-specific error element
+      const formSpecificError = document.createElement('div')
+      formSpecificError.id = 'test-form-both-error-main'
+      formSpecificError.classList.add('hidden', 'opacity-0')
+      form.appendChild(formSpecificError)
+
+      // Add an invalid input to trigger error display
+      const input = document.createElement('input')
+      input.required = true
+      input.value = ''
+      form.appendChild(input)
+
+      validator.init()
+      valid = await validator.validate()
+      ;(validator as any).showFormErrors()
+
+      // Verify the form-specific error is shown
+      expect(formSpecificError.classList.contains('hidden')).toBeFalsy()
+      expect(formSpecificError.innerHTML).toContain(validator.messages.ERROR_MAIN)
     })
   }) // end showFormErrors
 
@@ -2296,6 +2463,18 @@ describe('Validator', () => {
 
       expect(validator.removeEventListeners).toHaveBeenCalled()
       expect(form.hasAttribute('novalidate')).toBe(true)
+    })
+  })
+
+  describe('index.ts', () => {
+    it('should export Validator class as default export', () => {
+      expect(MainValidator).toBeDefined()
+      expect(MainValidator).toBe(Validator)
+    })
+
+    it('should be a constructor function', () => {
+      expect(typeof MainValidator).toBe('function')
+      expect(new MainValidator(document.createElement('form'))).toBeInstanceOf(Validator)
     })
   })
 })

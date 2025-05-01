@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.9] - 2025-05-01
+
+### Added
+
+- Added `showMainError` option to `ValidatorOptions` to allow disabling the main form error message display.
+- Main error message display logic now prioritizes an element with ID `{form.id}-error-main` if the form has an ID, falling back to `form-error-main` if the form-specific element is not found or the form has no ID.
+
+## [1.4.8] - 2025-05-01
+
+Rebuild for npm
+
 ## [1.4.7] - 2025-05-01
 
 ### Added
