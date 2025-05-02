@@ -130,7 +130,7 @@ On input (and sometimes select and textarea) elements, the following attributes 
   - `color` - The input must be a valid CSS color. (This can be used in conjunction with a native color input - see Color Picker Support for details.)
 
 - `data-date-format`/`data-time-format` - Applies formatting to time input types (these are interchangeable). The format must be a valid moment.js format string. See [moment.js docs](https://momentjs.com/docs/#/displaying/format/) for more information.
-- `date-range` - Applies to date input types. Supported values are `past` and `future`.
+- `data-date-range` - Applies to date input types. Supported values are `past` and `future`.
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
