@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 describe('Validator', () => {
   let form: HTMLFormElement
   let formControl: HTMLInputElement
-  let errorEl: HTMLDivElement
   let validator: Validator
   let valid: boolean
 
@@ -18,11 +17,6 @@ describe('Validator', () => {
     formControl.name = 'test-input'
     formControl.id = 'test-input'
     form.appendChild(formControl)
-
-    errorEl = document.createElement('div')
-    errorEl.id = 'test-input-error'
-    errorEl.classList.add('hidden')
-    form.appendChild(errorEl)
 
     validator = new Validator(form)
   })
