@@ -773,11 +773,6 @@ export default class Validator {
     // Prevents duplicate listeners if the validator is reinitialized on the same form.
     this.removeEventListeners()
 
-    // Reset the visual state of the form by clearing error messages and input styling.
-    // This returns the form elements visually to their state before validation errors were shown.
-    // JDL: I'm on the fence about whether these should be cleared. This may require more testing.
-    this.clearFormErrors()
-
     // Restore the form's 'novalidate' attribute to its original state.
     if (!this.originalNoValidate) this.form.removeAttribute('novalidate')
 

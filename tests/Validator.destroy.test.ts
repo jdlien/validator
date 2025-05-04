@@ -109,47 +109,5 @@ describe('Validator', () => {
       // Assert: clearTimeout was called with the correct ID during destroy
       expect(clearTimeoutSpy).toHaveBeenCalledWith(dispatchTimeoutIdBefore)
     })
-
-    it('calls clearFormErrors and removes visual errors', async () => {
-      const clearFormErrorsSpy = vi.spyOn(validatorInstance as any, 'clearFormErrors')
-
-      // Arrange: Setup an invalid form state
-      const reqInput = document.createElement('input')
-      reqInput.required = true
-      reqInput.id = 'req-destroy'
-      const reqError = document.createElement('div')
-      reqError.id = 'req-destroy-error' // Associate error div
-      reqError.dataset.errorFor = 'req-destroy'
-      reqError.classList.add('hidden') // Start hidden
-      formElement.appendChild(reqInput)
-      formElement.appendChild(reqError)
-      validatorInstance.init()
-
-      // Trigger validation and error display
-      await validatorInstance.validate()
-      ;(validatorInstance as any).showFormErrors()
-
-      // Verify errors are visible before destroy
-      const mainError = formElement.querySelector('#form-error-main')
-      expect(mainError).not.toBeNull()
-      expect(mainError?.classList.contains('hidden')).toBe(false)
-      expect(reqError.classList.contains('hidden')).toBe(false)
-      expect(reqError.textContent).not.toBe('')
-
-      // Act: Destroy the validator
-      validatorInstance.destroy()
-
-      // Assert: clearFormErrors was called
-      expect(clearFormErrorsSpy).toHaveBeenCalledTimes(1)
-
-      // Assert: Visual errors are cleared/hidden
-      const mainErrorAfter = formElement.querySelector('#form-error-main')
-      // Main error might be removed or hidden, check both possibilities
-      if (mainErrorAfter) {
-        expect(mainErrorAfter.classList.contains('hidden')).toBe(true)
-      }
-      expect(reqError.textContent).toBe('')
-      expect(reqError.classList.contains('hidden')).toBe(true)
-    })
   })
 })
