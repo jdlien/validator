@@ -92,7 +92,11 @@ export default class Validator {
   // Timeout for dispatching events on input (used by syncColorInput)
   private dispatchTimeout: number = 0
 
+  // Timeout ID for debounced functions
   private timeoutId: number = 0
+  // Instance of the MutationObserver used to re-initialize on DOM changes
+  private formMutationObserver: MutationObserver | null = null
+  // Debounced version of the init function
   private debouncedInit: () => void
 
   // Whether the original form has a novalidate attribute
@@ -135,8 +139,10 @@ export default class Validator {
     if (this.autoInit) this.init()
 
     // Re-initialize the form if it altered in the DOM
+    // Store the observer instance so it can be disconnected later.
     // FIXME: This doesn't seem to work well if I add a lot of things at once. Needs more testing.
-    new MutationObserver(() => this.autoInit && this.debouncedInit()).observe(form, {
+    this.formMutationObserver = new MutationObserver(() => this.autoInit && this.debouncedInit())
+    this.formMutationObserver.observe(form, {
       childList: true,
     })
   }
@@ -190,10 +196,11 @@ export default class Validator {
       this.inputErrors[input.name || input.id] = []
     })
 
-    // Check that the original form has a novalidate attribute
+    // Check if the form *originally* had a novalidate attribute *before* we potentially add it.
     this.originalNoValidate = this.form.hasAttribute('novalidate')
 
-    // Disable the browser's built-in validation
+    // Disable the browser's built-in validation by adding the novalidate attribute.
+    // This should happen *after* checking the original state.
     this.form.setAttribute('novalidate', 'novalidate')
 
     this.removeEventListeners()
@@ -750,9 +757,35 @@ export default class Validator {
   }
 
   public destroy() {
+    // Disconnect the MutationObserver to prevent memory leaks and stop watching for form changes.
+    // This is crucial if the form element itself is removed or replaced.
+    if (this.formMutationObserver) {
+      this.formMutationObserver.disconnect()
+      this.formMutationObserver = null // Explicitly nullify to aid garbage collection
+    }
+
+    // Clear any pending debounced function calls.
+    // Ensures that scheduled tasks (like debounced init or color sync) don't run after destruction.
+    clearTimeout(this.timeoutId)
+    clearTimeout(this.dispatchTimeout)
+
+    // Remove all event listeners added by this validator instance.
+    // Prevents duplicate listeners if the validator is reinitialized on the same form.
     this.removeEventListeners()
 
-    // Perform other cleanup actions here
+    // Reset the visual state of the form by clearing error messages and input styling.
+    // This returns the form elements visually to their state before validation errors were shown.
+    this.clearFormErrors()
+
+    // Restore the form's 'novalidate' attribute to its original state.
+    // If the form didn't originally have 'novalidate', removing it re-enables native browser validation.
     if (!this.originalNoValidate) this.form.removeAttribute('novalidate')
+    // If it did originally have it, ensure it's still set (though our init adds it anyway).
+    // Note: No explicit action needed here if originalNoValidate is true, as init sets it.
+
+    // TODO: Consider explicitly removing dynamically added elements if any were created,
+    //       like a fallback main error container, though clearFormErrors() handles hiding it.
+    // TODO: Consider resetting inline styles applied (e.g., color label backgrounds),
+    //       though this might require storing original values and adds complexity.
   }
 }
