@@ -1,6 +1,6 @@
 import Validator from '../src/Validator'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-
+import { setupTestForm } from './utils/setup'
 describe('Validator', () => {
   let form: HTMLFormElement
   let formControl: HTMLInputElement
@@ -8,17 +8,7 @@ describe('Validator', () => {
   let valid: boolean
 
   beforeEach(() => {
-    form = document.createElement('form')
-    form.id = 'test-form'
-    document.body.appendChild(form)
-
-    formControl = document.createElement('input')
-    formControl.type = 'text'
-    formControl.name = 'test-input'
-    formControl.id = 'test-input'
-    form.appendChild(formControl)
-
-    validator = new Validator(form)
+    ;({ form, formControl, validator } = setupTestForm())
   })
 
   afterEach(() => {
