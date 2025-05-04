@@ -775,13 +775,11 @@ export default class Validator {
 
     // Reset the visual state of the form by clearing error messages and input styling.
     // This returns the form elements visually to their state before validation errors were shown.
+    // JDL: I'm on the fence about whether these should be cleared. This may require more testing.
     this.clearFormErrors()
 
     // Restore the form's 'novalidate' attribute to its original state.
-    // If the form didn't originally have 'novalidate', removing it re-enables native browser validation.
     if (!this.originalNoValidate) this.form.removeAttribute('novalidate')
-    // If it did originally have it, ensure it's still set (though our init adds it anyway).
-    // Note: No explicit action needed here if originalNoValidate is true, as init sets it.
 
     // TODO: Consider explicitly removing dynamically added elements if any were created,
     //       like a fallback main error container, though clearFormErrors() handles hiding it.
