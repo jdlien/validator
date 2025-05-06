@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Stopped resetting errors on destroy, we want to leave them in place.
 
+### Known Issues
+
+- Modifying a numeric/integer input and entering non-integer values will cause the cursor to move to the end of the input.
+
 ## [1.4.10] - 2025-05-04
 
 ### Changed
