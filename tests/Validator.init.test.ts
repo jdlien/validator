@@ -12,7 +12,6 @@ describe('Validator', () => {
   })
 
   afterEach(() => {
-    validator.destroy()
     document.body.removeChild(form)
   })
 
@@ -74,7 +73,7 @@ describe('Validator', () => {
       validator.addEventListeners()
       validator.removeEventListeners()
 
-      expect(addEventListenerSpy).toHaveBeenCalledTimes(5)
+      expect(addEventListenerSpy).toHaveBeenCalledTimes(4)
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         'submit',
         (validator as any).submitHandlerRef
@@ -95,7 +94,7 @@ describe('Validator', () => {
         (validator as any).inputKeydownHandlerRef
       )
 
-      expect(removeEventListenerSpy).toHaveBeenCalledTimes(5)
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(4)
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         'submit',
         (validator as any).submitHandlerRef
@@ -115,8 +114,6 @@ describe('Validator', () => {
         'keydown',
         (validator as any).inputKeydownHandlerRef
       )
-
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('remove', validator.destroy)
     })
   }) // init
 }) // describe('Validator')

@@ -96,6 +96,8 @@ export default class Validator {
   private timeoutId: number = 0
   // Instance of the MutationObserver used to re-initialize on DOM changes
   private formMutationObserver: MutationObserver | null = null
+  // Instance of the MutationObserver used to auto-destroy when form is removed from DOM
+  private autoDestroyObserver: MutationObserver | null = null
   // Debounced version of the init function
   private debouncedInit: () => void
 
@@ -145,6 +147,9 @@ export default class Validator {
     this.formMutationObserver.observe(form, {
       childList: true,
     })
+
+    // Set up automatic cleanup when form is removed from DOM
+    this.setupAutoDestroy()
   }
 
   debounce<T extends (...args: any[]) => any>(
@@ -155,6 +160,22 @@ export default class Validator {
       clearTimeout(this.timeoutId as number)
       this.timeoutId = window.setTimeout(() => func(...args), wait)
     }
+  }
+
+  // Sets up automatic destruction when form is removed from DOM
+  private setupAutoDestroy(): void {
+    this.autoDestroyObserver = new MutationObserver(() => {
+      // Check if the form is no longer in the document
+      if (!document.contains(this.form)) {
+        this.destroy()
+      }
+    })
+    
+    // Observe the entire document for removal of the form or its ancestors
+    this.autoDestroyObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
   }
 
   // Event handler references
@@ -168,8 +189,6 @@ export default class Validator {
     this.form.addEventListener('input', this.inputInputHandlerRef)
     this.form.addEventListener('change', this.inputChangeHandlerRef)
     this.form.addEventListener('keydown', this.inputKeydownHandlerRef)
-    // This doesn't seem to be very useful
-    this.form.addEventListener('remove', this.destroy, { once: true })
   }
 
   public removeEventListeners(): void {
@@ -177,7 +196,6 @@ export default class Validator {
     this.form.removeEventListener('input', this.inputInputHandlerRef)
     this.form.removeEventListener('change', this.inputChangeHandlerRef)
     this.form.removeEventListener('keydown', this.inputKeydownHandlerRef)
-    this.form.removeEventListener('remove', this.destroy)
   }
 
   // Adds event listeners to all formFields in a specified form
@@ -762,6 +780,12 @@ export default class Validator {
     if (this.formMutationObserver) {
       this.formMutationObserver.disconnect()
       this.formMutationObserver = null // Explicitly nullify to aid garbage collection
+    }
+
+    // Disconnect the auto-destroy observer to prevent memory leaks
+    if (this.autoDestroyObserver) {
+      this.autoDestroyObserver.disconnect()
+      this.autoDestroyObserver = null // Explicitly nullify to aid garbage collection
     }
 
     // Clear any pending debounced function calls.

@@ -15,12 +15,7 @@ describe('Validator', () => {
     })
 
     afterEach(() => {
-      // Ensure validator is destroyed if an error occurred mid-test
-      // Check if validatorInstance exists and needs destroying
-      if (validatorInstance && (validatorInstance as any).formMutationObserver) {
-        validatorInstance.destroy()
-      }
-      // Clean up the form element from the DOM
+      // Clean up the form element from the DOM - auto-destroy will handle validator cleanup
       if (document.body.contains(formElement)) {
         document.body.removeChild(formElement)
       }
@@ -62,6 +57,17 @@ describe('Validator', () => {
 
       expect(disconnectSpy).toHaveBeenCalledTimes(1)
       expect((validatorInstance as any).formMutationObserver).toBeNull()
+    })
+
+    it('disconnects the auto-destroy observer', () => {
+      const observer = (validatorInstance as any).autoDestroyObserver
+      expect(observer).toBeInstanceOf(MutationObserver)
+      const disconnectSpy = vi.spyOn(observer, 'disconnect')
+
+      validatorInstance.destroy()
+
+      expect(disconnectSpy).toHaveBeenCalledTimes(1)
+      expect((validatorInstance as any).autoDestroyObserver).toBeNull()
     })
 
     it('clears the debounced init timer (timeoutId)', () => {
