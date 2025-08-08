@@ -13,6 +13,7 @@ describe('Validator', () => {
   })
 
   afterEach(() => {
+    validator.destroy()
     document.body.removeChild(form)
   })
 

@@ -14,8 +14,6 @@
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "dev:demo": "vite demo",
-    "build:demo": "vite build --config vite.config.demo.js",
     "build:css": "npx @tailwindcss/cli -i demo/demo-src.css -o demo/demo.css"
   },
   "repository": {
