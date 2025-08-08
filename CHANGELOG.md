@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-08
+
+### Added
+
+- **BREAKING CHANGE**: Automatic validator cleanup using MutationObserver - Validator instances now automatically destroy themselves when the form is removed from the DOM
+- Comprehensive auto-destroy functionality that handles direct form removal, parent container removal, and innerHTML replacement scenarios
+- New `autoDestroyObserver` MutationObserver that monitors the entire document tree for form removal
+- Complete test coverage for auto-destroy scenarios in new `Validator.autoDestroy.test.ts` file
+
+### Changed
+
+- **BREAKING CHANGE**: Removed ineffective 'remove' event listener and replaced with robust MutationObserver-based cleanup
+- Enhanced `destroy()` method to properly clean up both `formMutationObserver` and `autoDestroyObserver` 
+- Simplified test files by removing manual `validator.destroy()` calls from all `afterEach` blocks - auto-destroy now handles cleanup
+- Updated event listener tests to reflect removal of 'remove' event listener (4 listeners instead of 5)
+- Improved TypeScript null assertion handling with proper `!` operators
+
+### Fixed
+
+- Fixed unhandled timeout errors in tests caused by MutationObserver callbacks firing after test teardown
+- Resolved memory leaks from dangling MutationObserver instances when forms were removed without calling destroy()
+- Fixed test cleanup race conditions by ensuring proper order of operations
+
+### Removed
+
+- Removed unused `cleanupTestForm` utility function and imports
+- Removed ineffective 'remove' event listener from `addEventListeners()` and `removeEventListeners()`
+- Cleaned up unused npm scripts (`dev:demo` and `build:demo`) keeping only essential `build:css`
+- Removed legacy code and comments related to manual cleanup approaches
+
+### Developer Experience
+
+- **Major Improvement**: Developers no longer need to manually call `validator.destroy()` - cleanup is automatic
+- Backward compatible: Manual `destroy()` calls still work for edge cases requiring explicit control
+- Significantly reduced boilerplate code in applications using the validator
+- Enhanced memory safety with automatic cleanup preventing common memory leak scenarios
+
 ## [1.4.11] - 2025-05-04
 
 ### Changed
