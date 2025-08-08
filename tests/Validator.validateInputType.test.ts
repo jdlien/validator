@@ -1,6 +1,6 @@
 import Validator from '../src/Validator'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { setupTestForm } from './utils/setup'
+import { setupTestForm, cleanupTestForm } from './utils/setup'
 describe('Validator', () => {
   let form: HTMLFormElement
   let formControl: HTMLInputElement
@@ -12,6 +12,7 @@ describe('Validator', () => {
   })
 
   afterEach(() => {
+    validator.destroy()
     document.body.removeChild(form)
   })
 

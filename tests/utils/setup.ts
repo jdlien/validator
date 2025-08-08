@@ -30,3 +30,8 @@ export function setupTestForm(customOptions: Partial<ValidatorOptions> = {}): Te
 
   return { form, formControl, errorEl, options, validator }
 }
+
+export function cleanupTestForm(testSetup: TestSetup): void {
+  testSetup.validator.destroy()
+  document.body.removeChild(testSetup.form)
+}
