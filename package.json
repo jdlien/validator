@@ -10,11 +10,13 @@
   "description": "Validates and sanitizes the inputs in a form using native HTML attributes.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly && tailwindcss -i demo/demo-src.css -o demo/demo.css -m",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "tw": "tailwindcss -i demo/demo-src.css -o demo/demo.css -w -m"
+    "dev:demo": "vite demo",
+    "build:demo": "vite build --config vite.config.demo.js",
+    "build:css": "npx @tailwindcss/cli -i demo/demo-src.css -o demo/demo.css"
   },
   "repository": {
     "type": "git",
