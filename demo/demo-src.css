@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@plugin '@tailwindcss/forms';
-
 @layer base {
   [type='text'],
   [type='email'],
