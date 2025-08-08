@@ -251,14 +251,14 @@ export default class Validator {
 
     // Apply classes and message
     this.errorMainClasses.split(' ').forEach((className) => {
-      errorEl.classList.add(className)
+      errorEl!.classList.add(className)
     })
 
-    errorEl.innerHTML = message || this.messages.ERROR_MAIN
+    errorEl!.innerHTML = message || this.messages.ERROR_MAIN
 
     // Ensure it's visible (might have been hidden previously)
     this.hiddenClasses.split(' ').forEach((className) => {
-      errorEl.classList.remove(className)
+      errorEl!.classList.remove(className)
     })
   }
 
@@ -339,7 +339,7 @@ export default class Validator {
           mainErrorElement.innerHTML = this.messages.ERROR_MAIN
         }
         this.hiddenClasses.split(' ').forEach((className) => {
-          mainErrorElement.classList.remove(className)
+          mainErrorElement!.classList.remove(className)
         })
       } else {
         // If no main error element exists, add it (which also makes it visible)
