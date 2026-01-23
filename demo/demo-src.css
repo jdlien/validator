@@ -69,6 +69,13 @@
 
   input[type='radio'] {
     @apply rounded-full;
+    /* Override ring with circular outline for radio buttons */
+    &:focus {
+      --tw-ring-shadow: none;
+      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+      outline: 2px solid oklch(70.7% 0.165 254.624 / 0.5);
+      outline-offset: 1px;
+    }
   }
 
   select {
