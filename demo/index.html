@@ -14,7 +14,8 @@
         <p class="my-8">
           Validator has been applied to this form to help sanitize and validate user input.<br />
           This form won't submit if any fields are invalid and helpful errors will be shown or
-          hidden as the user changes fields.
+          hidden as the user changes fields.<br />
+          With <code>scrollToError: true</code>, the page will scroll to the first error on submit.
         </p>
 
         <div>Install this Validator through npm:</div>
@@ -241,6 +242,40 @@
               <div
                 class="error hidden text-sm text-red-600 transition dark:text-red-500"
                 id="input-number-error"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+          <label
+            for="input-number-range"
+            id="input-number-range-label"
+            class="block font-medium sm:mt-px sm:pt-1"
+            >Number with Min/Max</label
+          >
+          <div class="my-0.5 sm:mt-0 sm:col-span-2">
+            <div class="flex relative sm:max-w-sm">
+              <input
+                class="block w-full px-1.5 transition"
+                type="text"
+                id="input-number-range"
+                data-type="number"
+                data-min="0"
+                data-max="100"
+                name="input-number-range"
+                data-error-default=""
+                aria-describedby="input-number-range-error"
+              />
+            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Value must be between 0 and 100 (uses <code>data-min</code> and <code>data-max</code>)
+            </p>
+
+            <div style="min-height: 20px">
+              <div
+                class="error hidden text-sm text-red-600 transition dark:text-red-500"
+                id="input-number-range-error"
               ></div>
             </div>
           </div>
@@ -871,7 +906,8 @@
       <script src="../dist/validator.js"></script>
       <script>
         const form = document.getElementById('demo-form')
-        const validator = new Validator(form, {debug: true})
+        // scrollToError: true will scroll to and focus the first invalid input on validation failure
+        const validator = new Validator(form, {debug: true, scrollToError: true})
       </script>
     </main>
   </body>

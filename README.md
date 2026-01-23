@@ -131,6 +131,7 @@ On input (and sometimes select and textarea) elements, the following attributes 
 
 - `data-date-format`/`data-time-format` - Applies formatting to time input types (these are interchangeable). The format must be a valid moment.js format string. See [moment.js docs](https://momentjs.com/docs/#/displaying/format/) for more information.
 - `data-date-range` - Applies to date input types. Supported values are `past` and `future`.
+- `data-min`/`data-max` - Applies to numeric input types (`number`, `integer`, `float`, `decimal`). Validates that the numeric value is within the specified range. Also respects the native `min`/`max` attributes, but `data-` attributes take precedence.
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
@@ -209,6 +210,8 @@ messages = {
   CHECKED_REQUIRED: 'This must be checked.',
   ERROR_MAXLENGTH: 'This must be ${val} characters or fewer.',
   ERROR_MINLENGTH: 'This must be at least ${val} characters.',
+  ERROR_MIN_VALUE: 'The value must be at least ${val}.',
+  ERROR_MAX_VALUE: 'The value must be at most ${val}.',
   ERROR_NUMBER: 'This must be a number.',
   ERROR_INTEGER: 'This must be a whole number.',
   ERROR_TEL: 'This is not a valid telephone number.',
@@ -234,6 +237,7 @@ messages = {
 - `errorMainClasses` - A string containing one or more space-separated classes to apply to the main error message.
 - `errorInputClasses` - A string containing one or more space-separated classes to apply to invalid `inputs.
 - `showMainError` - A boolean indicating whether or not to show the main error message. Defaults to `true`.
+- `scrollToError` - A boolean indicating whether to scroll to and focus the first invalid input when validation fails. Defaults to `false`.
 - `validationSuccessCallback` - A function to be called when validation is successful.
 - `validationErrorCallback` - A function to be called when validation fails.
 
@@ -302,6 +306,29 @@ Here is a list of the utility functions:
 - **isColor**: Determines if a value is a valid color.
 - **parseColor**: Parses a color string into a standardized format.
 - **normalizeValidationResult**: Normalizes a validation result (like a boolean or string) into an object with a valid property and a messages array of strings.
+
+## Breaking Changes in v2.0.0
+
+### Event Classes Consolidated
+
+The separate `ValidationSuccessEvent` and `ValidationErrorEvent` classes have been replaced with a unified `ValidationEvent` class:
+
+```javascript
+// Before (v1.x)
+import { ValidationSuccessEvent, ValidationErrorEvent } from '@jdlien/validator'
+form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
+
+// After (v2.0)
+import { ValidationEvent } from '@jdlien/validator'
+form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
+form.addEventListener('validationError', (e: ValidationEvent) => { ... })
+```
+
+The `ValidationEvent` class has a `type` property that is either `'validationSuccess'` or `'validationError'`, and a `submitEvent` property containing the original form submission event.
+
+### Types File Removed
+
+The separate `types.d.ts` file has been removed. All types are now exported directly from the main module.
 
 ## Contributing
 
