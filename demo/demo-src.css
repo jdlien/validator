@@ -47,8 +47,8 @@
     @apply hover:bg-white dark:hover:bg-zinc-800;
   }
 
-  [type='checkbox'],
-  [type='radio'] {
+  input[type='checkbox'],
+  input[type='radio'] {
     @apply border border-zinc-300 bg-zinc-50 text-blue-600 shadow-sm
         checked:border checked:border-zinc-400 checked:bg-blue-600 focus:outline-none
         focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:checked:bg-blue-500;
@@ -61,13 +61,13 @@
     @apply disabled:checked:hover:border-zinc-400 disabled:dark:checked:bg-blue-600 dark:disabled:checked:hover:border-zinc-500;
   }
 
-  [type='checkbox']:not([disabled]),
-  [type='radio']:not([disabled]) {
+  input[type='checkbox']:not([disabled]),
+  input[type='radio']:not([disabled]) {
     @apply hover:bg-zinc-200 checked:hover:bg-blue-500
         dark:hover:bg-zinc-300 dark:hover:checked:bg-blue-400 dark:hover:focus:checked:bg-blue-400;
   }
 
-  [type='radio'] {
+  input[type='radio'] {
     @apply rounded-full;
   }
 
@@ -81,7 +81,7 @@
 }
 
 /* Component utilities using Tailwind v4 @utility API */
-@utility checked-label {
+.checked-label {
   @apply ml-1.5 mr-1;
 }
 
@@ -92,7 +92,7 @@ input:checked + .checked-label {
 }
 
 /* Apply checked-border to labels for checkboxes and radio buttons for a label that colors up automatically when checked */
-@utility checked-border {
+.checked-border {
   @apply inline-flex items-center border border-zinc-300/30 bg-zinc-50 px-1 text-zinc-700 shadow-inner;
   @apply hover:bg-white dark:border-zinc-500/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
 }
