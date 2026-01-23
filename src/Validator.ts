@@ -1,4 +1,4 @@
-/** Form Validator used by EPL apps and www2. ©2023 JD Lien */
+/** Form Validator used by EPL apps and www2. ©2026 JD Lien */
 
 // Import the validator utility functions
 import * as utils from '@jdlien/validator-utils'
@@ -6,7 +6,7 @@ import * as utils from '@jdlien/validator-utils'
 export type FormControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 
 export interface ValidatorOptions {
-  messages?: object
+  messages?: Record<string, string>
   debug?: boolean
   autoInit?: boolean
   preventSubmit?: boolean
@@ -14,6 +14,7 @@ export interface ValidatorOptions {
   errorMainClasses?: string
   errorInputClasses?: string
   showMainError?: boolean
+  scrollToError?: boolean
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
 }
@@ -26,19 +27,14 @@ export interface InputHandlers {
   }
 }
 
-export class ValidationSuccessEvent extends Event {
-  submitEvent: Event
-  constructor(submitEvent: Event) {
-    super('validationSuccess', { cancelable: true })
-    this.submitEvent = submitEvent
-  }
-}
+export type ValidationEventType = 'validationSuccess' | 'validationError'
 
-export class ValidationErrorEvent extends Event {
-  submitEvent: Event
-  constructor(submitEvent: Event) {
-    super('validationError', { cancelable: true })
-    this.submitEvent = submitEvent
+export class ValidationEvent extends Event {
+  constructor(
+    type: ValidationEventType,
+    public submitEvent: Event
+  ) {
+    super(type, { cancelable: true })
   }
 }
 
@@ -49,7 +45,7 @@ export default class Validator {
   inputErrors: { [key: string]: string[] } = {}
 
   // Default error messages.
-  messages = {
+  messages: Record<string, string> = {
     ERROR_MAIN: 'There is a problem with your submission.',
     ERROR_GENERIC: 'Enter a valid value.',
     ERROR_REQUIRED: 'This field is required.',
@@ -57,6 +53,8 @@ export default class Validator {
     CHECKED_REQUIRED: 'This must be checked.',
     ERROR_MAXLENGTH: 'This must be ${val} characters or fewer.',
     ERROR_MINLENGTH: 'This must be at least ${val} characters.',
+    ERROR_MIN_VALUE: 'The value must be at least ${val}.',
+    ERROR_MAX_VALUE: 'The value must be at most ${val}.',
     ERROR_NUMBER: 'This must be a number.',
     ERROR_INTEGER: 'This must be a whole number.',
     ERROR_TEL: 'This is not a valid telephone number.',
@@ -84,6 +82,8 @@ export default class Validator {
   hiddenClasses: string
   // Whether to show the main error message
   showMainError: boolean = true
+  // Whether to scroll to the first error on validation failure
+  scrollToError: boolean = false
 
   // Classes to apply to the main error message (space-separated)
   errorMainClasses: string
@@ -91,6 +91,11 @@ export default class Validator {
   errorInputClasses: string
   // Timeout for dispatching events on input (used by syncColorInput)
   private dispatchTimeout: number = 0
+
+  // Pre-split class arrays for performance (avoid repeated .split(' ') calls)
+  private hiddenClassesArray: string[] = []
+  private errorMainClassesArray: string[] = []
+  private errorInputClassesArray: string[] = []
 
   // Timeout ID for debounced functions
   private timeoutId: number = 0
@@ -134,6 +139,13 @@ export default class Validator {
 
     this.errorInputClasses = options.errorInputClasses || 'border-red-600 dark:border-red-500'
     this.showMainError = options.showMainError !== undefined ? options.showMainError : true
+    this.scrollToError = options.scrollToError || false
+
+    // Pre-split class strings for performance
+    this.hiddenClassesArray = this.hiddenClasses.split(' ').filter(Boolean)
+    this.errorMainClassesArray = this.errorMainClasses.split(' ').filter(Boolean)
+    this.errorInputClassesArray = this.errorInputClasses.split(' ').filter(Boolean)
+
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
 
@@ -164,17 +176,24 @@ export default class Validator {
 
   // Sets up automatic destruction when form is removed from DOM
   private setupAutoDestroy(): void {
+    const parent = this.form.parentElement || document.body
+
     this.autoDestroyObserver = new MutationObserver(() => {
-      // Check if the form is no longer in the document
-      if (!document.contains(this.form)) {
-        this.destroy()
+      const check = () => {
+        if (!document.contains(this.form)) this.destroy()
+      }
+      // Use requestIdleCallback to defer the check when available
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(check, { timeout: 100 })
+      } else {
+        setTimeout(check, 0)
       }
     })
-    
-    // Observe the entire document for removal of the form or its ancestors
-    this.autoDestroyObserver.observe(document.body, {
+
+    // Watch the parent more narrowly; only use subtree if parent is document.body
+    this.autoDestroyObserver.observe(parent, {
       childList: true,
-      subtree: true
+      subtree: parent === document.body,
     })
   }
 
@@ -268,14 +287,14 @@ export default class Validator {
     }
 
     // Apply classes and message
-    this.errorMainClasses.split(' ').forEach((className) => {
+    this.errorMainClassesArray.forEach((className) => {
       errorEl!.classList.add(className)
     })
 
     errorEl!.innerHTML = message || this.messages.ERROR_MAIN
 
     // Ensure it's visible (might have been hidden previously)
-    this.hiddenClasses.split(' ').forEach((className) => {
+    this.hiddenClassesArray.forEach((className) => {
       errorEl!.classList.remove(className)
     })
   }
@@ -323,7 +342,7 @@ export default class Validator {
     el.setAttribute('aria-invalid', 'true')
 
     // Apply input classes to indicate an error on the input itself
-    this.errorInputClasses.split(' ').forEach((className) => {
+    this.errorInputClassesArray.forEach((className) => {
       el.classList.add(className)
     })
 
@@ -333,16 +352,20 @@ export default class Validator {
 
     errorEl.innerHTML = errors.join('<br>')
 
-    this.hiddenClasses.split(' ').forEach((className) => {
+    this.hiddenClassesArray.forEach((className) => {
       if (errorEl) errorEl.classList.remove(className)
     })
   }
 
   // Shows all the error messages for all the inputs of the form, and a main error message
-  // TODO: Consider (optionally) scrolling to the first error message
   private showFormErrors(): void {
     // Show any errors from validation
     this.inputs.forEach((el) => this.showInputErrors(el))
+
+    // Find the first input with errors for potential scroll
+    const firstErrorInput = this.inputs.find(
+      (el) => this.inputErrors[el.name || el.id]?.length > 0
+    )
 
     // If there are any input errors and we should show the main error
     if (
@@ -356,13 +379,19 @@ export default class Validator {
         if (!mainErrorElement.innerHTML) {
           mainErrorElement.innerHTML = this.messages.ERROR_MAIN
         }
-        this.hiddenClasses.split(' ').forEach((className) => {
+        this.hiddenClassesArray.forEach((className) => {
           mainErrorElement!.classList.remove(className)
         })
       } else {
         // If no main error element exists, add it (which also makes it visible)
         this.addErrorMain()
       }
+    }
+
+    // Scroll to first error and focus if enabled
+    if (this.scrollToError && firstErrorInput) {
+      firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      firstErrorInput.focus()
     }
   }
 
@@ -377,12 +406,12 @@ export default class Validator {
     if (!errorEl) return
 
     // Remove the error style
-    this.errorInputClasses.split(' ').forEach((className) => {
+    this.errorInputClassesArray.forEach((className) => {
       el.classList.remove(className)
     })
 
     // Hide the error element
-    this.hiddenClasses.split(' ').forEach((className) => {
+    this.hiddenClassesArray.forEach((className) => {
       if (errorEl) errorEl.classList.add(className)
     })
 
@@ -395,7 +424,7 @@ export default class Validator {
     // Find the main error element (form-specific or generic) and hide it
     const mainErrorElement = this._getMainErrorElement()
     if (mainErrorElement) {
-      this.hiddenClasses.split(' ').forEach((className) => {
+      this.hiddenClassesArray.forEach((className) => {
         mainErrorElement.classList.add(className)
       })
       // Optionally clear the content after hiding
@@ -476,6 +505,43 @@ export default class Validator {
           el,
           this.messages.ERROR_MAXLENGTH.replace('${val}', maxLength.toString())
         )
+      }
+    }
+
+    return valid
+  }
+
+  // Validates min/max numeric value constraints
+  private validateValue(el: FormControl): boolean {
+    let valid = true
+    if (el.disabled) return valid
+    if (!(el instanceof HTMLInputElement) || !el.value.length) return valid
+
+    // Only apply to numeric types
+    const numericTypes = ['number', 'integer', 'float', 'decimal']
+    const dataType = el.dataset.type || el.type
+    if (!numericTypes.includes(dataType) && !numericTypes.includes(el.type)) return valid
+
+    const numValue = parseFloat(el.value)
+    if (isNaN(numValue)) return valid // Let type validation handle invalid numbers
+
+    // Get min from data-min, then native min attribute
+    const minAttr = el.dataset.min ?? el.min
+    const maxAttr = el.dataset.max ?? el.max
+
+    if (minAttr !== undefined && minAttr !== '') {
+      const minValue = parseFloat(minAttr)
+      if (!isNaN(minValue) && numValue < minValue) {
+        valid = false
+        this.addInputError(el, this.messages.ERROR_MIN_VALUE.replace('${val}', minAttr))
+      }
+    }
+
+    if (maxAttr !== undefined && maxAttr !== '') {
+      const maxValue = parseFloat(maxAttr)
+      if (!isNaN(maxValue) && numValue > maxValue) {
+        valid = false
+        this.addInputError(el, this.messages.ERROR_MAX_VALUE.replace('${val}', maxAttr))
       }
     }
 
@@ -650,6 +716,7 @@ export default class Validator {
       if (el.disabled) continue
       valid = this.validateRequired(el) && valid
       valid = this.validateLength(el) && valid
+      valid = this.validateValue(el) && valid
       valid = (await this.validateInput(el)) && valid
       // Validate custom functions here if value is empty, as they won't be
       // evaluated by validateInput, which only checks inputs with a value.
@@ -672,20 +739,19 @@ export default class Validator {
 
     // External functions can prevent the form from submitting
     // by calling e.preventDefault() in the validationSuccess event
-    const validationSuccessEvent = new ValidationSuccessEvent(e)
-    const validationErrorEvent = new ValidationErrorEvent(e)
+    const validationEvent = new ValidationEvent(valid ? 'validationSuccess' : 'validationError', e)
+
+    this.form.dispatchEvent(validationEvent)
 
     if (valid) {
-      this.form.dispatchEvent(validationSuccessEvent)
       if (this.validationSuccessCallback) this.validationSuccessCallback(e)
     } else {
-      this.form.dispatchEvent(validationErrorEvent)
       if (this.validationErrorCallback) this.validationErrorCallback(e)
     }
 
     if (valid && !this.preventSubmit) {
       this.isSubmitting = true
-      if (!validationSuccessEvent.defaultPrevented) this.form.submit()
+      if (!validationEvent.defaultPrevented) this.form.submit()
       this.isSubmitting = false
     }
   }

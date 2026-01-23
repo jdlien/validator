@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-23
+
+### Bundle Size Comparison
+| | v1.5.0 | v2.0.0 | Change |
+|--|--------|--------|--------|
+| Raw | 21.60 KiB | 22.78 KiB | +5.5% |
+| Gzip | 7.39 KiB | 7.70 KiB | +4.2% |
+| Brotli | 6.59 KiB | 6.85 KiB | +3.9% |
+
+### Added
+- `scrollToError` option to scroll to first invalid input on validation failure
+- Min/max value validation via `data-min`/`data-max` attributes (also respects native `min`/`max`)
+- `ERROR_MIN_VALUE` and `ERROR_MAX_VALUE` error messages
+- `ValidationEvent` unified event class with `ValidationEventType` type
+- Pre-split class string arrays for performance optimization
+
+### Changed
+- Optimized MutationObserver for auto-destroy using `requestIdleCallback` when available
+- MutationObserver now watches the form's parent more narrowly instead of entire document
+- Updated copyright year to 2026
+- `messages` option now typed as `Record<string, string>` (was `object`)
+
+### Removed
+- `types.d.ts` file (duplicated Validator.ts exports)
+- `ValidationSuccessEvent` class (use `ValidationEvent` with type `'validationSuccess'`)
+- `ValidationErrorEvent` class (use `ValidationEvent` with type `'validationError'`)
+
+### Breaking Changes
+- **Event classes consolidated:** Replace `ValidationSuccessEvent` and `ValidationErrorEvent` with unified `ValidationEvent` class
+  ```typescript
+  // Before
+  form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
+
+  // After
+  form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
+  ```
+- **`messages` typing:** Now `Record<string, string>` instead of `object`
+- **`types.d.ts` removed:** Import types from `Validator.ts` instead
+
 ## [1.5.0] - 2025-01-08
 
 ### Added

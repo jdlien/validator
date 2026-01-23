@@ -1,4 +1,4 @@
-import Validator, { ValidationErrorEvent, ValidationSuccessEvent } from '../src/Validator'
+import Validator, { ValidationEvent } from '../src/Validator'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setupTestForm } from './utils/setup'
 
@@ -44,19 +44,23 @@ describe('Validator', () => {
       expect((validator as any).showFormErrors).toHaveBeenCalled()
     })
 
-    it('dispatches ValidationSuccessEvent if form is valid', async () => {
+    it('dispatches ValidationEvent with validationSuccess type if form is valid', async () => {
       vi.spyOn(form, 'dispatchEvent')
       vi.spyOn(form, 'submit').mockImplementation(() => {})
       vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
       await (validator as any).submitHandler(new Event('submit'))
-      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationSuccessEvent))
+      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationEvent))
+      const dispatchedEvent = (form.dispatchEvent as any).mock.calls[0][0] as ValidationEvent
+      expect(dispatchedEvent.type).toBe('validationSuccess')
     })
 
-    it('dispatches ValidationErrorEvent if form is invalid', async () => {
+    it('dispatches ValidationEvent with validationError type if form is invalid', async () => {
       vi.spyOn(form, 'dispatchEvent')
       vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(false))
       await (validator as any).submitHandler(new Event('submit'))
-      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationErrorEvent))
+      expect(form.dispatchEvent).toHaveBeenCalledWith(expect.any(ValidationEvent))
+      const dispatchedEvent = (form.dispatchEvent as any).mock.calls[0][0] as ValidationEvent
+      expect(dispatchedEvent.type).toBe('validationError')
     })
 
     it('calls validationSuccessCallback if form is valid and no default is prevented', async () => {
@@ -85,25 +89,39 @@ describe('Validator', () => {
     })
   })
 
-  describe('ValidationEvents', () => {
+  describe('ValidationEvent', () => {
     let submitEvent: Event
 
     beforeEach(() => {
       submitEvent = new Event('submit')
     })
 
-    it('ValidationSuccessEvent should create a new event with the correct type', () => {
-      const validationSuccessEvent = new ValidationSuccessEvent(submitEvent)
-      expect(validationSuccessEvent instanceof ValidationSuccessEvent).toBe(true)
-      expect(validationSuccessEvent.type).toEqual('validationSuccess')
-      expect(validationSuccessEvent.submitEvent).toEqual(submitEvent)
+    it('should create a validationSuccess event with the correct type and submitEvent', () => {
+      const validationEvent = new ValidationEvent('validationSuccess', submitEvent)
+      expect(validationEvent instanceof ValidationEvent).toBe(true)
+      expect(validationEvent instanceof Event).toBe(true)
+      expect(validationEvent.type).toBe('validationSuccess')
+      expect(validationEvent.submitEvent).toBe(submitEvent)
     })
 
-    it('ValidationErrorEvent should create a new event with the correct type', () => {
-      const validationErrorEvent = new ValidationErrorEvent(submitEvent)
-      expect(validationErrorEvent instanceof ValidationErrorEvent).toBe(true)
-      expect(validationErrorEvent.type).toEqual('validationError')
-      expect(validationErrorEvent.submitEvent).toEqual(submitEvent)
+    it('should create a validationError event with the correct type and submitEvent', () => {
+      const validationEvent = new ValidationEvent('validationError', submitEvent)
+      expect(validationEvent instanceof ValidationEvent).toBe(true)
+      expect(validationEvent instanceof Event).toBe(true)
+      expect(validationEvent.type).toBe('validationError')
+      expect(validationEvent.submitEvent).toBe(submitEvent)
     })
-  }) // end describe('submitHandler')
+
+    it('should be cancelable', () => {
+      const validationEvent = new ValidationEvent('validationSuccess', submitEvent)
+      expect(validationEvent.cancelable).toBe(true)
+    })
+
+    it('should support preventDefault', () => {
+      const validationEvent = new ValidationEvent('validationSuccess', submitEvent)
+      expect(validationEvent.defaultPrevented).toBe(false)
+      validationEvent.preventDefault()
+      expect(validationEvent.defaultPrevented).toBe(true)
+    })
+  })
 }) // end describe('Validator')

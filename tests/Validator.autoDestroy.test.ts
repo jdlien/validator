@@ -13,6 +13,36 @@ describe('Validator Auto-Destroy', () => {
     destroySpy = vi.spyOn(validator, 'destroy')
   })
 
+  describe('requestIdleCallback optimization', () => {
+    it('should use requestIdleCallback when available', async () => {
+      // Mock requestIdleCallback
+      const mockRequestIdleCallback = vi.fn((cb: IdleRequestCallback) => {
+        cb({ didTimeout: false, timeRemaining: () => 50 } as IdleDeadline)
+        return 1
+      })
+      ;(globalThis as any).requestIdleCallback = mockRequestIdleCallback
+
+      // Create a new form and validator after mocking
+      const testForm = document.createElement('form')
+      testForm.id = 'test-form-ric'
+      document.body.appendChild(testForm)
+      const testValidator = new Validator(testForm)
+      const testDestroySpy = vi.spyOn(testValidator, 'destroy')
+
+      // Remove the form to trigger the MutationObserver
+      document.body.removeChild(testForm)
+
+      // Wait for MutationObserver to trigger
+      await new Promise((resolve) => setTimeout(resolve, 10))
+
+      // Verify destroy was called via requestIdleCallback
+      expect(testDestroySpy).toHaveBeenCalledTimes(1)
+
+      // Clean up
+      delete (globalThis as any).requestIdleCallback
+    })
+  })
+
   afterEach(() => {
     // Clean up any remaining elements
     if (document.body.contains(form)) {
