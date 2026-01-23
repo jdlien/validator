@@ -19,7 +19,7 @@
   select {
     @apply border border-zinc-300 rounded bg-zinc-50 px-2 py-1.5 text-zinc-700
         placeholder-zinc-500/50 shadow-inner
-        focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/50
+        focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/50
         focus:ring-offset-0 focus:ring-offset-transparent;
 
     @apply dark:border-zinc-500 dark:bg-zinc-900 dark:text-white dark:focus:bg-zinc-800;
@@ -49,32 +49,30 @@
 
   input[type='checkbox'],
   input[type='radio'] {
-    @apply border border-zinc-300 bg-zinc-50 text-blue-600 shadow-sm
-        checked:border checked:border-zinc-400 checked:bg-blue-600 focus:outline-none
-        focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:checked:bg-blue-500;
+    @apply border border-zinc-300 bg-zinc-50 text-indigo-600 shadow-sm
+    checked:border checked:border-zinc-400 checked:bg-indigo-600 focus:outline-none
+    focus:ring-2 focus:ring-indigo-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:checked:bg-indigo-500;
 
-    @apply dark:border-zinc-500 dark:bg-zinc-400 dark:checked:bg-blue-600 dark:focus:checked:bg-blue-400;
+    @apply dark:border-zinc-500 dark:bg-zinc-400 dark:checked:bg-indigo-600 dark:focus:checked:bg-indigo-400;
 
-    @apply disabled:opacity-60 disabled:checked:hover:bg-blue-600;
+    @apply disabled:opacity-60 disabled:checked:hover:bg-indigo-600;
 
     /* Prevents border change when disabled and hovered */
-    @apply disabled:checked:hover:border-zinc-400 disabled:dark:checked:bg-blue-600 dark:disabled:checked:hover:border-zinc-500;
+    @apply disabled:checked:hover:border-zinc-400 disabled:dark:checked:bg-indigo-600 dark:disabled:checked:hover:border-zinc-500;
   }
 
   input[type='checkbox']:not([disabled]),
   input[type='radio']:not([disabled]) {
-    @apply hover:bg-zinc-200 checked:hover:bg-blue-500
-        dark:hover:bg-zinc-300 dark:hover:checked:bg-blue-400 dark:hover:focus:checked:bg-blue-400;
+    @apply hover:bg-zinc-200 checked:hover:bg-indigo-500
+    dark:hover:bg-zinc-300 dark:hover:checked:bg-indigo-400 dark:hover:focus:checked:bg-indigo-400;
   }
 
   input[type='radio'] {
     @apply rounded-full;
-    /* Override ring with circular outline for radio buttons */
+    /* Use circular box-shadow for focus ring (box-shadow follows border-radius, outline doesn't) */
     &:focus {
-      --tw-ring-shadow: none;
-      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-      outline: 2px solid oklch(70.7% 0.165 254.624 / 0.5);
-      outline-offset: 1px;
+      outline: none;
+      box-shadow: 0 0 0 3px oklch(70.7% 0.165 254.624 / 0.5);
     }
   }
 
@@ -105,5 +103,5 @@ input:checked + .checked-label {
 }
 
 .checked-border:has([type='checkbox']:checked, [type='radio']:checked) {
-  @apply border-blue-600 text-black hover:border-blue-500 dark:text-white;
+  @apply border-indigo-600 text-black hover:border-indigo-500 dark:text-white;
 }
