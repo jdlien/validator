@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "build:css": "npx @tailwindcss/cli -i demo/demo-src.css -o demo/demo.css",
+    "build:css": "tailwindcss -i demo/demo-src.css -o demo/demo.css",
     "build:demo": "tsc demo/form-field.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && pnpm build:css"
   },
   "repository": {
@@ -47,6 +47,7 @@
   "homepage": "https://github.com/jdlien/validator#readme",
   "devDependencies": {
     "@sheerun/mutationobserver-shim": "^0.3.3",
+    "@tailwindcss/cli": "^4.1.18",
     "@types/jsdom": "^27.0.0",
     "@vitest/coverage-v8": "^4.0.18",
     "canvas": "^3.2.1",
