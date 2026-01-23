@@ -102,6 +102,24 @@ describe('Validator', () => {
       expect(errorEl2).toBeNull()
     })
 
+    it('returns error element by name when id-based error element does not exist', () => {
+      // Input has both id and name, but only name-based error element exists
+      const formControl4 = document.createElement('input')
+      formControl4.type = 'text'
+      formControl4.id = 'control-with-different-id'
+      formControl4.name = 'control-by-name'
+      form.appendChild(formControl4)
+
+      // Only create error element for the name, not the id
+      const errorDiv4 = document.createElement('div')
+      errorDiv4.id = 'control-by-name-error'
+      form.appendChild(errorDiv4)
+
+      const errorEl4 = (validator as any).getErrorEl(formControl4)
+      expect(errorEl4).toBeTruthy()
+      expect(errorEl4.id).toBe('control-by-name-error')
+    })
+
     it('handles ids with special characters', () => {
       const formControl4 = document.createElement('input')
       formControl4.type = 'text'

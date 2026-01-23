@@ -319,5 +319,18 @@ describe('Validator', () => {
         validator.messages.ERROR_MIN_VALUE.replace('${val}', '10')
       )
     })
+
+    it('returns true and skips validation when value is non-numeric', () => {
+      // Type validation should handle non-numeric values, not min/max validation
+      formControl.type = 'number'
+      formControl.value = 'abc'
+      formControl.setAttribute('data-min', '10')
+      formControl.setAttribute('data-max', '100')
+
+      const result = (validator as any).validateValue(formControl)
+      expect(result).toBeTruthy()
+      // No min/max errors should be added since value isn't a valid number
+      expect(validator.inputErrors[formControl.name]).toEqual([])
+    })
   }) // end validate Min/Max Value
 }) // end describe('Validator')

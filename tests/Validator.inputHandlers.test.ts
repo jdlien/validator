@@ -208,16 +208,16 @@ describe('Validator', () => {
       Object.defineProperty(event, 'key', { value: 'ArrowDown' })
 
       formControl.value = '5'
-      formControl.dispatchEvent(event)
+      ;(validator as any).inputKeydownHandler(event)
       expect(formControl.value).toEqual('4')
 
       // Test that it doesn't go below 0
       formControl.value = '0'
-      formControl.dispatchEvent(event)
+      ;(validator as any).inputKeydownHandler(event)
       expect(formControl.value).toEqual('0')
 
       formControl.value = ''
-      formControl.dispatchEvent(event)
+      ;(validator as any).inputKeydownHandler(event)
       expect(formControl.value).toEqual('0')
     })
 

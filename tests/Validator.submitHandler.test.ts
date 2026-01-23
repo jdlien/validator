@@ -87,6 +87,40 @@ describe('Validator', () => {
       ;(validator as any).submitHandler(new Event('submit'))
       expect(form.submit).not.toHaveBeenCalled()
     })
+
+    it('does not call validationSuccessCallback if it is not set', async () => {
+      // Ensure callback is undefined
+      ;(validator as any).validationSuccessCallback = undefined
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
+
+      // Should not throw even without callback
+      await expect((validator as any).submitHandler(new Event('submit'))).resolves.not.toThrow()
+    })
+
+    it('does not call validationErrorCallback if it is not set', async () => {
+      // Ensure callback is undefined
+      ;(validator as any).validationErrorCallback = undefined
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(false))
+
+      // Should not throw even without callback
+      await expect((validator as any).submitHandler(new Event('submit'))).resolves.not.toThrow()
+    })
+
+    it('does not submit the form if validationEvent.defaultPrevented is true', async () => {
+      vi.spyOn(form, 'submit').mockImplementation(() => {})
+      vi.spyOn(validator, 'validate').mockImplementation(() => Promise.resolve(true))
+
+      // Add an event listener that calls preventDefault on the validation event
+      form.addEventListener('validationSuccess', (e) => {
+        e.preventDefault()
+      })
+
+      await (validator as any).submitHandler(new Event('submit'))
+
+      // Form should NOT be submitted because defaultPrevented is true
+      expect(form.submit).not.toHaveBeenCalled()
+    })
   })
 
   describe('ValidationEvent', () => {
