@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Validator Demo</title>
     <link rel="stylesheet" href="demo.css" />
-    <script src="form-field.js"></script>
+    <script type="module" src="form-field.ts"></script>
   </head>
 
   <body class="p-6 bg-gray-400 dark:bg-gray-800 dark:text-white">
@@ -279,10 +279,13 @@
       </p>
 
       <script src="../dist/validator.js"></script>
-      <script>
+      <script type="module">
+        // Wait for custom element to be defined before initializing validator
+        await customElements.whenDefined('form-field')
         const form = document.getElementById('demo-form')
         // scrollToError: true will scroll to and focus the first invalid input on validation failure
         const validator = new Validator(form, {debug: true, scrollToError: true})
+        window.validator = validator // for debugging
       </script>
     </main>
   </body>
