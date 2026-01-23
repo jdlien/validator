@@ -12,6 +12,7 @@ export default defineConfig({
   ts: { declaration: true, declarationDir: 'dist', declarationMap: true },
   test: {
     environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts'],
     coverage: { reporter: ['text', 'json', 'html'] },
     threads: false, // suppresses errors from canvas when starting tests
     server: {
