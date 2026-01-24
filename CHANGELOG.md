@@ -4,68 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - Unreleased
 
 ### Bundle Size
 
-|        | v2.0.0    | Current   | Change |
-| ------ | --------- | --------- | ------ |
-| Raw    | 22.78 KiB | 22.38 KiB | -1.8%  |
-| Gzip   | 7.70 KiB  | 7.64 KiB  | -0.8%  |
-| Brotli | 6.85 KiB  | 6.80 KiB  | -0.7%  |
-
-### Added
-
-- Arrow key increment/decrement for `number`, `float`, and `decimal` fields (previously only `integer`)
-- `data-arrow-step` attribute to customize arrow key step size (e.g., `data-arrow-step="0.5"`)
-- Set `data-arrow-step=""` (empty string) to disable arrow key behavior on numeric fields
-- Arrow keys now respect `data-min`/`data-max` bounds, clamping values appropriately
-- `scrollToErrorDelay` option to delay scroll-to-error behavior (useful for animations)
-
-### Changed
-
-- Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
-- Floating point precision is preserved when using arrow keys on decimal values
-
-### Removed
-
-- Automatic MutationObserver-based re-init on form changes and auto-destroy on form removal
-
-### Breaking Changes
-
-- If you add/remove inputs dynamically, call `validator.init()` after DOM updates
-- If you remove a form from the DOM, call `validator.destroy()` before removing it
-
-## [2.0.0] - 2026-01-23
-
-### Bundle Size Comparison
-
 |        | v1.5.0    | v2.0.0    | Change |
 | ------ | --------- | --------- | ------ |
-| Raw    | 21.60 KiB | 22.78 KiB | +5.5%  |
-| Gzip   | 7.39 KiB  | 7.70 KiB  | +4.2%  |
-| Brotli | 6.59 KiB  | 6.85 KiB  | +3.9%  |
+| Raw    | 21.60 KiB | 22.32 KiB | +3.3%  |
+| Gzip   | 7.40 KiB  | 7.65 KiB  | +3.4%  |
+| Brotli | 6.59 KiB  | 6.79 KiB  | +3.0%  |
 
 ### Added
 
 - `scrollToError` option to scroll to first invalid input on validation failure
+- `scrollToErrorDelay` option to delay scroll-to-error behavior (useful for animations)
 - Min/max value validation via `data-min`/`data-max` attributes (also respects native `min`/`max`)
 - `ERROR_MIN_VALUE` and `ERROR_MAX_VALUE` error messages
 - `ValidationEvent` unified event class with `ValidationEventType` type
-- Pre-split class string arrays for performance optimization
+- Arrow key increment/decrement for `number`, `float`, and `decimal` fields (previously only `integer`)
+- `data-arrow-step` attribute to customize arrow key step size (e.g., `data-arrow-step="0.5"`)
+- Set `data-arrow-step=""` (empty string) to disable arrow key behavior on numeric fields
+- Arrow keys respect `data-min`/`data-max` bounds, clamping values appropriately
 
 ### Changed
 
-- Optimized MutationObserver for auto-destroy using `requestIdleCallback` when available
-- MutationObserver now watches the form's parent more narrowly instead of entire document
 - Updated copyright year to 2026
 - `messages` option now typed as `Record<string, string>` (was `object`)
+- Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
+- Floating point precision preserved when using arrow keys on decimal values
 
 ### Removed
 
 - `types.d.ts` file (duplicated Validator.ts exports)
 - `ValidationSuccessEvent` class (use `ValidationEvent` with type `'validationSuccess'`)
 - `ValidationErrorEvent` class (use `ValidationEvent` with type `'validationError'`)
+- Automatic MutationObserver-based re-init and auto-destroy (see Breaking Changes)
 
 ### Breaking Changes
 
@@ -81,6 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **`messages` typing:** Now `Record<string, string>` instead of `object`
 - **`types.d.ts` removed:** Import types from `Validator.ts` instead
+- **Manual lifecycle management:** If you add/remove inputs dynamically, call `validator.init()` after DOM updates. If you remove a form from the DOM, call `validator.destroy()` before removing it.
 
 ## [1.5.0] - 2025-01-08
 
