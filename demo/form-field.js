@@ -178,13 +178,15 @@ class FormField extends HTMLElement {
     buildWrapper(id, labelText, content) {
         const hint = this.getAttribute('hint');
         return el('div', { className: 'sm:grid sm:grid-cols-3 sm:items-start sm:gap-4' }, [
-            el('label', { for: id, id: `${id}-label`, className: 'block font-medium sm:mt-px sm:pt-1' }, [
-                labelText,
-            ]),
+            el('label', {
+                for: id,
+                id: `${id}-label`,
+                className: 'block font-light text-indigo-900/80 dark:text-indigo-100/80 sm:mt-px sm:pt-1 leading-loose',
+            }, [labelText]),
             el('div', { className: 'my-0.5 sm:mt-0 sm:col-span-2' }, [
                 content,
                 hint
-                    ? elHtml('p', { className: 'mt-1 text-sm text-zinc-500 dark:text-zinc-400' }, hint)
+                    ? elHtml('p', { className: 'mt-1 text-sm text-indigo-700/75 dark:text-indigo-300/75' }, hint)
                     : null,
                 el('div', { style: 'min-height: 20px' }, [
                     el('div', {
