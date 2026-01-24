@@ -103,4 +103,55 @@ describe('Validator scrollToError', () => {
     validator = new Validator(form, { scrollToError: true })
     expect(validator.scrollToError).toBe(true)
   })
+
+  it('calls focus with preventScroll to avoid overriding smooth scroll', async () => {
+    validator = new Validator(form, { scrollToError: true })
+    const focusSpy = vi.spyOn(input2, 'focus')
+
+    await validator.validate()
+    ;(validator as any).showFormErrors()
+
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true })
+  })
+
+  it('scrollToErrorDelay defaults to 0', () => {
+    validator = new Validator(form)
+    expect(validator.scrollToErrorDelay).toBe(0)
+  })
+
+  it('scrollToErrorDelay can be set via options', () => {
+    validator = new Validator(form, { scrollToErrorDelay: 200 })
+    expect(validator.scrollToErrorDelay).toBe(200)
+  })
+
+  it('delays scroll when scrollToErrorDelay is set', async () => {
+    vi.useFakeTimers()
+    validator = new Validator(form, { scrollToError: true, scrollToErrorDelay: 200 })
+    const scrollSpy = vi.spyOn(input2, 'scrollIntoView')
+
+    await validator.validate()
+    ;(validator as any).showFormErrors()
+
+    // Should not have scrolled yet
+    expect(scrollSpy).not.toHaveBeenCalled()
+
+    // Advance timers by the delay amount
+    vi.advanceTimersByTime(200)
+
+    // Now it should have scrolled
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
+
+    vi.useRealTimers()
+  })
+
+  it('scrolls immediately when scrollToErrorDelay is 0', async () => {
+    validator = new Validator(form, { scrollToError: true, scrollToErrorDelay: 0 })
+    const scrollSpy = vi.spyOn(input2, 'scrollIntoView')
+
+    await validator.validate()
+    ;(validator as any).showFormErrors()
+
+    // Should scroll immediately (no setTimeout)
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
+  })
 })

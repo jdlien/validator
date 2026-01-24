@@ -183,10 +183,12 @@ class FormField extends HTMLElement {
             ]),
             el('div', { className: 'my-0.5 sm:mt-0 sm:col-span-2' }, [
                 content,
-                hint ? elHtml('p', { className: 'mt-1 text-sm text-gray-500 dark:text-gray-400' }, hint) : null,
+                hint
+                    ? elHtml('p', { className: 'mt-1 text-sm text-gray-500 dark:text-gray-400' }, hint)
+                    : null,
                 el('div', { style: 'min-height: 20px' }, [
                     el('div', {
-                        className: 'error hidden text-sm text-red-600 transition dark:text-red-500',
+                        className: 'error opacity-0 mt-1 overflow-hidden text-sm text-red-600 dark:text-red-500',
                         id: `${id}-error`,
                     }),
                 ]),

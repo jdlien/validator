@@ -15,6 +15,7 @@ export interface ValidatorOptions {
   errorInputClasses?: string
   showMainError?: boolean
   scrollToError?: boolean
+  scrollToErrorDelay?: number
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
 }
@@ -84,6 +85,8 @@ export default class Validator {
   showMainError: boolean = true
   // Whether to scroll to the first error on validation failure
   scrollToError: boolean = false
+  // Delay in ms before scrolling to the first error (allows animations to complete)
+  scrollToErrorDelay: number = 0
 
   // Classes to apply to the main error message (space-separated)
   errorMainClasses: string
@@ -140,6 +143,7 @@ export default class Validator {
     this.errorInputClasses = options.errorInputClasses || 'border-red-600 dark:border-red-500'
     this.showMainError = options.showMainError !== undefined ? options.showMainError : true
     this.scrollToError = options.scrollToError || false
+    this.scrollToErrorDelay = options.scrollToErrorDelay || 0
 
     // Pre-split class strings for performance
     this.hiddenClassesArray = this.hiddenClasses.split(' ').filter(Boolean)
@@ -390,8 +394,16 @@ export default class Validator {
 
     // Scroll to first error and focus if enabled
     if (this.scrollToError && firstErrorInput) {
-      firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      firstErrorInput.focus()
+      const scrollAndFocus = () => {
+        firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        // Use preventScroll to avoid focus() overriding the smooth scroll
+        firstErrorInput.focus({ preventScroll: true })
+      }
+      if (this.scrollToErrorDelay > 0) {
+        setTimeout(scrollAndFocus, this.scrollToErrorDelay)
+      } else {
+        scrollAndFocus()
+      }
     }
   }
 
