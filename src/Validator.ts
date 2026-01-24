@@ -777,14 +777,24 @@ export default class Validator {
   }
 
   private async inputChangeHandler(e: Event): Promise<void> {
-    if (!(e.target instanceof HTMLInputElement) || this.shouldSkipValidation(e.target)) return
+    const target = e.target
+    // Handle all form control types: input, select, and textarea
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) ||
+      this.shouldSkipValidation(target)
+    )
+      return
 
     // Clear and reset error messages for the input
-    this.clearInputErrors(e.target)
-    this.validateLength(e.target)
-    await this.validateInput(e.target)
+    this.clearInputErrors(target)
+    this.validateLength(target)
+    await this.validateInput(target)
     // Show any error messages for the input after validation
-    this.showInputErrors(e.target)
+    this.showInputErrors(target)
   }
 
   private inputInputHandler(e: Event) {

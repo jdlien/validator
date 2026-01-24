@@ -184,11 +184,11 @@ class FormField extends HTMLElement {
             el('div', { className: 'my-0.5 sm:mt-0 sm:col-span-2' }, [
                 content,
                 hint
-                    ? elHtml('p', { className: 'mt-1 text-sm text-gray-500 dark:text-gray-400' }, hint)
+                    ? elHtml('p', { className: 'mt-1 text-sm text-zinc-500 dark:text-zinc-400' }, hint)
                     : null,
                 el('div', { style: 'min-height: 20px' }, [
                     el('div', {
-                        className: 'error opacity-0 mt-1 overflow-hidden text-sm text-red-600 dark:text-red-500',
+                        className: 'error opacity-0 mt-1 overflow-hidden text-sm text-pink-600 dark:text-pink-400',
                         id: `${id}-error`,
                     }),
                 ]),
@@ -238,10 +238,10 @@ class FormField extends HTMLElement {
         const colorLabel = el('label', {
             id: `${id}-color-label`,
             for: `${id}-color`,
-            className: 'border border-l-0 border-gray-350 dark:border-gray-500 cursor-pointer w-20 rounded-r',
+            className: 'border border-l-0 border-zinc-300 dark:border-zinc-700/60 cursor-pointer w-20 rounded-r-lg',
             style: `background-color: ${value}`,
         }, [colorInput]);
-        const wrapper = el('div', { className: 'flex relative sm:max-w-sm' }, [textInput, colorLabel]);
+        const wrapper = el('div', { className: 'color-input-wrapper flex relative sm:max-w-sm rounded-lg' }, [textInput, colorLabel]);
         this.appendChild(this.buildWrapper(id, label, wrapper));
         // Set up color sync with direct references (no querying needed!)
         colorInput.addEventListener('input', () => {

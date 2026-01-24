@@ -22,14 +22,14 @@ form-field {
   select[multiple],
   textarea,
   select {
-    @apply border border-zinc-300 rounded bg-zinc-50 dark:bg-indigo-900 px-2 py-1.5 text-zinc-700
+    @apply border border-zinc-300 rounded-lg  px-2 py-1.5 text-zinc-700
         placeholder-zinc-500/50 shadow-inner
         focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/50
         focus:ring-offset-0 focus:ring-offset-transparent inset-shadow-sm;
 
-    @apply bg-linear-to-b dark:from-black/85 dark:to-black/75  dark:border-zinc-700/60  dark:text-white dark:focus:bg-zinc-800;
+    @apply bg-linear-to-b dark:from-black/85 dark:to-black/75 dark:text-white dark:focus:bg-zinc-800 dark:border-zinc-700/60;
 
-    @apply disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-300;
+    @apply disabled:bg-zinc-300 disabled:text-zinc-600/50 dark:disabled:bg-zinc-600/50 dark:disabled:text-zinc-300;
   }
 
   /* Form input variants (do not apply when disabled) */
@@ -49,7 +49,7 @@ form-field {
   select[multiple]:not([disabled]),
   textarea:not([disabled]),
   select:not([disabled]) {
-    @apply hover:bg-white dark:hover:bg-zinc-800;
+    @apply hover:bg-white dark:hover:bg-zinc-800 bg-zinc-50 dark:bg-indigo-900;
   }
 
   input[type='checkbox'],
@@ -113,8 +113,8 @@ input:checked + .checked-label {
 
 /* Apply checked-border to labels for checkboxes and radio buttons for a label that colors up automatically when checked */
 .checked-border {
-  @apply inline-flex items-center border bg-linear-to-b dark:from-black/85 dark:to-black/75 dark:bg-indigo-900 px-1 text-zinc-700 shadow-inner rounded;
-  @apply hover:bg-white dark:border-zinc-500/10  dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
+  @apply inline-flex items-center border border-black/20 bg-linear-to-b dark:from-black/85 dark:to-black/75 dark:bg-indigo-900 px-1 text-zinc-700 shadow-inner rounded;
+  @apply hover:bg-white/50 dark:border-zinc-500/10  dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
 }
 
 /* Focus ring on the label when any child input is focused */
@@ -143,4 +143,14 @@ input:checked + .checked-label {
 
 .error.opacity-0 {
   @apply max-h-0;
+}
+
+/* Color input wrapper - focus ring around both input and swatch */
+.color-input-wrapper:focus-within {
+  @apply ring-2 ring-indigo-400/50 ring-offset-0;
+}
+
+/* Remove default focus ring from input inside color wrapper */
+.color-input-wrapper input[type='text']:focus {
+  @apply ring-0;
 }
