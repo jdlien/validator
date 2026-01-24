@@ -249,5 +249,219 @@ describe('Validator', () => {
       formControl.dispatchEvent(event)
       expect(formControl.value).toEqual('1')
     })
+
+    // Number/decimal/float arrow key support
+    it('should increment number input value when ArrowUp key is pressed', () => {
+      formControl.dataset.type = 'number'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '5.5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('6.5')
+
+      formControl.value = ''
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('1')
+    })
+
+    it('should decrement number input value when ArrowDown key is pressed', () => {
+      formControl.dataset.type = 'number'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '5.5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('4.5')
+    })
+
+    it('should work for float and decimal types', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.dataset.type = 'float'
+      formControl.value = '1.5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('2.5')
+
+      formControl.dataset.type = 'decimal'
+      formControl.value = '1.5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('2.5')
+    })
+
+    it('should handle floating point precision correctly', () => {
+      formControl.dataset.type = 'number'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      // Classic floating point issue: 0.1 + 0.1 + 0.1 should be 0.3
+      formControl.value = '0.2'
+      formControl.dataset.arrowStep = '0.1'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('0.3')
+    })
+
+    // Min/max enforcement
+    it('should not increment integer above data-max', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.max = '10'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '10'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('10')
+    })
+
+    it('should not decrement integer below data-min', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.min = '5'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('5')
+    })
+
+    it('should respect native min/max attributes', () => {
+      formControl.dataset.type = 'integer'
+      formControl.min = '0'
+      formControl.max = '100'
+
+      const downEvent = new Event('keydown', { bubbles: true })
+      Object.defineProperty(downEvent, 'target', { value: formControl })
+      Object.defineProperty(downEvent, 'key', { value: 'ArrowDown' })
+      formControl.value = '0'
+      ;(validator as any).inputKeydownHandler(downEvent)
+      expect(formControl.value).toEqual('0')
+
+      const upEvent = new Event('keydown', { bubbles: true })
+      Object.defineProperty(upEvent, 'target', { value: formControl })
+      Object.defineProperty(upEvent, 'key', { value: 'ArrowUp' })
+      formControl.value = '100'
+      ;(validator as any).inputKeydownHandler(upEvent)
+      expect(formControl.value).toEqual('100')
+    })
+
+    it('should enforce min/max for number types', () => {
+      formControl.dataset.type = 'number'
+      formControl.dataset.min = '-5.5'
+      formControl.dataset.max = '5.5'
+
+      const downEvent = new Event('keydown', { bubbles: true })
+      Object.defineProperty(downEvent, 'target', { value: formControl })
+      Object.defineProperty(downEvent, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '-5'
+      ;(validator as any).inputKeydownHandler(downEvent)
+      expect(formControl.value).toEqual('-5.5')
+
+      formControl.value = '-5.5'
+      ;(validator as any).inputKeydownHandler(downEvent)
+      expect(formControl.value).toEqual('-5.5')
+
+      const upEvent = new Event('keydown', { bubbles: true })
+      Object.defineProperty(upEvent, 'target', { value: formControl })
+      Object.defineProperty(upEvent, 'key', { value: 'ArrowUp' })
+      formControl.value = '5.5'
+      ;(validator as any).inputKeydownHandler(upEvent)
+      expect(formControl.value).toEqual('5.5')
+    })
+
+    it('should allow negative numbers when no min is set', () => {
+      formControl.dataset.type = 'number'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '0'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('-1')
+    })
+
+    it('should allow negative integers when min allows', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.min = '-10'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '0'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('-1')
+
+      formControl.value = '-10'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('-10')
+    })
+
+    // data-arrow-step attribute
+    it('should use custom step from data-arrow-step', () => {
+      formControl.dataset.type = 'number'
+      formControl.dataset.arrowStep = '0.5'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '1'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('1.5')
+    })
+
+    it('should use custom step for integers', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.arrowStep = '5'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '10'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('15')
+    })
+
+    it('should disable arrow keys when data-arrow-step is empty string', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.arrowStep = ''
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('5')
+    })
+
+    it('should disable arrow keys for numbers when data-arrow-step is empty string', () => {
+      formControl.dataset.type = 'number'
+      formControl.dataset.arrowStep = ''
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '5.5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('5.5')
+    })
+
+    it('should clamp to max when step would exceed it', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.arrowStep = '10'
+      formControl.dataset.max = '25'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '20'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('25')
+    })
+
+    it('should clamp to min when step would go below it', () => {
+      formControl.dataset.type = 'number'
+      formControl.dataset.arrowStep = '5'
+      formControl.dataset.min = '-3'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowDown' })
+
+      formControl.value = '0'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('-3')
+    })
   }) // end inputKeydownHandler
 })

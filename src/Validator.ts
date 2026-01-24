@@ -848,22 +848,42 @@ export default class Validator {
     }, 200)
   }
 
-  // Support using arrow keys to cycle through numbers.
-  // Other handling for keyboard events can be done here
+  // Support using arrow keys to increment/decrement numeric fields.
+  // Use data-arrow-step to customize step size, or set to "" to disable.
   private inputKeydownHandler(e: KeyboardEvent) {
     if (!(e.target instanceof HTMLInputElement)) return
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
 
-    if (utils.isType(e.target, 'integer')) {
-      if (e.key === 'ArrowUp') {
-        // Prevent the cursor from moving to the beginning of the input
-        e.preventDefault()
-        if (e.target.value === '') e.target.value = '0'
-        e.target.value = (parseInt(e.target.value) + 1).toString()
-      } else if (e.key === 'ArrowDown') {
-        if (parseInt(e.target.value) > 0) e.target.value = (parseInt(e.target.value) - 1).toString()
-        else e.target.value = '0'
-      }
-    }
+    const el = e.target
+    const isInteger = utils.isType(el, 'integer')
+    const isNumber = utils.isType(el, ['number', 'float', 'decimal'])
+    if (!isInteger && !isNumber) return
+
+    // data-arrow-step="" disables the feature
+    if (el.dataset.arrowStep === '') return
+
+    e.preventDefault()
+
+    const step = parseFloat(el.dataset.arrowStep ?? '1') || 1
+    const current = parseFloat(el.value) || 0
+    const delta = e.key === 'ArrowUp' ? step : -step
+    let newVal = current + delta
+
+    // Get min/max bounds
+    const minAttr = el.dataset.min ?? el.min
+    const maxAttr = el.dataset.max ?? el.max
+    const min = minAttr !== '' ? parseFloat(minAttr) : (isInteger ? 0 : -Infinity)
+    const max = maxAttr !== '' ? parseFloat(maxAttr) : Infinity
+
+    // Clamp to bounds
+    if (!isNaN(min)) newVal = Math.max(min, newVal)
+    if (!isNaN(max)) newVal = Math.min(max, newVal)
+
+    // Handle floating point precision - use max decimals from step or current value
+    const stepDecimals = (step.toString().split('.')[1] || '').length
+    const valueDecimals = (el.value.split('.')[1] || '').length
+    const decimals = Math.max(stepDecimals, valueDecimals)
+    el.value = isInteger ? Math.round(newVal).toString() : (decimals ? newVal.toFixed(decimals) : newVal.toString())
   }
 
   public destroy() {
