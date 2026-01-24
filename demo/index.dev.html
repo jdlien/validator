@@ -4,24 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Validator Demo</title>
+    <script>
+      ;(() => {
+        try {
+          const storedTheme = localStorage.getItem('theme')
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const useDark = storedTheme ? storedTheme === 'dark' : prefersDark
+          document.documentElement.classList.toggle('dark', useDark)
+        } catch {}
+      })()
+    </script>
     <link rel="stylesheet" href="demo-src.css" />
     <script type="module" src="form-field.ts"></script>
+    <script type="module" src="dark-toggle.ts"></script>
   </head>
 
   <body
-    class="font-alexandria font-light p-6 bg-indigo-300 dark:bg-indigo-950 dark:text-white"
+    class="font-alexandria font-light bg-indigo-300 dark:bg-indigo-950 dark:text-white"
     style="
       background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2240%22 viewBox=%220 0 100 40%22><path d=%22M0 20 Q25 0 50 20 T100 20%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221.5%22 stroke-opacity=%220.06%22/><path d=%22M0 30 Q25 10 50 30 T100 30%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221%22 stroke-opacity=%220.08%22/></svg>');
     "
   >
-    <main
-      class="max-w-3xl mx-auto bg-indigo-200 dark:bg-black/50 rounded-xl p-8 shadow-xl border border-indigo-100 dark:border-indigo-100/10"
-    >
-      <h1 class="text-4xl font-semibold text-center text-indigo-800 dark:text-indigo-200">
-        Validator Demo
+    <header class="relative mb-4 bg-linear-0 from-white/50 to-white/20 shadow-xl dark:from-black/50 dark:to-black/20 p-4">
+      <div class="absolute right-4 inset-y-0 items-center hidden xs:flex">
+        <dark-toggle orientation="vertical"></dark-toggle>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-semibold text-center">
+        <span class="text-indigo-900/80 dark:text-indigo-200/80">@jdlien<span class="tracking-widest">/</span></span><span class="text-indigo-900 dark:text-indigo-200">Validator</span>
       </h1>
+      <div class="mx-auto my-3 mx-4 h-px w-full max-w-96 bg-indigo-500/60 dark:bg-indigo-300/50"></div>
+      <div class="text-center text-sm uppercase tracking-[0.35em] text-indigo-800/80 dark:text-indigo-300/80">
+        Easy, Powerful Form Validation
+      </div>
+    </header>
+
+    <main
+      class="max-w-3xl md:mx-auto bg-indigo-200 dark:bg-black/50 rounded-xl p-8 shadow-xl border border-indigo-100 dark:border-indigo-100/10 mx-4"
+    >
+
       <div class="text-left">
-        <p class="my-8 text-indigo-950/90 dark:text-indigo-100/90">
+        <p class="mb-8 text-indigo-950/90 dark:text-indigo-100/90">
           Validator has been applied to this form to help sanitize and validate user input.<br />
           This form won't submit if any fields are invalid and helpful errors will be shown or
           hidden as the user changes fields.<br />
@@ -47,9 +69,9 @@
           >.
         </p>
       </div>
-      <form id="demo-form" class="space-y-6 mx-auto mb-12">
+      <form id="demo-form" class="space-y-8 mx-auto mb-12">
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Core Inputs</h2>
             <p class="form-card-lead">
               Fields can be required, have a minimum or maximum length, or a pattern. Numeric inputs
@@ -102,7 +124,7 @@
         </section>
 
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Number Inputs</h2>
             <p class="form-card-lead">
               Numeric inputs prevent invalid values and support range constraints.
@@ -135,7 +157,7 @@
         </section>
 
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Dates &amp; Time</h2>
             <p class="form-card-lead">
               Dates can be entered in flexible formats and normalized to the configured format.
@@ -209,7 +231,7 @@
         </section>
 
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Contact &amp; Formats</h2>
             <p class="form-card-lead">
               Common formats like URLs, phone numbers, and postal codes are validated and
@@ -259,7 +281,7 @@
         </section>
 
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Selections</h2>
             <p class="form-card-lead">
               Selects, radio buttons, and checkbox groups can all be required.
@@ -294,7 +316,7 @@
         </section>
 
         <section class="form-card space-y-4">
-          <div>
+          <div class="card-header">
             <h2 class="form-card-title">Long Form</h2>
             <p class="form-card-lead">
               Textarea elements can have min and max lengths as well as be required.

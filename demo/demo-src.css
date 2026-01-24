@@ -2,8 +2,15 @@
 
 @import 'tailwindcss';
 
+/* Dark mode configuration - use class strategy */
+@custom-variant dark (
+  &:where(.dark, .dark *):where(:not(.light, .light *)),
+  &:where(:not(.light, .light *)):where(@media (prefers-color-scheme: dark))
+);
+
 @theme {
   --font-alexandria: 'Alexandria', sans-serif;
+  --breakpoint-xs: 380px;
 }
 
 /* Custom element needs block display for space-y to work */
@@ -35,7 +42,7 @@ form-field {
 
     @apply bg-linear-to-b dark:from-black/85 dark:to-black/75 dark:text-white dark:focus:bg-zinc-800 dark:border-zinc-700/60;
 
-    @apply disabled:bg-zinc-300 disabled:text-zinc-600/50 dark:disabled:bg-zinc-200/40 dark:disabled:text-zinc-400;
+    @apply disabled:bg-zinc-200 disabled:text-zinc-600/50 dark:disabled:bg-zinc-200/40 dark:disabled:text-zinc-400;
   }
 
   /* Form input variants (do not apply when disabled) */
@@ -108,8 +115,8 @@ form-field {
 
 @layer components {
   .form-card {
-    @apply rounded-xl border border-indigo-100/80 bg-white/55 p-5 shadow-sm;
-    @apply dark:border-indigo-300/10 dark:bg-indigo-950/40;
+    @apply rounded-xl border border-indigo-100/80 p-5 shadow-sm bg-linear-120 from-indigo-50/70 to-indigo-100/80;
+    @apply dark:border-indigo-400/10  dark:from-indigo-950/60 dark:to-indigo-950/10;
   }
 
   .form-card-title {
