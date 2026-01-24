@@ -20,21 +20,25 @@
       <h1 class="text-4xl font-semibold text-center text-indigo-800 dark:text-indigo-200">
         Validator Demo
       </h1>
-      <div class="text-center">
-        <p class="my-8">
+      <div class="text-left">
+        <p class="my-8 text-indigo-950/90 dark:text-indigo-100/90">
           Validator has been applied to this form to help sanitize and validate user input.<br />
           This form won't submit if any fields are invalid and helpful errors will be shown or
           hidden as the user changes fields.<br />
           With <code>scrollToError: true</code>, the page will scroll to the first error on submit.
         </p>
 
-        <div>Install this Validator through npm:</div>
-
-        <div>
-          <code>npm install @jdlien/validator</code>
+        <div class="text-indigo-800/80 dark:text-indigo-200/80">
+          Install this Validator through npm:
         </div>
 
-        <p class="my-8">
+        <div>
+          <code class="text-indigo-900/90 dark:text-indigo-100/90">
+            npm install @jdlien/validator
+          </code>
+        </div>
+
+        <p class="my-8 text-indigo-900/80 dark:text-indigo-200/80">
           Source code and documentation at
           <a
             href="https://github.com/jdlien/validator/"
@@ -43,221 +47,271 @@
           >.
         </p>
       </div>
-      <form id="demo-form" class="space-y-3 max-w-2xl mx-auto mb-12">
-        <p class="text-indigo-950 dark:text-indigo-100">
-          Fields can be required, have a minimum or maximum length, or a pattern.<br />
-          Numeric inputs won't even allow invalid values to be typed in.
-        </p>
+      <form id="demo-form" class="space-y-6 mx-auto mb-12">
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Core Inputs</h2>
+            <p class="form-card-lead">
+              Fields can be required, have a minimum or maximum length, or a pattern. Numeric inputs
+              won't even allow invalid values to be typed in.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-required"
+              label="Required"
+              type="text"
+              required
+              minlength="8"
+            ></form-field>
 
-        <form-field
-          name="input-required"
-          label="Required"
-          type="text"
-          required
-          minlength="8"
-        ></form-field>
+            <form-field
+              name="input-required-disabled"
+              label="Required But Disabled"
+              type="text"
+              required
+              disabled
+              minlength="8"
+              value="Hi!""
+            ></form-field>
 
-        <form-field
-          name="input-required-disabled"
-          label="Required But Disabled"
-          type="text"
-          required
-          disabled
-          minlength="8"
-        ></form-field>
+            <form-field
+              name="input-pattern"
+              label="Regex Pattern"
+              type="text"
+              pattern="^[a-zA-Z]\d+$"
+              data-pattern="^[a-zA-Z]\d+$"
+              error-msg="^[a-zA-Z]\d+$ (A letter followed by one or more numbers)"
+              hint="A letter followed by numbers <strong>(^[a-zA-Z]\d+$)</strong>"
+            ></form-field>
 
-        <form-field
-          name="input-pattern"
-          label="Regex Pattern"
-          type="text"
-          pattern="^[a-zA-Z]\d+$"
-          data-pattern="^[a-zA-Z]\d+$"
-          error-msg="^[a-zA-Z]\d+$ (A letter followed by one or more numbers)"
-          hint="A letter followed by numbers <strong>(^[a-zA-Z]\d+$)</strong>"
-        ></form-field>
+            <form-field
+              name="input-min"
+              label="Minimum 8 chars"
+              type="text"
+              minlength="8"
+            ></form-field>
 
-        <form-field name="input-min" label="Minimum 8 chars" type="text" minlength="8"></form-field>
+            <form-field
+              name="input-max"
+              label="Maximum"
+              type="text"
+              data-max-length="3"
+            ></form-field>
+          </div>
+        </section>
 
-        <form-field name="input-max" label="Maximum" type="text" data-max-length="3"></form-field>
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Number Inputs</h2>
+            <p class="form-card-lead">
+              Numeric inputs prevent invalid values and support range constraints.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-integer"
+              label="Positive Integers"
+              type="integer"
+              hint="Up/down arrow keys increment &amp; decrement"
+            ></form-field>
 
-        <form-field
-          name="input-integer"
-          label="Positive Integers"
-          type="integer"
-          hint="Up/down arrow keys increment &amp; decrement"
-        ></form-field>
+            <form-field
+              name="input-number"
+              label="Any Number"
+              type="number"
+              hint="Negative numbers and decimals are allowed"
+            ></form-field>
 
-        <form-field
-          name="input-number"
-          label="Any Number"
-          type="number"
-          hint="Negative numbers and decimals are allowed"
-        ></form-field>
+            <form-field
+              name="input-number-range"
+              label="Number with Min/Max"
+              type="number"
+              min="0"
+              max="100"
+              hint="Value must be between 0 and 100 (uses <code>data-min</code> and <code>data-max</code>)"
+            ></form-field>
+          </div>
+        </section>
 
-        <form-field
-          name="input-number-range"
-          label="Number with Min/Max"
-          type="number"
-          min="0"
-          max="100"
-          hint="Value must be between 0 and 100 (uses <code>data-min</code> and <code>data-max</code>)"
-        ></form-field>
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Dates &amp; Time</h2>
+            <p class="form-card-lead">
+              Dates can be entered in flexible formats and normalized to the configured format.
+              These features are compatible with datepickers like
+              <a
+                href="https://flatpickr.js.org/"
+                class="text-indigo-700 dark:text-indigo-400 hover:underline"
+                >Flatpickr</a
+              >.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-date"
+              label="Date"
+              type="date"
+              value="2021-Jan-01"
+              date-format="YYYY-MMM-DD"
+              placeholder="YYYY-Mmm-D"
+              hint="Any date will be converted to the <em>YYYY-MMM-DD</em> format"
+            ></form-field>
 
-        <p class="text-indigo-950 dark:text-indigo-100">
-          Dates can be entered by users in almost any format, and will be converted to the format
-          specified in the data-date-format attribute.<br />
-          Dates can also be constrained to past or future dates.<br />
-          These features are compatible with datepickers like
-          <a
-            href="https://flatpickr.js.org/"
-            class="text-indigo-700 dark:text-indigo-400 hover:underline"
-            >Flatpickr</a
-          >.
-        </p>
+            <form-field
+              name="input-past-date"
+              label="Past date"
+              type="date"
+              value="2021-01-01"
+              date-format="YYYY-MM-DD"
+              date-range="past"
+              placeholder="YYYY-Mmm-D"
+              hint="YYYY-MM-DD format is enforced"
+            ></form-field>
 
-        <form-field
-          name="input-date"
-          label="Date"
-          type="date"
-          value="2021-Jan-01"
-          date-format="YYYY-MMM-DD"
-          placeholder="YYYY-Mmm-D"
-          hint="Any date will be converted to the <em>YYYY-MMM-DD</em> format"
-        ></form-field>
+            <form-field
+              name="input-future-date"
+              label="Enter Future date"
+              type="date"
+              date-format="YYYY-MM-DD"
+              date-range="future"
+              placeholder="YYYY-Mmm-D"
+            ></form-field>
 
-        <form-field
-          name="input-past-date"
-          label="Past date"
-          type="date"
-          value="2021-01-01"
-          date-format="YYYY-MM-DD"
-          date-range="past"
-          placeholder="YYYY-Mmm-D"
-          hint="YYYY-MM-DD format is enforced"
-        ></form-field>
+            <form-field
+              name="input-datetime"
+              label="Date Time"
+              type="datetime"
+              date-format="YYYY-MMM-DD h:mm A"
+              placeholder="YYYY-Mmm-D h:mm AM"
+              hint="Datetime can be used to also include a time with a date"
+            ></form-field>
 
-        <form-field
-          name="input-future-date"
-          label="Enter Future date"
-          type="date"
-          date-format="YYYY-MM-DD"
-          date-range="future"
-          placeholder="YYYY-Mmm-D"
-        ></form-field>
+            <form-field
+              name="input-datetime-past"
+              label="Past Date Time"
+              type="datetime"
+              date-format="YYYY-MMM-DD h:mm A"
+              date-range="past"
+              placeholder="YYYY-Mmm-D h:mm AM"
+              hint="Datetime can be used to also include a time with a date"
+            ></form-field>
 
-        <form-field
-          name="input-datetime"
-          label="Date Time"
-          type="datetime"
-          date-format="YYYY-MMM-DD h:mm A"
-          placeholder="YYYY-Mmm-D h:mm AM"
-          hint="Datetime can be used to also include a time with a date"
-        ></form-field>
+            <form-field
+              name="input-time"
+              label="Time of Day"
+              type="time"
+              time-format="h:mm A"
+              placeholder="H:MM AM"
+              hint="Anything resembling a time will be converted into the specified format"
+            ></form-field>
+          </div>
+        </section>
 
-        <form-field
-          name="input-datetime-past"
-          label="Past Date Time"
-          type="datetime"
-          date-format="YYYY-MMM-DD h:mm A"
-          date-range="past"
-          placeholder="YYYY-Mmm-D h:mm AM"
-          hint="Datetime can be used to also include a time with a date"
-        ></form-field>
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Contact &amp; Formats</h2>
+            <p class="form-card-lead">
+              Common formats like URLs, phone numbers, and postal codes are validated and
+              normalized.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-url"
+              label="Web Address"
+              type="url"
+              required
+              placeholder="https://____.___"
+              hint="This is a text input with a provided error"
+              error-msg="You have to put text here."
+            ></form-field>
 
-        <form-field
-          name="input-url"
-          label="Web Address"
-          type="url"
-          required
-          placeholder="https://____.___"
-          hint="This is a text input with a provided error"
-          error-msg="You have to put text here."
-        ></form-field>
+            <form-field
+              name="input-tel"
+              label="Tel"
+              type="tel"
+              required
+              placeholder="___-___-____"
+              hint="A North-American phone number will be formatted on change"
+            ></form-field>
 
-        <form-field
-          name="input-tel"
-          label="Tel"
-          type="tel"
-          required
-          placeholder="___-___-____"
-          hint="A North-American phone number will be formatted on change"
-        ></form-field>
+            <form-field
+              name="input-email"
+              label="Email"
+              type="email"
+              required
+              placeholder="____@____.___"
+            ></form-field>
 
-        <form-field
-          name="input-email"
-          label="Email"
-          type="email"
-          required
-          placeholder="____@____.___"
-        ></form-field>
+            <form-field name="input-zip" label="US Zip Code" type="zip"></form-field>
 
-        <form-field name="input-zip" label="US Zip Code" type="zip"></form-field>
+            <form-field name="input-postal" label="Canadian Postal Code" type="postal"></form-field>
 
-        <form-field name="input-postal" label="Canadian Postal Code" type="postal"></form-field>
+            <form-field
+              name="input-color"
+              label="Color value with picker"
+              type="color"
+              value="#888888"
+              hint="The label will show a swatch of any valid color"
+            ></form-field>
+          </div>
+        </section>
 
-        <form-field
-          name="input-time"
-          label="Time of Day"
-          type="time"
-          time-format="h:mm A"
-          placeholder="H:MM AM"
-          hint="Anything resembling a time will be converted into the specified format"
-        ></form-field>
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Selections</h2>
+            <p class="form-card-lead">
+              Selects, radio buttons, and checkbox groups can all be required.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-select"
+              label="Select an option"
+              type="select"
+              required
+              options="red,green,indigo"
+            ></form-field>
 
-        <form-field
-          name="input-color"
-          label="Color value with picker"
-          type="color"
-          value="#888888"
-          hint="The label will show a swatch of any valid color"
-        ></form-field>
+            <form-field
+              name="checkboxGroup"
+              label="Checkbox group"
+              type="checkbox"
+              required
+              options="Red,Green,Indigo"
+              error-msg="You have to check at least one box."
+            ></form-field>
 
-        <!-- Accept an array of basic options for a select -->
-        <p class="text-indigo-950 dark:text-indigo-100">Selects can be required as well.</p>
+            <form-field
+              name="input-radio"
+              label="Radio button group"
+              type="radio"
+              required
+              options="red,green,indigo"
+            ></form-field>
+          </div>
+        </section>
 
-        <form-field
-          name="input-select"
-          label="Select an option"
-          type="select"
-          required
-          options="red,green,indigo"
-        ></form-field>
-
-        <p class="text-indigo-950 dark:text-indigo-100">
-          You can require groups of radio buttons or checkboxes so one must be selected.
-        </p>
-
-        <!-- Accept an array of basic options for a checkbox group -->
-        <form-field
-          name="checkboxGroup"
-          label="Checkbox group"
-          type="checkbox"
-          required
-          options="Red,Green,Indigo"
-          error-msg="You have to check at least one box."
-        ></form-field>
-
-        <form-field
-          name="input-radio"
-          label="Radio button group"
-          type="radio"
-          required
-          options="red,green,indigo"
-        ></form-field>
-
-        <p class="text-indigo-950 dark:text-indigo-100">
-          Textarea elements can have min and max lengths as well as be required.
-        </p>
-
-        <form-field
-          name="input-textarea"
-          label="Multiple Text Lines"
-          type="textarea"
-          required
-          min-length="2"
-          max-length="50"
-          placeholder="Between 2 and 50 characters"
-        ></form-field>
+        <section class="form-card space-y-4">
+          <div>
+            <h2 class="form-card-title">Long Form</h2>
+            <p class="form-card-lead">
+              Textarea elements can have min and max lengths as well as be required.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-textarea"
+              label="Multiple Text Lines"
+              type="textarea"
+              required
+              min-length="2"
+              max-length="50"
+              placeholder="Between 2 and 50 characters"
+            ></form-field>
+          </div>
+        </section>
 
         <div class="text-center">
           <input
@@ -267,7 +321,7 @@
         </div>
       </form>
 
-      <p class="text-center">
+      <p class="text-center text-indigo-900/70 dark:text-indigo-200/70">
         If the form is invalid when submitted, 'form-error-main' will be displayed above.
       </p>
 
@@ -284,7 +338,7 @@
           hiddenClasses: 'opacity-0 max-h-0 overflow-hidden',
           errorMainClasses:
             'm-2 border border-pink-500 bg-pink-200/50 text-pink-700 p-3 py-4 dark:bg-pink-900/80 dark:text-pink-200 text-center rounded-lg',
-          errorInputClasses: 'border-pink-500 dark:border-pink-400 text-pink-500',
+          errorInputClasses: 'border-pink-500 dark:border-pink-400',
         })
         window.validator = validator // for debugging
       </script>
