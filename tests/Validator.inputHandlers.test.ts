@@ -418,6 +418,17 @@ describe('Validator', () => {
       expect(formControl.value).toEqual('15')
     })
 
+    it('should fall back to step 1 when data-arrow-step is 0', () => {
+      formControl.dataset.type = 'integer'
+      formControl.dataset.arrowStep = '0'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '2'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('3')
+    })
+
     it('should disable arrow keys when data-arrow-step is empty string', () => {
       formControl.dataset.type = 'integer'
       formControl.dataset.arrowStep = ''
@@ -462,6 +473,17 @@ describe('Validator', () => {
       formControl.value = '0'
       ;(validator as any).inputKeydownHandler(event)
       expect(formControl.value).toEqual('-3')
+    })
+
+    it('should ignore invalid data-max values', () => {
+      formControl.dataset.type = 'number'
+      formControl.dataset.max = 'not-a-number'
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'ArrowUp' })
+
+      formControl.value = '5'
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('6')
     })
   }) // end inputKeydownHandler
 })

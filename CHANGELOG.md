@@ -4,16 +4,50 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Bundle Size
+
+|        | v2.0.0    | Current   | Change |
+| ------ | --------- | --------- | ------ |
+| Raw    | 22.78 KiB | 22.38 KiB | -1.8%  |
+| Gzip   | 7.70 KiB  | 7.64 KiB  | -0.8%  |
+| Brotli | 6.85 KiB  | 6.80 KiB  | -0.7%  |
+
+### Added
+
+- Arrow key increment/decrement for `number`, `float`, and `decimal` fields (previously only `integer`)
+- `data-arrow-step` attribute to customize arrow key step size (e.g., `data-arrow-step="0.5"`)
+- Set `data-arrow-step=""` (empty string) to disable arrow key behavior on numeric fields
+- Arrow keys now respect `data-min`/`data-max` bounds, clamping values appropriately
+- `scrollToErrorDelay` option to delay scroll-to-error behavior (useful for animations)
+
+### Changed
+
+- Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
+- Floating point precision is preserved when using arrow keys on decimal values
+
+### Removed
+
+- Automatic MutationObserver-based re-init on form changes and auto-destroy on form removal
+
+### Breaking Changes
+
+- If you add/remove inputs dynamically, call `validator.init()` after DOM updates
+- If you remove a form from the DOM, call `validator.destroy()` before removing it
+
 ## [2.0.0] - 2026-01-23
 
 ### Bundle Size Comparison
-| | v1.5.0 | v2.0.0 | Change |
-|--|--------|--------|--------|
-| Raw | 21.60 KiB | 22.78 KiB | +5.5% |
-| Gzip | 7.39 KiB | 7.70 KiB | +4.2% |
-| Brotli | 6.59 KiB | 6.85 KiB | +3.9% |
+
+|        | v1.5.0    | v2.0.0    | Change |
+| ------ | --------- | --------- | ------ |
+| Raw    | 21.60 KiB | 22.78 KiB | +5.5%  |
+| Gzip   | 7.39 KiB  | 7.70 KiB  | +4.2%  |
+| Brotli | 6.59 KiB  | 6.85 KiB  | +3.9%  |
 
 ### Added
+
 - `scrollToError` option to scroll to first invalid input on validation failure
 - Min/max value validation via `data-min`/`data-max` attributes (also respects native `min`/`max`)
 - `ERROR_MIN_VALUE` and `ERROR_MAX_VALUE` error messages
@@ -21,18 +55,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pre-split class string arrays for performance optimization
 
 ### Changed
+
 - Optimized MutationObserver for auto-destroy using `requestIdleCallback` when available
 - MutationObserver now watches the form's parent more narrowly instead of entire document
 - Updated copyright year to 2026
 - `messages` option now typed as `Record<string, string>` (was `object`)
 
 ### Removed
+
 - `types.d.ts` file (duplicated Validator.ts exports)
 - `ValidationSuccessEvent` class (use `ValidationEvent` with type `'validationSuccess'`)
 - `ValidationErrorEvent` class (use `ValidationEvent` with type `'validationError'`)
 
 ### Breaking Changes
+
 - **Event classes consolidated:** Replace `ValidationSuccessEvent` and `ValidationErrorEvent` with unified `ValidationEvent` class
+
   ```typescript
   // Before
   form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
@@ -40,6 +78,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   // After
   form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
   ```
+
 - **`messages` typing:** Now `Record<string, string>` instead of `object`
 - **`types.d.ts` removed:** Import types from `Validator.ts` instead
 
@@ -55,7 +94,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - **BREAKING CHANGE**: Removed ineffective 'remove' event listener and replaced with robust MutationObserver-based cleanup
-- Enhanced `destroy()` method to properly clean up both `formMutationObserver` and `autoDestroyObserver` 
+- Enhanced `destroy()` method to properly clean up both `formMutationObserver` and `autoDestroyObserver`
 - Simplified test files by removing manual `validator.destroy()` calls from all `afterEach` blocks - auto-destroy now handles cleanup
 - Updated event listener tests to reflect removal of 'remove' event listener (4 listeners instead of 5)
 - Improved TypeScript null assertion handling with proper `!` operators

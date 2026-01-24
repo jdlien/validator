@@ -223,7 +223,6 @@ messages = {
   ERROR_DATE_FUTURE: 'The date must be in the future.',
   ERROR_DATE_RANGE: 'The date is outside the allowed range.',
   ERROR_TIME: 'This is not a valid time.',
-  ERROR_TIME_RANGE: 'The time is outside the allowed range.',
   ERROR_URL: 'This is not a valid URL.',
   ERROR_COLOR: 'This is not a valid CSS colour.',
   ERROR_CUSTOM_VALIDATION: 'There was a problem validating this field.',
@@ -260,6 +259,26 @@ const myValidator = new Validator(myForm, {
   validationSuccessCallback: () => console.log('Validation successful!'),
   validationErrorCallback: () => console.log('Validation failed.'),
 })
+```
+
+## Dynamic Forms and Cleanup
+
+Validator does not watch the DOM for changes. If you add or remove inputs after initialization
+(for example, injecting fields with JavaScript or swapping Blade partials), call `init()` again
+to refresh the list of inputs and their error state.
+
+If you remove the form from the page (such as when closing a modal or navigating in an SPA),
+call `destroy()` first to remove event listeners and restore the form's original `novalidate` state.
+
+```javascript
+const validator = new Validator(form)
+
+// After dynamically adding/removing inputs:
+validator.init()
+
+// Before removing the form from the DOM:
+validator.destroy()
+form.remove()
 ```
 
 ## Utility Functions

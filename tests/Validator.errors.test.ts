@@ -403,8 +403,7 @@ describe('Validator', () => {
       input1.value = 'abc'
       form.appendChild(input1)
 
-      // Wait 60ms for debounce of init after adding new input
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      validator.init()
 
       valid = await validator.validate()
       ;(validator as any).showFormErrors()

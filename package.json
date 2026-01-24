@@ -45,7 +45,6 @@
   },
   "homepage": "https://github.com/jdlien/validator#readme",
   "devDependencies": {
-    "@sheerun/mutationobserver-shim": "^0.3.3",
     "@tailwindcss/vite": "^4.1.18",
     "@types/jsdom": "^27.0.0",
     "@vitest/coverage-v8": "^4.0.18",

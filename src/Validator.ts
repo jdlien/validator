@@ -68,7 +68,6 @@ export default class Validator {
     ERROR_DATE_RANGE: 'The date is outside the allowed range.',
     ERROR_DATETIME: 'This is not a valid date and time.',
     ERROR_TIME: 'This is not a valid time.',
-    ERROR_TIME_RANGE: 'The time is outside the allowed range.',
     ERROR_URL: 'This is not a valid URL.',
     ERROR_COLOR: 'This is not a valid CSS colour.',
     ERROR_CUSTOM_VALIDATION: 'There was a problem validating this field.',
@@ -99,15 +98,6 @@ export default class Validator {
   private hiddenClassesArray: string[] = []
   private errorMainClassesArray: string[] = []
   private errorInputClassesArray: string[] = []
-
-  // Timeout ID for debounced functions
-  private timeoutId: number = 0
-  // Instance of the MutationObserver used to re-initialize on DOM changes
-  private formMutationObserver: MutationObserver | null = null
-  // Instance of the MutationObserver used to auto-destroy when form is removed from DOM
-  private autoDestroyObserver: MutationObserver | null = null
-  // Debounced version of the init function
-  private debouncedInit: () => void
 
   // Whether the original form has a novalidate attribute
   private originalNoValidate: boolean = false
@@ -153,52 +143,7 @@ export default class Validator {
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
 
-    this.debouncedInit = this.debounce(this.init.bind(this), 45)
     if (this.autoInit) this.init()
-
-    // Re-initialize the form if it altered in the DOM
-    // Store the observer instance so it can be disconnected later.
-    // FIXME: This doesn't seem to work well if I add a lot of things at once. Needs more testing.
-    this.formMutationObserver = new MutationObserver(() => this.autoInit && this.debouncedInit())
-    this.formMutationObserver.observe(form, {
-      childList: true,
-    })
-
-    // Set up automatic cleanup when form is removed from DOM
-    this.setupAutoDestroy()
-  }
-
-  debounce<T extends (...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): (...funcArgs: Parameters<T>) => void {
-    return (...args: Parameters<T>): void => {
-      clearTimeout(this.timeoutId as number)
-      this.timeoutId = window.setTimeout(() => func(...args), wait)
-    }
-  }
-
-  // Sets up automatic destruction when form is removed from DOM
-  private setupAutoDestroy(): void {
-    const parent = this.form.parentElement || document.body
-
-    this.autoDestroyObserver = new MutationObserver(() => {
-      const check = () => {
-        if (!document.contains(this.form)) this.destroy()
-      }
-      // Use requestIdleCallback to defer the check when available
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(check, { timeout: 100 })
-      } else {
-        setTimeout(check, 0)
-      }
-    })
-
-    // Watch the parent more narrowly; only use subtree if parent is document.body
-    this.autoDestroyObserver.observe(parent, {
-      childList: true,
-      subtree: parent === document.body,
-    })
   }
 
   // Event handler references
@@ -887,22 +832,6 @@ export default class Validator {
   }
 
   public destroy() {
-    // Disconnect the MutationObserver to prevent memory leaks and stop watching for form changes.
-    // This is crucial if the form element itself is removed or replaced.
-    if (this.formMutationObserver) {
-      this.formMutationObserver.disconnect()
-      this.formMutationObserver = null // Explicitly nullify to aid garbage collection
-    }
-
-    // Disconnect the auto-destroy observer to prevent memory leaks
-    if (this.autoDestroyObserver) {
-      this.autoDestroyObserver.disconnect()
-      this.autoDestroyObserver = null // Explicitly nullify to aid garbage collection
-    }
-
-    // Clear any pending debounced function calls.
-    // Ensures that scheduled tasks (like debounced init or color sync) don't run after destruction.
-    clearTimeout(this.timeoutId)
     clearTimeout(this.dispatchTimeout)
 
     // Remove all event listeners added by this validator instance.
