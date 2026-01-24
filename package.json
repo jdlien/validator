@@ -11,7 +11,7 @@
   "description": "Validates and sanitizes the inputs in a form using native HTML attributes.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --emitDeclarationOnly && pnpm build:demo",
     "size:wire": "node scripts/measure-wire-size.mjs",
     "preview": "vite preview",
     "test": "vitest",
@@ -49,6 +49,7 @@
   "devDependencies": {
     "@sheerun/mutationobserver-shim": "^0.3.3",
     "@tailwindcss/cli": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/jsdom": "^27.0.0",
     "@vitest/coverage-v8": "^4.0.18",
     "canvas": "^3.2.1",

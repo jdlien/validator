@@ -221,6 +221,15 @@ describe('Validator', () => {
       expect(formControl.value).toEqual('0')
     })
 
+    it('should ignore non-arrow keys for integer inputs', () => {
+      Object.defineProperty(event, 'target', { value: formControl })
+      Object.defineProperty(event, 'key', { value: 'Enter' })
+      formControl.value = '5'
+
+      ;(validator as any).inputKeydownHandler(event)
+      expect(formControl.value).toEqual('5')
+    })
+
     it('should not increment or decrement non-integer inputs on ArrowUp', () => {
       Object.defineProperty(event, 'target', { value: formControl })
       Object.defineProperty(event, 'key', { value: 'ArrowUp' })

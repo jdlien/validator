@@ -1,2 +1,4 @@
 import Validator from './src/Validator'
-export default Validator
+
+const ValidatorExport = Validator
+export default ValidatorExport

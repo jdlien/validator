@@ -357,7 +357,7 @@ export default class Validator {
     errorEl.innerHTML = errors.join('<br>')
 
     this.hiddenClassesArray.forEach((className) => {
-      if (errorEl) errorEl.classList.remove(className)
+      errorEl.classList.remove(className)
     })
   }
 
@@ -424,7 +424,7 @@ export default class Validator {
 
     // Hide the error element
     this.hiddenClassesArray.forEach((className) => {
-      if (errorEl) errorEl.classList.add(className)
+      errorEl.classList.add(className)
     })
 
     // Clear the error message
@@ -647,8 +647,12 @@ export default class Validator {
       // only validate the date range if it's a valid date
       if (!isNaN(date.getTime()) && !utils.isDateInRange(date, range)) {
         let msg = el.dataset.errorDefault || this.messages.ERROR_DATE_RANGE
-        if (range === 'past') msg = this.messages.ERROR_DATE_PAST
-        else if (range === 'future') msg = this.messages.ERROR_DATE_FUTURE
+        if (range === 'past') {
+          msg = this.messages.ERROR_DATE_PAST
+        }
+        if (range === 'future') {
+          msg = this.messages.ERROR_DATE_FUTURE
+        }
         this.addInputError(el, msg)
         return false
       }

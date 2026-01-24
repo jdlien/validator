@@ -203,7 +203,7 @@ class FormField extends HTMLElement {
         const validationAttrs = this.getValidationAttrs();
         const flatpickrClass = ['date', 'datetime', 'time'].includes(type) ? ' flatpickr-input' : '';
         const input = el('input', {
-            className: `block w-full px-1.5 transition${flatpickrClass}`,
+            className: `block w-full transition${flatpickrClass}`,
             type: inputType,
             id,
             name,

@@ -1,4 +1,10 @@
+@import url(https://fonts.bunny.net/css?family=alexandria:200,300,400,500,600,700);
+
 @import 'tailwindcss';
+
+@theme {
+  --font-alexandria: 'Alexandria', sans-serif;
+}
 
 /* Custom element needs block display for space-y to work */
 form-field {
@@ -22,7 +28,7 @@ form-field {
   select[multiple],
   textarea,
   select {
-    @apply border border-zinc-300 rounded-lg  px-2 py-1.5 text-zinc-700
+    @apply border border-zinc-300 rounded-lg px-3 py-2 text-zinc-700
         placeholder-zinc-500/50 shadow-inner
         focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/50
         focus:ring-offset-0 focus:ring-offset-transparent inset-shadow-sm;

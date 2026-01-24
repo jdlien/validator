@@ -140,5 +140,19 @@ describe('Validator', () => {
       // Check that the message was not duplicated
       expect(validator.inputErrors[radio1.name].length).toBe(1)
     })
+
+    it('returns true for required values on non-form-control inputs', () => {
+      const fakeControl = {
+        required: true,
+        value: '',
+        name: 'fake-control',
+        id: 'fake-control',
+        dataset: {},
+      }
+
+      const result = (validator as any).validateRequired(fakeControl)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[fakeControl.name]).toBeUndefined()
+    })
   }) // end validateRequired
 }) // end describe('Validator')

@@ -322,7 +322,8 @@ describe('Validator', () => {
 
     it('returns true and skips validation when value is non-numeric', () => {
       // Type validation should handle non-numeric values, not min/max validation
-      formControl.type = 'number'
+      formControl.type = 'text'
+      formControl.setAttribute('data-type', 'number')
       formControl.value = 'abc'
       formControl.setAttribute('data-min', '10')
       formControl.setAttribute('data-max', '100')

@@ -73,6 +73,25 @@ describe('Validator', () => {
       expect(errorEl.getAttribute('data-flux-error')).toBe('')
     })
 
+    it('falls back when a flux field has no error element', () => {
+      const fluxField = document.createElement('div')
+      fluxField.setAttribute('data-flux-field', '')
+      form.appendChild(fluxField)
+
+      const fluxInput = document.createElement('input')
+      fluxInput.type = 'text'
+      fluxInput.name = 'flux-input'
+      fluxInput.id = 'flux-input-id'
+      fluxField.appendChild(fluxInput)
+
+      const fallbackError = document.createElement('div')
+      fallbackError.id = 'flux-input-id-error'
+      form.appendChild(fallbackError)
+
+      const errorEl = (validator as any).getErrorEl(fluxInput)
+      expect(errorEl).toBe(fallbackError)
+    })
+
     it('returns error element by aria-describedby if not found by name or id', () => {
       const formControl3 = document.createElement('input')
       formControl3.type = 'text'
@@ -89,6 +108,22 @@ describe('Validator', () => {
       const errorEl3 = (validator as any).getErrorEl(formControl3)
       expect(errorEl3).toBeTruthy()
       expect(errorEl3.id).toBe('form-control-3-error')
+    })
+
+    it('falls back when aria-describedby target is missing', () => {
+      const formControl3 = document.createElement('input')
+      formControl3.type = 'text'
+      formControl3.setAttribute('aria-describedby', 'missing-error-id')
+      formControl3.name = 'form-control-3'
+      formControl3.id = 'form-control-3'
+      form.appendChild(formControl3)
+
+      const fallbackError = document.createElement('div')
+      fallbackError.id = 'form-control-3-error'
+      form.appendChild(fallbackError)
+
+      const errorEl3 = (validator as any).getErrorEl(formControl3)
+      expect(errorEl3).toBe(fallbackError)
     })
 
     it('returns null if the input does not have an error element', () => {
@@ -174,6 +209,21 @@ describe('Validator', () => {
       ;(validator as any).addErrorMain()
       const errorEl = document.querySelector('#form-error-main')
       if (errorEl) expect(errorEl.parentNode).toBe(form)
+    })
+
+    it('reuses an existing form-error-main element when present', () => {
+      const existing = document.createElement('div')
+      existing.id = 'form-error-main'
+      existing.classList.add('hidden')
+      form.appendChild(existing)
+
+      const message = 'Existing error element'
+      ;(validator as any).addErrorMain(message)
+
+      const errorEl = form.querySelector('#form-error-main')
+      expect(errorEl).toBe(existing)
+      expect(errorEl?.innerHTML).toBe(message)
+      expect(form.querySelectorAll('#form-error-main')).toHaveLength(1)
     })
   }) // addErrorMain
 

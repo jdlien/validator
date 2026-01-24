@@ -1,5 +1,5 @@
 import Validator from '../src/Validator'
-import MainValidator from '..'
+import MainValidator from '../index'
 import { describe, it, expect } from 'vitest'
 
 describe('index.ts', () => {

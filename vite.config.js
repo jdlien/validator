@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  plugins: [tailwindcss()],
   optimizeDeps: { include: ['@jdlien/validator-utils'] },
   build: {
     lib: { entry: 'index.ts', name: 'Validator', fileName: 'validator' },

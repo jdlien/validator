@@ -223,9 +223,15 @@ class FormField extends HTMLElement {
     const hint = this.getAttribute('hint')
 
     return el('div', { className: 'sm:grid sm:grid-cols-3 sm:items-start sm:gap-4' }, [
-      el('label', { for: id, id: `${id}-label`, className: 'block font-medium sm:mt-px sm:pt-1' }, [
-        labelText,
-      ]),
+      el(
+        'label',
+        {
+          for: id,
+          id: `${id}-label`,
+          className: 'block font-extralight sm:mt-px sm:pt-1 leading-loose',
+        },
+        [labelText]
+      ),
       el('div', { className: 'my-0.5 sm:mt-0 sm:col-span-2' }, [
         content,
         hint
@@ -251,7 +257,7 @@ class FormField extends HTMLElement {
     const flatpickrClass = ['date', 'datetime', 'time'].includes(type) ? ' flatpickr-input' : ''
 
     const input = el('input', {
-      className: `block w-full px-1.5 transition${flatpickrClass}`,
+      className: `block w-full transition${flatpickrClass}`,
       type: inputType,
       id,
       name,

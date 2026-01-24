@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Validator Demo</title>
-    <link rel="stylesheet" href="demo.css" />
-    <script type="module" src="form-field.js"></script>
+    <link rel="stylesheet" href="demo-src.css" />
+    <script type="module" src="form-field.ts"></script>
   </head>
 
   <body
-    class="font-charis p-6 bg-indigo-300 dark:bg-indigo-950 dark:text-white"
+    class="font-alexandria font-light p-6 bg-indigo-300 dark:bg-indigo-950 dark:text-white"
     style="
       background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2240%22 viewBox=%220 0 100 40%22><path d=%22M0 20 Q25 0 50 20 T100 20%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221.5%22 stroke-opacity=%220.06%22/><path d=%22M0 30 Q25 10 50 30 T100 30%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221%22 stroke-opacity=%220.08%22/></svg>');
     "
@@ -271,8 +271,8 @@
         If the form is invalid when submitted, 'form-error-main' will be displayed above.
       </p>
 
-      <script src="../dist/validator.js"></script>
       <script type="module">
+        import Validator from '../index.ts'
         // Wait for custom element to be defined before initializing validator
         await customElements.whenDefined('form-field')
         const form = document.getElementById('demo-form')
