@@ -1,6 +1,7 @@
 import Validator from '../src/Validator'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setupTestForm } from './utils/setup'
+import { makeFile, setInputFiles } from './utils/files'
 
 describe('Validator', () => {
   let form: HTMLFormElement
@@ -70,6 +71,27 @@ describe('Validator', () => {
 
       // We show the generic error message if one isn't provided
       expect(validator.inputErrors[formControl.name]).toContain(errorMessage)
+    })
+
+    it('returns false and shows an error if a file input is required and empty', () => {
+      formControl.type = 'file'
+      formControl.required = true
+      setInputFiles(formControl, [])
+
+      const result = (validator as any).validateRequired(formControl)
+      expect(result).toBeFalsy()
+
+      expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_REQUIRED)
+    })
+
+    it('returns true and shows no error if a required file input has files', () => {
+      formControl.type = 'file'
+      formControl.required = true
+      setInputFiles(formControl, [makeFile(10, 'doc.txt', 'text/plain')])
+
+      const result = (validator as any).validateRequired(formControl)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[formControl.name]).toEqual([])
     })
 
     it('returns false and shows an error if the input is a single checkbox and not checked', () => {

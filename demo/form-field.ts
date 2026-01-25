@@ -8,6 +8,8 @@
  *   <form-field name="choice" label="Choose" type="radio" options="a,b,c" required></form-field>
  */
 
+import './file-drop'
+
 // Types
 type Attrs = Record<string, string | boolean | undefined>
 type Child = HTMLElement | string | null | undefined
@@ -27,6 +29,7 @@ type FieldType =
   | 'date'
   | 'datetime'
   | 'time'
+  | 'file'
   | 'color'
   | 'zip'
   | 'postal'
@@ -83,15 +86,20 @@ function elHtml<K extends keyof HTMLElementTagNameMap>(
 const ATTR_MAP: Record<string, string> = {
   required: 'required',
   disabled: 'disabled',
+  multiple: 'multiple',
   placeholder: 'placeholder',
   value: 'value',
   minlength: 'minlength',
   maxlength: 'maxlength',
   pattern: 'pattern',
+  accept: 'accept',
   min: 'data-min',
   max: 'data-max',
   'min-length': 'data-min-length',
   'max-length': 'data-max-length',
+  'max-files': 'data-max-files',
+  'min-file-size': 'data-min-file-size',
+  'max-file-size': 'data-max-file-size',
   'date-format': 'data-date-format',
   'date-range': 'data-date-range',
   'time-format': 'data-time-format',
@@ -159,7 +167,13 @@ class FormField extends HTMLElement {
   private render(): void {
     const type = (this.getAttribute('type') || 'text') as FieldType
     const name = this.getAttribute('name') || ''
-    const id = this.getAttribute('id') || name
+    let id = this.getAttribute('id') || name
+
+    // Generate unique ID if none provided or if ID already exists in document
+    if (!id || document.getElementById(id)) {
+      const base = name || 'field'
+      id = `${base}-${Math.random().toString(36).slice(2, 8)}`
+    }
 
     // Remove id from custom element to avoid duplicates
     this.removeAttribute('id')
@@ -172,6 +186,8 @@ class FormField extends HTMLElement {
       this.renderGroup(id, name, type)
     } else if (type === 'color') {
       this.renderColorInput(id, name)
+    } else if (type === 'file') {
+      this.renderFileInput(id, name)
     } else {
       this.renderInput(id, name, type)
     }
@@ -197,11 +213,12 @@ class FormField extends HTMLElement {
 
   private getValidationAttrs(): Attrs {
     const attrs: Attrs = {}
+    const booleanAttrs = new Set(['required', 'disabled', 'multiple'])
 
     for (const [formFieldAttr, inputAttr] of Object.entries(ATTR_MAP)) {
       if (this.hasAttribute(formFieldAttr)) {
         const val = this.getAttribute(formFieldAttr)
-        if (formFieldAttr === 'required' || formFieldAttr === 'disabled') {
+        if (booleanAttrs.has(formFieldAttr)) {
           attrs[inputAttr] = true
         } else {
           attrs[inputAttr] = val || undefined
@@ -340,6 +357,34 @@ class FormField extends HTMLElement {
       colorLabel.style.backgroundColor = value
       if (colorInput) colorInput.value = value
     }
+  }
+
+  private renderFileInput(id: string, name: string): void {
+    const label = this.getAttribute('label') || name
+
+    // Create file-drop element and pass through attributes
+    const fileDrop = document.createElement('file-drop')
+    fileDrop.setAttribute('name', name)
+    fileDrop.setAttribute('id', id)
+
+    // Pass through relevant attributes
+    const passthrough = ['accept', 'multiple', 'required', 'disabled']
+    passthrough.forEach((attr) => {
+      if (this.hasAttribute(attr)) {
+        const val = this.getAttribute(attr)
+        if (val === '' || val === null) fileDrop.setAttribute(attr, '')
+        else fileDrop.setAttribute(attr, val)
+      }
+    })
+
+    // Pass through data-* attributes for validation
+    Array.from(this.attributes).forEach((attr) => {
+      if (attr.name.startsWith('data-')) {
+        fileDrop.setAttribute(attr.name, attr.value)
+      }
+    })
+
+    this.appendChild(this.buildWrapper(id, label, fileDrop))
   }
 
   private renderSelect(id: string, name: string): void {

@@ -79,6 +79,10 @@ export default class Validator {
     ERROR_TIME: 'This is not a valid time.',
     ERROR_URL: 'This is not a valid URL.',
     ERROR_COLOR: 'This is not a valid CSS colour.',
+    ERROR_FILE_TYPE: 'This file type is not allowed.',
+    ERROR_FILE_MAX_FILES: 'You can upload up to ${val} file(s).',
+    ERROR_FILE_MAX_SIZE: 'Each file must be ${val} or smaller.',
+    ERROR_FILE_MIN_SIZE: 'Each file must be at least ${val}.',
     ERROR_CUSTOM_VALIDATION: 'There was a problem validating this field.',
   }
   // Show debug messages in the console
@@ -391,20 +395,32 @@ export default class Validator {
     this.inputs.forEach((el) => this.clearInputErrors(el))
   }
 
+  private hasInputValue(el: FormControl): boolean {
+    if (el instanceof HTMLInputElement && el.type === 'file') {
+      return !!el.files && el.files.length > 0
+    }
+    return el.value.length > 0
+  }
+
   // Validates a required input and returns true if it's valid.
   // Shows an error if the input is required and empty.
   private validateRequired(el: FormControl): boolean {
     let valid = true
+    const isCheckable =
+      el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type)
+    const isFileInput = el instanceof HTMLInputElement && el.type === 'file'
+    const isEmpty = isFileInput
+      ? !this.hasInputValue(el)
+      : el.value === '' || (isCheckable && !el.checked)
     if (
       el.required &&
-      (el.value === '' ||
-        (el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type) && !el.checked))
+      isEmpty
     ) {
       // Handle checkboxes and radio buttons. Check that at least one of any name group is checked
       // Check that any checkbox of a group of checkboxes is checked
       // This assumes the checkbox or radio button is in a group... if it's not,
       // we can specify a default error message with error=
-      if (el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type)) {
+      if (isCheckable) {
         let groupChecked = false
         let groupName = el.name
         const groupInputs = this.form.querySelectorAll(`input[name="${groupName}"]`)
@@ -437,6 +453,8 @@ export default class Validator {
   private validateLength(el: FormControl): boolean {
     let valid = true
     if (el.disabled) return valid
+
+    if (el instanceof HTMLInputElement && el.type === 'file') return valid
 
     if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.value.length) {
       // prettier-ignore
@@ -607,9 +625,99 @@ export default class Validator {
     return true
   }
 
+  private formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  private parseAcceptList(accept: string): { mimeTypes: string[]; extensions: string[] } {
+    const mimeTypes: string[] = []
+    const extensions: string[] = []
+
+    for (const raw of accept.split(',')) {
+      const token = raw.trim().toLowerCase()
+      if (!token) continue
+      if (token.startsWith('.')) extensions.push(token)
+      else if (token.includes('/')) mimeTypes.push(token)
+    }
+
+    return { mimeTypes, extensions }
+  }
+
+  private validateFileInput(el: HTMLInputElement): boolean {
+    if (el.type !== 'file') return true
+    const files = Array.from(el.files || [])
+    if (!files.length) return true
+
+    let valid = true
+
+    const maxFiles = Number.parseInt(el.dataset.maxFiles || '', 10)
+    if (Number.isFinite(maxFiles) && maxFiles >= 0 && files.length > maxFiles) {
+      this.addInputError(
+        el,
+        this.messages.ERROR_FILE_MAX_FILES.replace('${val}', maxFiles.toString())
+      )
+      valid = false
+    }
+
+    const minSize = Number.parseFloat(el.dataset.minFileSize || '')
+    if (Number.isFinite(minSize) && minSize >= 0) {
+      const tooSmall = files.some((file) => file.size < minSize)
+      if (tooSmall) {
+        this.addInputError(
+          el,
+          this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', this.formatBytes(minSize))
+        )
+        valid = false
+      }
+    }
+
+    const maxSize = Number.parseFloat(el.dataset.maxFileSize || '')
+    if (Number.isFinite(maxSize) && maxSize >= 0) {
+      const tooLarge = files.some((file) => file.size > maxSize)
+      if (tooLarge) {
+        this.addInputError(
+          el,
+          this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', this.formatBytes(maxSize))
+        )
+        valid = false
+      }
+    }
+
+    const accept = (el.dataset.accept ?? el.accept ?? '').trim()
+    if (accept) {
+      const { mimeTypes, extensions } = this.parseAcceptList(accept)
+      if (mimeTypes.length || extensions.length) {
+        const matchesMime = (type: string) =>
+          mimeTypes.some((entry) => {
+            if (entry === '*/*') return true
+            if (entry.endsWith('/*')) return type.startsWith(entry.slice(0, -1))
+            return entry === type
+          })
+
+        const isAllowed = (file: File) => {
+          const type = file.type.toLowerCase()
+          const name = file.name.toLowerCase()
+          const allowedByMime = type && mimeTypes.length ? matchesMime(type) : false
+          const allowedByExt = extensions.length ? extensions.some((ext) => name.endsWith(ext)) : false
+          return allowedByMime || allowedByExt
+        }
+
+        if (files.some((file) => !isAllowed(file))) {
+          this.addInputError(el, this.messages.ERROR_FILE_TYPE)
+          valid = false
+        }
+      }
+    }
+
+    return valid
+  }
+
   // Validates a pattern from data-pattern or pattern; data-pattern takes precedence
   // Anchors pattern to match HTML5 pattern attribute behavior (full value must match)
   private validatePattern(el: FormControl): boolean {
+    if (el instanceof HTMLInputElement && el.type === 'file') return true
     const pattern = el.dataset.pattern || (el instanceof HTMLInputElement && el.pattern) || null
     if (!pattern) return true
 
@@ -666,15 +774,20 @@ export default class Validator {
   // Validates an input with a value and returns true if it's valid
   // Checks inputs defined in the inputHandlers map, pattern, and date range,
   private async validateInput(el: FormControl): Promise<boolean> {
-    if (!(el instanceof HTMLInputElement) || !el.value.length) return true
+    if (!(el instanceof HTMLInputElement) || !this.hasInputValue(el)) return true
 
     let valid = true
+    const isFileInput = el.type === 'file'
 
     // Skip disabled inputs
     if (el.disabled) return valid
-    valid = this.validateInputType(el) && valid
-    valid = this.validateDateRange(el) && valid
-    valid = this.validatePattern(el) && valid
+    if (isFileInput) {
+      valid = this.validateFileInput(el) && valid
+    } else {
+      valid = this.validateInputType(el) && valid
+      valid = this.validateDateRange(el) && valid
+      valid = this.validatePattern(el) && valid
+    }
     valid = (await this.validateCustom(el)) && valid
 
     return valid
@@ -694,7 +807,7 @@ export default class Validator {
       valid = (await this.validateInput(el)) && valid
       // Validate custom functions here if value is empty, as they won't be
       // evaluated by validateInput, which only checks inputs with a value.
-      if (!el.value.length) valid = (await this.validateCustom(el)) && valid
+      if (!this.hasInputValue(el)) valid = (await this.validateCustom(el)) && valid
     }
 
     return valid
@@ -722,7 +835,7 @@ export default class Validator {
     valid = (await this.validateInput(input)) && valid
     // Validate custom functions if value is empty, as validateInput
     // only checks inputs with a value.
-    if (!input.value.length) valid = (await this.validateCustom(input)) && valid
+    if (!this.hasInputValue(input)) valid = (await this.validateCustom(input)) && valid
 
     this.showInputErrors(input)
     return valid
@@ -805,7 +918,7 @@ export default class Validator {
     this.validateLength(target)
     this.validateValue(target)
     await this.validateInput(target)
-    if (!target.value.length) await this.validateCustom(target)
+    if (!this.hasInputValue(target)) await this.validateCustom(target)
     this.showInputErrors(target)
   }
 

@@ -289,6 +289,28 @@
 
         <section class="form-card space-y-4">
           <div class="card-header">
+            <h2 class="form-card-title">File Uploads</h2>
+            <p class="form-card-lead">
+              File inputs support type, size, and count limits using accept and data attributes.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-file"
+              label="Images or PDF"
+              type="file"
+              accept="image/*,.pdf"
+              max-files="2"
+              min-file-size="1000"
+              max-file-size="500000"
+              multiple
+              hint="Up to 2 files; each must be 1-500 KB and match image/* or .pdf"
+            ></form-field>
+          </div>
+        </section>
+
+        <section class="form-card space-y-4">
+          <div class="card-header">
             <h2 class="form-card-title">Selections</h2>
             <p class="form-card-lead">
               Selects, radio buttons, and checkbox groups can all be required.
