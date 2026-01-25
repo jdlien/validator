@@ -28,10 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Updated copyright year to 2026
 - `messages` option now typed as `Record<string, string>` (was `object`)
 - Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
-- Floating point precision preserved when using arrow keys on decimal values
 
 ### Removed
 
