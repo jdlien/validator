@@ -625,10 +625,32 @@ export default class Validator {
     return true
   }
 
-  private formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  // Parses human-readable byte strings: "500000", "5M", "5MB", "2GB", "1KB", etc.
+  private parseBytes(value: string): number {
+    const str = value.trim()
+    const match = str.match(/^(\d+(?:\.\d+)?)\s*(B|KB?|MB?|GB?|TB?)?$/i)
+    if (!match) return NaN
+
+    const num = Number.parseFloat(match[1])
+    const unit = match[2]?.toUpperCase().replace(/B$/, '') || ''
+    const mult: Record<string, number> = { '': 1, K: 1000, M: 1e6, G: 1e9, T: 1e12 }
+    return num * mult[unit]
+  }
+
+  // Formats bytes as human-readable string. decimal=true uses SI units (1000-based).
+  private formatBytes(bytes: number, decimal = true): string {
+    const base = decimal ? 1000 : 1024
+    const units = ['B', 'KB', 'MB', 'GB', 'TB']
+    if (bytes < base) return `${bytes} B`
+
+    let i = 0
+    let val = bytes
+    while (val >= base && i < units.length - 1) {
+      val /= base
+      i++
+    }
+    const rounded = Math.round(val * 10) / 10
+    return `${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)} ${units[i]}`
   }
 
   private parseAcceptList(accept: string): { mimeTypes: string[]; extensions: string[] } {
@@ -661,7 +683,7 @@ export default class Validator {
       valid = false
     }
 
-    const minSize = Number.parseFloat(el.dataset.minFileSize || '')
+    const minSize = this.parseBytes(el.dataset.minFileSize || '')
     if (Number.isFinite(minSize) && minSize >= 0) {
       const tooSmall = files.some((file) => file.size < minSize)
       if (tooSmall) {
@@ -673,7 +695,7 @@ export default class Validator {
       }
     }
 
-    const maxSize = Number.parseFloat(el.dataset.maxFileSize || '')
+    const maxSize = this.parseBytes(el.dataset.maxFileSize || '')
     if (Number.isFinite(maxSize) && maxSize >= 0) {
       const tooLarge = files.some((file) => file.size > maxSize)
       if (tooLarge) {

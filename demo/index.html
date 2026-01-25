@@ -189,7 +189,7 @@
 
             <form-field
               name="input-past-date"
-              label="Past date"
+              label="Past Date"
               type="date"
               value="2021-01-01"
               date-format="YYYY-MM-DD"
@@ -296,7 +296,7 @@
           </div>
           <div class="space-y-3">
             <form-field
-              name="input-file"
+              name="input-file-1"
               label="Images or PDF"
               type="file"
               accept="image/*,.pdf"
@@ -305,6 +305,14 @@
               max-file-size="500000"
               multiple
               hint="Up to 2 files; each must be 1-500 KB and match image/* or .pdf"
+            ></form-field>
+
+            <form-field
+              name="input-file-2"
+              label="Any File Will Do"
+              type="file"
+              required
+              hint="Single file of any kind, required."
             ></form-field>
           </div>
         </section>
@@ -319,7 +327,7 @@
           <div class="space-y-3">
             <form-field
               name="input-select"
-              label="Select an option"
+              label="Select an Option"
               type="select"
               required
               options="red,green,indigo"
@@ -327,7 +335,7 @@
 
             <form-field
               name="checkboxGroup"
-              label="Checkbox group"
+              label="Checkbox Group"
               type="checkbox"
               required
               options="Red,Green,Indigo"
@@ -336,7 +344,7 @@
 
             <form-field
               name="input-radio"
-              label="Radio button group"
+              label="Radio Button Group"
               type="radio"
               required
               options="red,green,indigo"
