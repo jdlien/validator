@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 |        | v1.5.0    | v2.0.0    | Change |
 | ------ | --------- | --------- | ------ |
-| Raw    | 21.60 KiB | 22.32 KiB | +3.3%  |
-| Gzip   | 7.40 KiB  | 7.65 KiB  | +3.4%  |
-| Brotli | 6.59 KiB  | 6.79 KiB  | +3.0%  |
+| Raw    | 21.60 KiB | 22.29 KiB | +3.2%  |
+| Gzip   | 7.40 KiB  | 7.67 KiB  | +3.6%  |
+| Brotli | 6.59 KiB  | 6.83 KiB  | +3.6%  |
 
 ### Added
 
@@ -39,6 +39,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `ValidationSuccessEvent` class (use `ValidationEvent` with type `'validationSuccess'`)
 - `ValidationErrorEvent` class (use `ValidationEvent` with type `'validationError'`)
 - Automatic MutationObserver-based re-init and auto-destroy (see Breaking Changes)
+
+### Fixed
+
+- Color sync no longer throws when a `type="color"` input has no paired text input
+- Custom error messages now apply to type validators (number, email, tel, etc.)
+- Error classes on inputs are now removed even when no error element exists
+- Stale `inputErrors` entries are cleared when `init()` is called after removing inputs
+- Pattern validation no longer throws for invalid regex patterns (treats as pass-through)
+- Pattern validation now anchors patterns for full-match behavior (matches HTML5 `pattern` attribute)
 
 ### Breaking Changes
 
