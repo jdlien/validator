@@ -3,20 +3,35 @@
   "version": "2.0.0",
   "type": "module",
   "packageManager": "pnpm@10.11.0",
-  "module": "dist/validator.js",
+  "main": "dist/validator.cjs",
+  "module": "dist/validator.mjs",
   "types": "dist/Validator.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/Validator.d.ts",
+      "import": "./dist/validator.mjs",
+      "require": "./dist/validator.cjs",
+      "default": "./dist/validator.mjs"
+    }
+  },
   "files": [
     "dist"
   ],
+  "unpkg": "dist/validator.js",
+  "jsdelivr": "dist/validator.js",
   "description": "Validates and sanitizes the inputs in a form using native HTML attributes.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly && pnpm build:demo",
+    "build:lib": "pnpm build:lib:esm && pnpm build:lib:compat && tsc --emitDeclarationOnly",
+    "build:lib:esm": "vite build",
+    "build:lib:compat": "vite build --mode compat",
+    "build": "pnpm build:lib && pnpm build:demo",
     "size:wire": "node scripts/measure-wire-size.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "build:demo": "tsc demo/form-field.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc demo/dark-toggle.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && node scripts/build-demo.mjs"
+    "build:demo": "tsc demo/form-field.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc demo/dark-toggle.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && node scripts/build-demo.mjs",
+    "prepublishOnly": "pnpm build:lib"
   },
   "repository": {
     "type": "git",
