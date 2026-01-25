@@ -1,5 +1,7 @@
 import Validator, { ValidationEvent } from './src/Validator'
 
+const ValidatorExport = Validator
+
 export type {
   FormControl,
   InputHandler,
@@ -8,4 +10,4 @@ export type {
   ValidatorOptions,
 } from './src/Validator'
 export { ValidationEvent }
-export default Validator
+export default ValidatorExport
