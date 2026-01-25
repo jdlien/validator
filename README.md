@@ -290,6 +290,48 @@ const myValidator = new Validator(myForm, {
 })
 ```
 
+## Methods
+
+### `validateSingle(input): Promise<boolean>`
+
+Validates a single input programmatically and displays any error messages. Returns `true` if the input is valid, `false` otherwise.
+
+This is useful for:
+
+- **Multi-step forms/wizards** - Validate each step before allowing progression
+- **Dependent field validation** - Validate field A when field B changes
+- **Custom validation triggers** - Validate on demand rather than relying on events
+- **Dynamic form updates** - Validate after programmatically updating a field's value
+
+```javascript
+const validator = new Validator(form)
+const emailInput = document.getElementById('email')
+
+// Validate a single input on demand
+const isValid = await validator.validateSingle(emailInput)
+
+if (isValid) {
+  // Proceed to next step
+} else {
+  // Error messages are automatically displayed
+}
+```
+
+Notes:
+
+- Returns `true` for inputs not part of the form or disabled inputs
+- Clears previous errors before validating
+- Displays error messages in the associated error element
+- Works with all form control types (input, select, textarea)
+
+### `init()`
+
+Re-initializes the validator, refreshing the list of form inputs. Call this after dynamically adding or removing inputs.
+
+### `destroy()`
+
+Removes all event listeners and restores the form's original `novalidate` state. Call this before removing the form from the DOM.
+
 ## Dynamic Forms and Cleanup
 
 Validator does not watch the DOM for changes. If you add or remove inputs after initialization

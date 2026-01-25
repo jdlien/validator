@@ -10,12 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 |        | v1.5.0    | v2.0.0    | Change |
 | ------ | --------- | --------- | ------ |
-| Raw    | 21.60 KiB | 22.94 KiB | +6.2%  |
-| Gzip   | 7.40 KiB  | 7.76 KiB  | +4.9%  |
-| Brotli | 6.59 KiB  | 6.91 KiB  | +4.9%  |
+| Raw    | 21.60 KiB | 23.24 KiB | +7.6%  |
+| Gzip   | 7.40 KiB  | 7.81 KiB  | +5.5%  |
+| Brotli | 6.59 KiB  | 6.94 KiB  | +5.3%  |
 
 ### Added
 
+- `validateSingle(input)` method for programmatic single-input validation on demand
 - `scrollToError` option to scroll to first invalid input on validation failure
 - `scrollToErrorDelay` option to delay scroll-to-error behavior (useful for animations)
 - Min/max value validation via `data-min`/`data-max` attributes (also respects native `min`/`max`)

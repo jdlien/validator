@@ -700,6 +700,34 @@ export default class Validator {
     return valid
   } //end validate()
 
+  /**
+   * Validates a single input programmatically and displays any error messages.
+   * Useful for validating inputs on demand (e.g., in multi-step forms or custom UI flows).
+   * @param input The input element to validate
+   * @returns A promise that resolves to true if the input is valid, false otherwise
+   */
+  public async validateSingle(input: FormControl): Promise<boolean> {
+    // If the input isn't part of this form's inputs, consider it valid
+    if (!this.inputs.includes(input)) return true
+
+    // Skip disabled inputs
+    if (input.disabled) return true
+
+    this.clearInputErrors(input)
+
+    let valid = true
+    valid = this.validateRequired(input) && valid
+    valid = this.validateLength(input) && valid
+    valid = this.validateValue(input) && valid
+    valid = (await this.validateInput(input)) && valid
+    // Validate custom functions if value is empty, as validateInput
+    // only checks inputs with a value.
+    if (!input.value.length) valid = (await this.validateCustom(input)) && valid
+
+    this.showInputErrors(input)
+    return valid
+  }
+
   private isSubmitting = false
   private async submitHandler(e: Event): Promise<void> {
     if (this.isSubmitting) return
