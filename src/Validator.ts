@@ -1,4 +1,4 @@
-/** Form Validator used by EPL apps and www2. ©2026 JD Lien */
+/** Form Validator ©2026 JD Lien */
 
 // Import the validator utility functions
 import * as utils from '@jdlien/validator-utils'
@@ -22,6 +22,7 @@ export interface ValidatorOptions {
   showMainError?: boolean
   scrollToError?: boolean
   scrollToErrorDelay?: number
+  validateOnBlur?: boolean
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
 }
@@ -94,6 +95,8 @@ export default class Validator {
   scrollToError: boolean = false
   // Delay in ms before scrolling to the first error (allows animations to complete)
   scrollToErrorDelay: number = 0
+  // Whether to validate inputs when they lose focus (even if unchanged)
+  validateOnBlur: boolean = false
 
   // Classes to apply to the main error message (space-separated)
   errorMainClasses: string
@@ -142,6 +145,7 @@ export default class Validator {
     this.showMainError = options.showMainError !== undefined ? options.showMainError : true
     this.scrollToError = options.scrollToError || false
     this.scrollToErrorDelay = options.scrollToErrorDelay || 0
+    this.validateOnBlur = options.validateOnBlur || false
 
     // Pre-split class strings for performance
     this.hiddenClassesArray = this.hiddenClasses.split(' ').filter(Boolean)
@@ -158,6 +162,7 @@ export default class Validator {
   private submitHandlerRef = this.submitHandler.bind(this)
   private inputInputHandlerRef = this.inputInputHandler.bind(this)
   private inputChangeHandlerRef = this.inputChangeHandler.bind(this)
+  private inputBlurHandlerRef = this.inputBlurHandler.bind(this)
   private inputKeydownHandlerRef = this.inputKeydownHandler.bind(this)
 
   public addEventListeners(): void {
@@ -165,6 +170,9 @@ export default class Validator {
     this.form.addEventListener('input', this.inputInputHandlerRef)
     this.form.addEventListener('change', this.inputChangeHandlerRef)
     this.form.addEventListener('keydown', this.inputKeydownHandlerRef)
+    if (this.validateOnBlur) {
+      this.form.addEventListener('blur', this.inputBlurHandlerRef, true)
+    }
   }
 
   public removeEventListeners(): void {
@@ -172,6 +180,7 @@ export default class Validator {
     this.form.removeEventListener('input', this.inputInputHandlerRef)
     this.form.removeEventListener('change', this.inputChangeHandlerRef)
     this.form.removeEventListener('keydown', this.inputKeydownHandlerRef)
+    this.form.removeEventListener('blur', this.inputBlurHandlerRef, true)
   }
 
   // Adds event listeners to all formFields in a specified form
@@ -312,9 +321,7 @@ export default class Validator {
     this.inputs.forEach((el) => this.showInputErrors(el))
 
     // Find the first input with errors for potential scroll
-    const firstErrorInput = this.inputs.find(
-      (el) => this.inputErrors[el.name || el.id]?.length > 0
-    )
+    const firstErrorInput = this.inputs.find((el) => this.inputErrors[el.name || el.id]?.length > 0)
 
     // If there are any input errors and we should show the main error
     if (
@@ -752,6 +759,28 @@ export default class Validator {
     this.showInputErrors(target)
   }
 
+  // Validates on blur even if value unchanged (catches touched-but-empty required fields)
+  private async inputBlurHandler(e: FocusEvent): Promise<void> {
+    const target = e.target
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) ||
+      this.shouldSkipValidation(target)
+    )
+      return
+
+    this.clearInputErrors(target)
+    this.validateRequired(target)
+    this.validateLength(target)
+    this.validateValue(target)
+    await this.validateInput(target)
+    if (!target.value.length) await this.validateCustom(target)
+    this.showInputErrors(target)
+  }
+
   private inputInputHandler(e: Event) {
     const input = e.target as HTMLInputElement
 
@@ -778,11 +807,15 @@ export default class Validator {
       if (!colorInput) return // No paired text input found
     }
 
-    let colorLabel = this.form.querySelector(`#${cssEscape(colorInput.id)}-color-label`) as HTMLElement | null
+    let colorLabel = this.form.querySelector(
+      `#${cssEscape(colorInput.id)}-color-label`
+    ) as HTMLElement | null
 
     // Update the HTML color picker input and its label background when color input changes
     if ((input.dataset.type || '') === 'color') {
-      let colorPicker = this.form.querySelector(`input#${cssEscape(input.id)}-color`) as HTMLInputElement
+      let colorPicker = this.form.querySelector(
+        `input#${cssEscape(input.id)}-color`
+      ) as HTMLInputElement
 
       if (!colorPicker || !utils.isColor(input.value)) return
       colorPicker.value = utils.parseColor(input.value)
@@ -825,7 +858,7 @@ export default class Validator {
     // Get min/max bounds
     const minAttr = el.dataset.min ?? el.min
     const maxAttr = el.dataset.max ?? el.max
-    const min = minAttr !== '' ? parseFloat(minAttr) : (isInteger ? 0 : -Infinity)
+    const min = minAttr !== '' ? parseFloat(minAttr) : isInteger ? 0 : -Infinity
     const max = maxAttr !== '' ? parseFloat(maxAttr) : Infinity
 
     // Clamp to bounds
@@ -836,7 +869,11 @@ export default class Validator {
     const stepDecimals = (step.toString().split('.')[1] || '').length
     const valueDecimals = (el.value.split('.')[1] || '').length
     const decimals = Math.max(stepDecimals, valueDecimals)
-    el.value = isInteger ? Math.round(newVal).toString() : (decimals ? newVal.toFixed(decimals) : newVal.toString())
+    el.value = isInteger
+      ? Math.round(newVal).toString()
+      : decimals
+        ? newVal.toFixed(decimals)
+        : newVal.toString()
   }
 
   public destroy() {

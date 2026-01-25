@@ -23,6 +23,7 @@ Validator includes the following built-in validation types:
 - Canadian Postal Codes
 - Colors (CSS colors, with color picker support)
 - Dates (optionally constrained to past or future dates)
+- Date and time
 - Time of day
 - URLs
 
@@ -38,6 +39,10 @@ npm install @jdlien/validator
 # or
 
 yarn add @jdlien/validator
+
+# or
+
+pnpm add @jdlien/validator
 ```
 
 ## Basic Usage
@@ -48,6 +53,18 @@ although often, the browser's built-in validation is problematic or inflexible. 
 can use a `data-` variant of these attributes to avoid the browser's built-in validation.
 
 Any input that you want to validate should have a unique name attribute. If you want to display error messages for the input, you must also have a div with an id that is the name of the input + `-error`.
+
+If you're using a bundler:
+
+```javascript
+import Validator from '@jdlien/validator'
+```
+
+If you're using CommonJS:
+
+```javascript
+const Validator = require('@jdlien/validator')
+```
 
 Then, create a new Validator instance and pass it the form element as the first argument. An optional second argument allows you to pass in options. Here is a simplified example:
 
@@ -76,9 +93,17 @@ Then, create a new Validator instance and pass it the form element as the first 
   <input type="submit" value="Submit" />
 </form>
 
-<!-- Include the validator.js file if you are not using a module bundler -->
-<script src="./dist/validator.js"></script>
+<!-- Choose one of the following script tags if you are not using a bundler -->
+<!-- UMD (global Validator) -->
+<script src="https://unpkg.com/@jdlien/validator/dist/validator.js"></script>
 <script>
+  const form = document.getElementById('myForm')
+  const validator = new Validator(form)
+</script>
+
+<!-- ESM (module) -->
+<script type="module">
+  import Validator from 'https://unpkg.com/@jdlien/validator/dist/validator.mjs'
   const form = document.getElementById('myForm')
   const validator = new Validator(form)
 </script>
@@ -117,21 +142,22 @@ On input (and sometimes select and textarea) elements, the following attributes 
 - `pattern`/`data-pattern` - The input must match the specified regular expression.
 - `type`/`data-type` - The input must match the specified type. The following types are supported:
 
-  - `number` - The input must be a number (use `data-type` to avoid quirky browser behavior)
+  - `number` (also `float`/`decimal`) - The input must be a number (use `data-type` to avoid quirky browser behavior)
   - `integer` - The input must be a positive whole number.
   - `tel` - The input must be a valid North American phone number.
   - `email` - The input must be a valid email address.
   - `zip` - The input must be a valid US zip code.
   - `postal` - The input must be a valid Canadian postal code.
-  - `color` - The input must be a valid CSS color.
   - `date` - The input must be a valid date.
+  - `datetime` - The input must be a valid date and time.
   - `time` - The input must be a valid time.
   - `url` - The input must be a valid URL.
   - `color` - The input must be a valid CSS color. (This can be used in conjunction with a native color input - see Color Picker Support for details.)
 
-- `data-date-format`/`data-time-format` - Applies formatting to time input types (these are interchangeable). The format must be a valid moment.js format string. See [moment.js docs](https://momentjs.com/docs/#/displaying/format/) for more information.
+- `data-date-format`/`data-time-format` - Applies formatting to date, time, or datetime inputs (these are interchangeable). The format must be a valid moment.js format string. See [moment.js docs](https://momentjs.com/docs/#/displaying/format/) for more information.
 - `data-date-range` - Applies to date input types. Supported values are `past` and `future`.
 - `data-min`/`data-max` - Applies to numeric input types (`number`, `integer`, `float`, `decimal`). Validates that the numeric value is within the specified range. Also respects the native `min`/`max` attributes, but `data-` attributes take precedence.
+- `data-arrow-step` - Applies to numeric input types (`number`, `integer`, `float`, `decimal`). Sets the arrow key step size (defaults to `1`). Set `data-arrow-step=""` to disable arrow key handling for the field.
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
@@ -175,7 +201,7 @@ If you do not use `aria-describedby`, Validator will fall back to displaying err
 
 It is recommended to initially hide error elements with a class that sets properties such as `display: none;`, `visibility: hidden;`, or `opacity: 0;`.
 
-You can customize the class(es) that Validator uses to hide the error messages by passing in a `hideErrorClass` option to the Validator constructor. The default is `hidden opacity-0`.
+You can customize the class(es) that Validator uses to hide the error messages by passing in a `hiddenClasses` option to the Validator constructor. The default is `hidden opacity-0`.
 
 ## Color Picker Support
 
@@ -199,7 +225,7 @@ A basic example that would work:
 
 The second parameter to the Validator constructor is an options object. The following options are available:
 
-- `messages - An object containing custom error messages. The default messages can be overridden by `passing in a custom message object. These are all the default messages:
+- `messages` - An object containing custom error messages. The default messages can be overridden by passing in a custom message object. These are all the default messages:
 
 ```javascript
 messages = {
@@ -222,6 +248,7 @@ messages = {
   ERROR_DATE_PAST: 'The date must be in the past.',
   ERROR_DATE_FUTURE: 'The date must be in the future.',
   ERROR_DATE_RANGE: 'The date is outside the allowed range.',
+  ERROR_DATETIME: 'This is not a valid date and time.',
   ERROR_TIME: 'This is not a valid time.',
   ERROR_URL: 'This is not a valid URL.',
   ERROR_COLOR: 'This is not a valid CSS colour.',
@@ -234,16 +261,18 @@ messages = {
 - `preventSubmit` - A boolean indicating whether or not to prevent form submission if validation is successful. Defaults to false.
 - `hiddenClasses` - A string containing one or more space-separated classes to toggle the hidden mode (e.g., `display: none` CSS property) on hidden elements. Defaults to `hidden opacity-0`.
 - `errorMainClasses` - A string containing one or more space-separated classes to apply to the main error message.
-- `errorInputClasses` - A string containing one or more space-separated classes to apply to invalid `inputs.
+- `errorInputClasses` - A string containing one or more space-separated classes to apply to invalid inputs.
 - `showMainError` - A boolean indicating whether or not to show the main error message. Defaults to `true`.
 - `scrollToError` - A boolean indicating whether to scroll to and focus the first invalid input when validation fails. Defaults to `false`.
+- `scrollToErrorDelay` - A number (ms) to delay scroll-to-error behavior. Defaults to `0`.
+- `validateOnBlur` - A boolean indicating whether to validate fields when they lose focus, even if the value hasn't changed. Useful for showing errors on touched-but-empty required fields. Defaults to `false`.
 - `validationSuccessCallback` - A function to be called when validation is successful.
 - `validationErrorCallback` - A function to be called when validation fails.
 
 ### Example:
 
 ```javascript
-import Validator from 'validator'
+import Validator from '@jdlien/validator'
 
 const myForm = document.querySelector('form')
 const myValidator = new Validator(myForm, {
@@ -291,7 +320,7 @@ If you wish to use these, you may import the functions directly from the module 
 // Import all the functions into a validatorUtils object
 import * as validatorUtils from '@jdlien/validator-utils'
 // Or just import the functions you need
-import { dateFormat, formatDateTime } from '@jdlien/validator-utils'
+import { parseDate, formatDateTime } from '@jdlien/validator-utils'
 ```
 
 Here is a list of the utility functions:
@@ -334,11 +363,11 @@ The separate `ValidationSuccessEvent` and `ValidationErrorEvent` classes have be
 
 ```javascript
 // Before (v1.x)
-import { ValidationSuccessEvent, ValidationErrorEvent } from '@jdlien/validator'
+import type { ValidationSuccessEvent, ValidationErrorEvent } from '@jdlien/validator'
 form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
 
 // After (v2.0)
-import { ValidationEvent } from '@jdlien/validator'
+import type { ValidationEvent } from '@jdlien/validator'
 form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
 form.addEventListener('validationError', (e: ValidationEvent) => { ... })
 ```
@@ -354,7 +383,7 @@ The separate `types.d.ts` file has been removed. All types are now exported dire
 Install dev dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 When running Vite, you may get an error like
@@ -364,4 +393,4 @@ Module did not self-register: '...\node_modules\canvas\build\Release\canvas.node
 ```
 
 If that happens, you
-need to install the canvas module manually: `npm rebuild canvas --update-binary`
+need to install the canvas module manually: `pnpm rebuild canvas --update-binary`

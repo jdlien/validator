@@ -12,6 +12,7 @@ demo.css
 demo/*.js
 
 node_modules
+.pnpm-store
 dist
 dist-ssr
 *.local

@@ -94,7 +94,7 @@ describe('Validator', () => {
         (validator as any).inputKeydownHandlerRef
       )
 
-      expect(removeEventListenerSpy).toHaveBeenCalledTimes(4)
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(5)
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         'submit',
         (validator as any).submitHandlerRef
@@ -113,6 +113,12 @@ describe('Validator', () => {
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         'keydown',
         (validator as any).inputKeydownHandlerRef
+      )
+
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'blur',
+        (validator as any).inputBlurHandlerRef,
+        true
       )
     })
   }) // init

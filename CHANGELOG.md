@@ -4,15 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-01-25
 
 ### Bundle Size
 
 |        | v1.5.0    | v2.0.0    | Change |
 | ------ | --------- | --------- | ------ |
-| Raw    | 21.60 KiB | 22.29 KiB | +3.2%  |
-| Gzip   | 7.40 KiB  | 7.67 KiB  | +3.6%  |
-| Brotli | 6.59 KiB  | 6.83 KiB  | +3.6%  |
+| Raw    | 21.60 KiB | 22.94 KiB | +6.2%  |
+| Gzip   | 7.40 KiB  | 7.76 KiB  | +4.9%  |
+| Brotli | 6.59 KiB  | 6.91 KiB  | +4.9%  |
 
 ### Added
 
@@ -25,11 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `data-arrow-step` attribute to customize arrow key step size (e.g., `data-arrow-step="0.5"`)
 - Set `data-arrow-step=""` (empty string) to disable arrow key behavior on numeric fields
 - Arrow keys respect `data-min`/`data-max` bounds, clamping values appropriately
+- `validateOnBlur` option to validate fields when they lose focus (even if unchanged)
 
 ### Changed
 
 - `messages` option now typed as `Record<string, string>` (was `object`)
 - Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
+- Package exports now include explicit ESM/CJS entry points (UMD still available at `dist/validator.js`)
 
 ### Removed
 
