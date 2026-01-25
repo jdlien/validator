@@ -3,6 +3,12 @@
 // Import the validator utility functions
 import * as utils from '@jdlien/validator-utils'
 
+// CSS.escape polyfill for environments that don't support it (e.g., jsdom)
+const cssEscape =
+  typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    ? (s: string) => CSS.escape(s)
+    : (s: string) => s.replace(/([.#{}()\\?*[\]-])/g, '\\$1')
+
 export type FormControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 
 export interface ValidatorOptions {
@@ -20,12 +26,14 @@ export interface ValidatorOptions {
   validationErrorCallback?: (event: Event) => void
 }
 
+export interface InputHandler {
+  parse: (value: string, dateFormat?: string) => string
+  isValid: (value: string) => boolean
+  errorKey: string
+}
+
 export interface InputHandlers {
-  [key: string]: {
-    parse: (value: string, dateFormat?: string) => string
-    isValid: (value: string) => boolean
-    error: string
-  }
+  [key: string]: InputHandler
 }
 
 export type ValidationEventType = 'validationSuccess' | 'validationError'
@@ -168,6 +176,9 @@ export default class Validator {
 
   // Adds event listeners to all formFields in a specified form
   init(): void {
+    // Reset inputErrors to clear any stale entries from removed inputs
+    this.inputErrors = {}
+
     // Get all the inputs in the form but ensure we don't include button, fieldset, or output elements
     this.inputs = Array.from(this.form.elements).filter(
       (element) =>
@@ -197,8 +208,7 @@ export default class Validator {
     // Scope search to current form. I originally used getElementById to search the
     // entire document, but that caused issues when there were multiple forms on a page.
     const getElById = (id: string): HTMLElement | null => {
-      const escapedId = id.replace(/([.#{}()\\?*[\]-])/g, '\\$1')
-      return this.form.querySelector(`#${escapedId}`) || document.getElementById(id) || null
+      return this.form.querySelector(`#${cssEscape(id)}`) || document.getElementById(id) || null
     }
 
     // Support for Flux-style error messages. Must come before the aria-describedby check,
@@ -236,16 +246,11 @@ export default class Validator {
     }
 
     // Apply classes and message
-    this.errorMainClassesArray.forEach((className) => {
-      errorEl!.classList.add(className)
-    })
-
+    errorEl!.classList.add(...this.errorMainClassesArray)
     errorEl!.innerHTML = message || this.messages.ERROR_MAIN
 
     // Ensure it's visible (might have been hidden previously)
-    this.hiddenClassesArray.forEach((className) => {
-      errorEl!.classList.remove(className)
-    })
+    errorEl!.classList.remove(...this.hiddenClassesArray)
   }
 
   // Helper method to find the main error element
@@ -291,19 +296,14 @@ export default class Validator {
     el.setAttribute('aria-invalid', 'true')
 
     // Apply input classes to indicate an error on the input itself
-    this.errorInputClassesArray.forEach((className) => {
-      el.classList.add(className)
-    })
+    el.classList.add(...this.errorInputClassesArray)
 
     // Add the error messages to the error element and show it
     let errorEl = this.getErrorEl(el)
     if (!errorEl) return
 
     errorEl.innerHTML = errors.join('<br>')
-
-    this.hiddenClassesArray.forEach((className) => {
-      errorEl.classList.remove(className)
-    })
+    errorEl.classList.remove(...this.hiddenClassesArray)
   }
 
   // Shows all the error messages for all the inputs of the form, and a main error message
@@ -328,9 +328,7 @@ export default class Validator {
         if (!mainErrorElement.innerHTML) {
           mainErrorElement.innerHTML = this.messages.ERROR_MAIN
         }
-        this.hiddenClassesArray.forEach((className) => {
-          mainErrorElement!.classList.remove(className)
-        })
+        mainErrorElement.classList.remove(...this.hiddenClassesArray)
       } else {
         // If no main error element exists, add it (which also makes it visible)
         this.addErrorMain()
@@ -359,18 +357,14 @@ export default class Validator {
     // Remove the aria-invalid attribute from the input
     el.removeAttribute('aria-invalid')
 
+    // Remove the error style from the input itself (must happen even without errorEl)
+    el.classList.remove(...this.errorInputClassesArray)
+
     let errorEl = this.getErrorEl(el)
     if (!errorEl) return
 
-    // Remove the error style
-    this.errorInputClassesArray.forEach((className) => {
-      el.classList.remove(className)
-    })
-
     // Hide the error element
-    this.hiddenClassesArray.forEach((className) => {
-      errorEl.classList.add(className)
-    })
+    errorEl.classList.add(...this.hiddenClassesArray)
 
     // Clear the error message
     // TODO: This needs to happen on transitionend if we want to animate the error message out
@@ -381,9 +375,7 @@ export default class Validator {
     // Find the main error element (form-specific or generic) and hide it
     const mainErrorElement = this._getMainErrorElement()
     if (mainErrorElement) {
-      this.hiddenClassesArray.forEach((className) => {
-        mainErrorElement.classList.add(className)
-      })
+      mainErrorElement.classList.add(...this.hiddenClassesArray)
       // Optionally clear the content after hiding
       // mainErrorElement.innerHTML = ''
     }
@@ -506,61 +498,62 @@ export default class Validator {
   }
 
   // A map of input handlers that can be used for each type of input.
+  // errorKey references this.messages at validation time to support custom messages
   private inputHandlers: InputHandlers = {
     number: {
       parse: utils.parseNumber,
       isValid: utils.isNumber,
-      error: this.messages.ERROR_NUMBER,
+      errorKey: 'ERROR_NUMBER',
     },
     integer: {
       parse: utils.parseInteger,
       isValid: utils.isInteger,
-      error: this.messages.ERROR_INTEGER,
+      errorKey: 'ERROR_INTEGER',
     },
     tel: {
       parse: utils.parseNANPTel,
       isValid: utils.isNANPTel,
-      error: this.messages.ERROR_TEL,
+      errorKey: 'ERROR_TEL',
     },
     email: {
       parse: (value: string) => value.trim(),
       isValid: utils.isEmail,
-      error: this.messages.ERROR_EMAIL,
+      errorKey: 'ERROR_EMAIL',
     },
     zip: {
       parse: utils.parseZip,
       isValid: utils.isZip,
-      error: this.messages.ERROR_ZIP,
+      errorKey: 'ERROR_ZIP',
     },
     postal: {
       parse: utils.parsePostalCA,
       isValid: utils.isPostalCA,
-      error: this.messages.ERROR_POSTAL,
+      errorKey: 'ERROR_POSTAL',
     },
     url: {
       parse: utils.parseUrl,
       isValid: utils.isUrl,
-      error: this.messages.ERROR_URL,
+      errorKey: 'ERROR_URL',
     },
     date: {
       parse: utils.parseDateToString,
       isValid: utils.isDate,
-      error: this.messages.ERROR_DATE,
+      errorKey: 'ERROR_DATE',
     },
     datetime: {
       parse: utils.parseDateTimeToString,
       isValid: utils.isDateTime,
-      error: this.messages.ERROR_DATETIME,
+      errorKey: 'ERROR_DATETIME',
     },
     time: {
       parse: utils.parseTimeToString,
       isValid: utils.isTime,
-      error: this.messages.ERROR_TIME,
+      errorKey: 'ERROR_TIME',
     },
     color: {
       parse: (value: string) => value.trim().toLowerCase(),
       isValid: utils.isColor,
-      error: this.messages.ERROR_COLOR,
+      errorKey: 'ERROR_COLOR',
     },
   }
 
@@ -577,7 +570,8 @@ export default class Validator {
       if (parsedValue.length && !nonUpdateableTypes.includes(el.type)) el.value = parsedValue
 
       if (!inputHandler.isValid(el.value)) {
-        this.addInputError(el, inputHandler.error)
+        // Look up error message at validation time to support custom messages
+        this.addInputError(el, this.messages[inputHandler.errorKey])
         return false
       }
     }
@@ -607,9 +601,21 @@ export default class Validator {
   }
 
   // Validates a pattern from data-pattern or pattern; data-pattern takes precedence
+  // Anchors pattern to match HTML5 pattern attribute behavior (full value must match)
   private validatePattern(el: FormControl): boolean {
     const pattern = el.dataset.pattern || (el instanceof HTMLInputElement && el.pattern) || null
-    if (pattern && !new RegExp(pattern).test(el.value)) {
+    if (!pattern) return true
+
+    let regex: RegExp
+    try {
+      // Anchor pattern to require full match (HTML5 pattern behavior)
+      regex = new RegExp(`^(?:${pattern})$`)
+    } catch {
+      // Invalid regex pattern - treat as pass-through
+      return true
+    }
+
+    if (!regex.test(el.value)) {
       this.addInputError(el) // Use the default error message
       return false
     }
@@ -765,23 +771,25 @@ export default class Validator {
   // Sync color inputs (data-type="color") with an associated native color input type
   private syncColorInput(e: Event): void {
     let input = e.target as HTMLInputElement
-    let colorInput = input
+    let colorInput: HTMLInputElement | null = input
 
-    if (input.type === 'color')
-      colorInput = this.form.querySelector(`#${input.id.replace(/-color/, '')}`) as HTMLInputElement
+    if (input.type === 'color') {
+      colorInput = this.form.querySelector(`#${cssEscape(input.id.replace(/-color$/, ''))}`)
+      if (!colorInput) return // No paired text input found
+    }
 
-    let colorLabel = this.form.querySelector(`#${colorInput.id}-color-label`) as HTMLInputElement
+    let colorLabel = this.form.querySelector(`#${cssEscape(colorInput.id)}-color-label`) as HTMLElement | null
 
     // Update the HTML color picker input and its label background when color input changes
     if ((input.dataset.type || '') === 'color') {
-      let colorPicker = this.form.querySelector(`input#${input.id}-color`) as HTMLInputElement
+      let colorPicker = this.form.querySelector(`input#${cssEscape(input.id)}-color`) as HTMLInputElement
 
       if (!colorPicker || !utils.isColor(input.value)) return
       colorPicker.value = utils.parseColor(input.value)
     }
 
     // Update the color input and label background when the HTML color picker is changed
-    if (input.type === 'color') colorInput.value = input.value
+    if (input.type === 'color' && colorInput) colorInput.value = input.value
 
     if (colorLabel) colorLabel.style.backgroundColor = input.value
 
