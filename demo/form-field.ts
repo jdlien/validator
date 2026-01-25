@@ -377,7 +377,15 @@ class FormField extends HTMLElement {
       }
     })
 
-    // Pass through data-* attributes for validation
+    // Pass through file validation attributes (map to data-* attributes)
+    const fileAttrs = ['max-files', 'min-file-size', 'max-file-size']
+    fileAttrs.forEach((attr) => {
+      if (this.hasAttribute(attr)) {
+        fileDrop.setAttribute(`data-${attr}`, this.getAttribute(attr)!)
+      }
+    })
+
+    // Pass through any other data-* attributes
     Array.from(this.attributes).forEach((attr) => {
       if (attr.name.startsWith('data-')) {
         fileDrop.setAttribute(attr.name, attr.value)
