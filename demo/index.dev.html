@@ -46,6 +46,23 @@
       </div>
     </header>
 
+    <!-- Sidebar Navigation -->
+    <nav
+      id="section-nav"
+      class="hidden xl:block fixed left-4 top-32 w-44 text-sm"
+    >
+      <ul class="space-y-1">
+        <li><a href="#section-core" class="nav-link">Core Inputs</a></li>
+        <li><a href="#section-numbers" class="nav-link">Numbers</a></li>
+        <li><a href="#section-dates" class="nav-link">Dates &amp; Time</a></li>
+        <li><a href="#section-contact" class="nav-link">Contact &amp; Formats</a></li>
+        <li><a href="#section-files" class="nav-link">File Uploads</a></li>
+        <li><a href="#section-selections" class="nav-link">Selections</a></li>
+        <li><a href="#section-custom" class="nav-link">Custom Validation</a></li>
+        <li><a href="#section-textarea" class="nav-link">Long Form</a></li>
+      </ul>
+    </nav>
+
     <main
       class="max-w-3xl md:mx-auto bg-indigo-200 dark:bg-black/50 rounded-xl p-8 shadow-xl border border-indigo-100 dark:border-indigo-100/10 mx-4"
     >
@@ -77,7 +94,7 @@
         </p>
       </div>
       <form id="demo-form" class="space-y-8 mx-auto mb-12">
-        <section class="form-card space-y-4">
+        <section id="section-core" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Core Inputs</h2>
             <p class="form-card-lead">
@@ -130,7 +147,7 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-numbers" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Number Inputs</h2>
             <p class="form-card-lead">
@@ -163,7 +180,7 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-dates" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Dates &amp; Time</h2>
             <p class="form-card-lead">
@@ -227,6 +244,16 @@
             ></form-field>
 
             <form-field
+              name="input-datetime-custom"
+              label="Date Range (±2 Weeks)"
+              type="date"
+              date-format="YYYY-MMM-DD"
+              date-range="-2w:+2w"
+              placeholder="YYYY-Mmm-D"
+              hint="You can use a custom date range like <code>-2w:+2w</code>"
+            ></form-field>
+
+            <form-field
               name="input-time"
               label="Time of Day"
               type="time"
@@ -237,7 +264,7 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-contact" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Contact &amp; Formats</h2>
             <p class="form-card-lead">
@@ -287,7 +314,7 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-files" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">File Uploads</h2>
             <p class="form-card-lead">
@@ -317,7 +344,7 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-selections" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Selections</h2>
             <p class="form-card-lead">
@@ -352,7 +379,36 @@
           </div>
         </section>
 
-        <section class="form-card space-y-4">
+        <section id="section-custom" class="form-card space-y-4 scroll-mt-4">
+          <div class="card-header">
+            <h2 class="form-card-title">Custom Validation</h2>
+            <p class="form-card-lead">
+              Use <code>data-validation</code> to specify a custom function for sync or async
+              validation. Functions can return booleans, promises, or objects with custom error
+              messages.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <form-field
+              name="input-github"
+              label="GitHub Username"
+              type="text"
+              data-validation="validateGitHubUser"
+              hint="Checks if the username exists on GitHub (async API call)"
+            ></form-field>
+
+            <form-field
+              name="input-credit-card"
+              label="Credit Card Number"
+              type="text"
+              data-validation="validateLuhn"
+              placeholder="4111 1111 1111 1111"
+              hint="Validates using Luhn checksum (try 4111111111111111)"
+            ></form-field>
+          </div>
+        </section>
+
+        <section id="section-textarea" class="form-card space-y-4 scroll-mt-4">
           <div class="card-header">
             <h2 class="form-card-title">Long Form</h2>
             <p class="form-card-lead">
@@ -373,10 +429,7 @@
         </section>
 
         <div class="text-center">
-          <input
-            class="bg-linear-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 active:from-indigo-600 active:to-indigo-800 text-white text-lg w-60 py-3 my-4 rounded-lg border border-indigo-600/50 border-t-indigo-300/70 border-b-indigo-900/40 shadow-md shadow-indigo-900/20 hover:shadow-lg hover:shadow-indigo-900/30 transition duration-150 active:translate-y-0.5 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)]"
-            type="submit"
-          />
+          <input class="btn" type="submit" />
         </div>
       </form>
 
@@ -386,6 +439,55 @@
 
       <script type="module">
         import Validator from '../index.ts'
+
+        // Custom validation: Check if GitHub username exists
+        window.validateGitHubUser = async (value) => {
+          if (!value) return true // Empty is valid (use required for mandatory)
+          if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
+            return { valid: false, message: 'Invalid GitHub username format' }
+          }
+          try {
+            const res = await fetch(`https://api.github.com/users/${encodeURIComponent(value)}`)
+            if (res.status === 404) {
+              return { valid: false, message: `GitHub user "${value}" not found` }
+            }
+            if (res.status === 403) {
+              return { valid: true } // Rate limited - assume valid
+            }
+            return res.ok
+          } catch {
+            return true // Network error - assume valid
+          }
+        }
+
+        // Custom validation: Luhn checksum for credit card numbers
+        window.validateLuhn = (value) => {
+          if (!value) return true // Empty is valid
+          const digits = value.replace(/[\s-]/g, '')
+          if (!/^\d+$/.test(digits)) {
+            return { valid: false, message: 'Card number must contain only digits' }
+          }
+          if (digits.length < 13 || digits.length > 19) {
+            return { valid: false, message: 'Card number must be 13-19 digits' }
+          }
+          // Luhn algorithm
+          let sum = 0
+          let isEven = false
+          for (let i = digits.length - 1; i >= 0; i--) {
+            let digit = parseInt(digits[i], 10)
+            if (isEven) {
+              digit *= 2
+              if (digit > 9) digit -= 9
+            }
+            sum += digit
+            isEven = !isEven
+          }
+          if (sum % 10 !== 0) {
+            return { valid: false, message: 'Invalid card number (checksum failed)' }
+          }
+          return true
+        }
+
         // Wait for custom element to be defined before initializing validator
         await customElements.whenDefined('form-field')
         const form = document.getElementById('demo-form')
