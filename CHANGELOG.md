@@ -8,11 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Bundle Size
 
-|        | v1.5.0    | v2.0.0    | Change |
-| ------ | --------- | --------- | ------ |
-| Raw    | 21.60 KiB | 23.24 KiB | +7.6%  |
-| Gzip   | 7.40 KiB  | 7.81 KiB  | +5.5%  |
-| Brotli | 6.59 KiB  | 6.94 KiB  | +5.3%  |
+|        | v1.5.0    | v2.0.0    | Change  |
+| ------ | --------- | --------- | ------- |
+| Raw    | 21.60 KiB | 26.00 KiB | +20.4%  |
+| Gzip   | 7.40 KiB  | 8.74 KiB  | +18.1%  |
+| Brotli | 6.59 KiB  | 7.81 KiB  | +18.5%  |
 
 ### Added
 

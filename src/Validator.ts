@@ -54,6 +54,14 @@ export default class Validator {
   // Keeps track of error messages accumulated for each input
   inputErrors: { [key: string]: string[] } = {}
 
+  // Hoisted multiplier maps for parseBytes (avoid per-call allocation)
+  private static readonly SI_MULT: Record<string, number> = {
+    '': 1, K: 1000, M: 1e6, G: 1e9, T: 1e12
+  }
+  private static readonly BINARY_MULT: Record<string, number> = {
+    '': 1, K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4
+  }
+
   // Default error messages.
   messages: Record<string, string> = {
     ERROR_MAIN: 'There is a problem with your submission.',
@@ -625,16 +633,19 @@ export default class Validator {
     return true
   }
 
-  // Parses human-readable byte strings: "500000", "5M", "5MB", "2GB", "1KB", etc.
+  // Parses human-readable byte strings: "500000", "5M", "5MB", "5MiB", "2GB", "1KiB", etc.
   private parseBytes(value: string): number {
     const str = value.trim()
-    const match = str.match(/^(\d+(?:\.\d+)?)\s*(B|KB?|MB?|GB?|TB?)?$/i)
+    // Accept: 500, 5B, 5K, 5KB, 5KiB, 5Ki, 5M, 5MB, 5MiB, etc.
+    const match = str.match(/^(\d+(?:\.\d+)?)\s*(B|Ki?B?|Mi?B?|Gi?B?|Ti?B?)?$/i)
     if (!match) return NaN
 
     const num = Number.parseFloat(match[1])
-    const unit = match[2]?.toUpperCase().replace(/B$/, '') || ''
-    const mult: Record<string, number> = { '': 1, K: 1000, M: 1e6, G: 1e9, T: 1e12 }
-    return num * mult[unit]
+    const rawUnit = match[2]?.toUpperCase() || ''
+    const isBinary = rawUnit.includes('I')
+    const prefix = rawUnit.replace(/I?B$/i, '').replace(/I$/i, '') || ''
+    const mult = isBinary ? Validator.BINARY_MULT : Validator.SI_MULT
+    return num * mult[prefix]
   }
 
   // Formats bytes as human-readable string. decimal=true uses SI units (1000-based).
@@ -649,7 +660,12 @@ export default class Validator {
       val /= base
       i++
     }
-    const rounded = Math.round(val * 10) / 10
+    let rounded = Math.round(val * 10) / 10
+    // If rounding pushed us to next unit threshold, bump up
+    if (rounded >= base && i < units.length - 1) {
+      rounded = 1
+      i++
+    }
     return `${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)} ${units[i]}`
   }
 
@@ -683,27 +699,41 @@ export default class Validator {
       valid = false
     }
 
-    const minSize = this.parseBytes(el.dataset.minFileSize || '')
-    if (Number.isFinite(minSize) && minSize >= 0) {
-      const tooSmall = files.some((file) => file.size < minSize)
-      if (tooSmall) {
-        this.addInputError(
-          el,
-          this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', this.formatBytes(minSize))
-        )
+    const minSizeAttr = el.dataset.minFileSize || ''
+    if (minSizeAttr) {
+      const minSize = this.parseBytes(minSizeAttr)
+      if (Number.isNaN(minSize)) {
+        if (this.debug) console.warn(`Validator: Invalid min-file-size "${minSizeAttr}"`)
+        this.addInputError(el, this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', minSizeAttr))
         valid = false
+      } else if (minSize >= 0) {
+        const tooSmall = files.some((file) => file.size < minSize)
+        if (tooSmall) {
+          this.addInputError(
+            el,
+            this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', this.formatBytes(minSize))
+          )
+          valid = false
+        }
       }
     }
 
-    const maxSize = this.parseBytes(el.dataset.maxFileSize || '')
-    if (Number.isFinite(maxSize) && maxSize >= 0) {
-      const tooLarge = files.some((file) => file.size > maxSize)
-      if (tooLarge) {
-        this.addInputError(
-          el,
-          this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', this.formatBytes(maxSize))
-        )
+    const maxSizeAttr = el.dataset.maxFileSize || ''
+    if (maxSizeAttr) {
+      const maxSize = this.parseBytes(maxSizeAttr)
+      if (Number.isNaN(maxSize)) {
+        if (this.debug) console.warn(`Validator: Invalid max-file-size "${maxSizeAttr}"`)
+        this.addInputError(el, this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', maxSizeAttr))
         valid = false
+      } else if (maxSize >= 0) {
+        const tooLarge = files.some((file) => file.size > maxSize)
+        if (tooLarge) {
+          this.addInputError(
+            el,
+            this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', this.formatBytes(maxSize))
+          )
+          valid = false
+        }
       }
     }
 

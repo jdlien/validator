@@ -1,5 +1,5 @@
 import Validator from '../src/Validator'
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setupTestForm } from './utils/setup'
 import { makeFile, setInputFiles } from './utils/files'
 
@@ -221,6 +221,20 @@ describe('Validator file validation', () => {
       expect((validator as any).parseBytes('abc')).toBeNaN()
       expect((validator as any).parseBytes('MB')).toBeNaN()
     })
+
+    it('parses binary KiB/MiB/GiB/TiB values', () => {
+      expect((validator as any).parseBytes('1KiB')).toBe(1024)
+      expect((validator as any).parseBytes('1Ki')).toBe(1024)
+      expect((validator as any).parseBytes('1MiB')).toBe(1048576)
+      expect((validator as any).parseBytes('1GiB')).toBe(1073741824)
+      expect((validator as any).parseBytes('1TiB')).toBe(1099511627776)
+    })
+
+    it('parses mixed case binary units', () => {
+      expect((validator as any).parseBytes('5kib')).toBe(5 * 1024)
+      expect((validator as any).parseBytes('5KIB')).toBe(5 * 1024)
+      expect((validator as any).parseBytes('2.5MiB')).toBe(2.5 * 1024 * 1024)
+    })
   })
 
   describe('formatBytes', () => {
@@ -235,7 +249,10 @@ describe('Validator file validation', () => {
       expect((validator as any).formatBytes(1000)).toBe('1 KB')
       expect((validator as any).formatBytes(1500)).toBe('1.5 KB')
       expect((validator as any).formatBytes(10000)).toBe('10 KB')
-      expect((validator as any).formatBytes(999999)).toBe('1000 KB')
+    })
+
+    it('formats 999999 bytes as 1 MB not 1000 KB (boundary rounding)', () => {
+      expect((validator as any).formatBytes(999999)).toBe('1 MB')
     })
 
     it('formats megabytes for values 1 MB and above (decimal)', () => {
@@ -295,6 +312,64 @@ describe('Validator file validation', () => {
       validator.inputErrors[formControl.name] = []
       setInputFiles(formControl, [makeFile(500, 'small.bin', 'application/octet-stream')])
       expect(await validator.validateSingle(formControl)).toBe(false)
+    })
+
+    it('accepts binary unit size values (KiB, MiB)', async () => {
+      formControl.dataset.maxFileSize = '1MiB'
+      setInputFiles(formControl, [makeFile(1000000, 'ok.bin', 'application/octet-stream')])
+      expect(await validator.validateSingle(formControl)).toBe(true)
+
+      setInputFiles(formControl, [makeFile(1100000, 'big.bin', 'application/octet-stream')])
+      expect(await validator.validateSingle(formControl)).toBe(false)
+    })
+  })
+
+  describe('fail-closed on invalid size attributes', () => {
+    it('fails validation when max-file-size attribute is invalid', async () => {
+      formControl.dataset.maxFileSize = '5MBX'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      expect(await validator.validateSingle(formControl)).toBe(false)
+    })
+
+    it('fails validation when min-file-size attribute is invalid', async () => {
+      formControl.dataset.minFileSize = 'invalid'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      expect(await validator.validateSingle(formControl)).toBe(false)
+    })
+
+    it('fails validation for locale-formatted numbers', async () => {
+      formControl.dataset.maxFileSize = '1,000'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      expect(await validator.validateSingle(formControl)).toBe(false)
+    })
+
+    it('includes the invalid attribute value in the error message', async () => {
+      formControl.dataset.maxFileSize = '5MBX'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      await validator.validateSingle(formControl)
+      expect(validator.inputErrors[formControl.name]).toContain(
+        validator.messages.ERROR_FILE_MAX_SIZE.replace('${val}', '5MBX')
+      )
+    })
+
+    it('logs debug warning for invalid max-file-size when debug is enabled', async () => {
+      const debugValidator = new Validator(form, { debug: true })
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      formControl.dataset.maxFileSize = 'invalid'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      await debugValidator.validateSingle(formControl)
+      expect(warnSpy).toHaveBeenCalledWith('Validator: Invalid max-file-size "invalid"')
+      warnSpy.mockRestore()
+    })
+
+    it('logs debug warning for invalid min-file-size when debug is enabled', async () => {
+      const debugValidator = new Validator(form, { debug: true })
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      formControl.dataset.minFileSize = 'invalid'
+      setInputFiles(formControl, [makeFile(100, 'small.bin')])
+      await debugValidator.validateSingle(formControl)
+      expect(warnSpy).toHaveBeenCalledWith('Validator: Invalid min-file-size "invalid"')
+      warnSpy.mockRestore()
     })
   })
 })
