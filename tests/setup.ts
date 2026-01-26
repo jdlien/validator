@@ -1,9 +1,6 @@
-/**
- * Global test setup for Vitest
- * Mocks CSS.supports since jsdom doesn't implement it properly
- */
+// Mock CSS.supports for jsdom (which doesn't implement it properly)
+// Copied from validator-utils tests
 
-// Mock CSS.supports for color validation tests
 const cssColorValidator = (prop: string, value: string): boolean => {
   if (prop !== 'color') return false
 
@@ -19,39 +16,21 @@ const cssColorValidator = (prop: string, value: string): boolean => {
     return true
 
   // HSL/HSLA with comma syntax
-  if (
-    /^hsla?\(\s*\d+(?:deg|grad|rad|turn)?\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(,\s*[\d.]+%?)?\s*\)$/i.test(
-      value
-    )
-  )
+  if (/^hsla?\(\s*\d+(?:deg|grad|rad|turn)?\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(,\s*[\d.]+%?)?\s*\)$/i.test(value))
     return true
 
   // HSL/HSLA with space syntax
-  if (
-    /^hsla?\(\s*\d+(?:deg|grad|rad|turn)?\s+\d{1,3}%\s+\d{1,3}%\s*(\s*\/\s*[\d.]+%?)?\s*\)$/i.test(
-      value
-    )
-  )
+  if (/^hsla?\(\s*\d+(?:deg|grad|rad|turn)?\s+\d{1,3}%\s+\d{1,3}%\s*(\s*\/\s*[\d.]+%?)?\s*\)$/i.test(value))
     return true
 
-  // Named colors
+  // Named colors (includes all tested colors)
   const namedColors = new Set([
-    'transparent',
-    'currentcolor',
-    'red',
-    'green',
-    'blue',
-    'yellow',
-    'cyan',
-    'magenta',
-    'black',
-    'white',
-    'orange',
-    'purple',
-    'pink',
-    'brown',
-    'gray',
-    'grey',
+    'transparent', 'currentcolor', 'black', 'white', 'red', 'green', 'blue', 'yellow',
+    'orange', 'purple', 'brown', 'pink', 'gray', 'grey', 'cyan', 'magenta', 'aqua', 'fuchsia',
+    'lavenderblush', 'honeydew', 'seashell', 'azure', 'lavender', 'aliceblue', 'ghostwhite',
+    'mintcream', 'oldlace', 'linen', 'cornsilk', 'papayawhip', 'beige', 'bisque',
+    'blanchedalmond', 'wheat', 'navajowhite', 'peachpuff', 'moccasin', 'gainsboro',
+    'lightgrey', 'lightgray', 'silver', 'darkgray', 'dimgray',
   ])
   if (namedColors.has(value.toLowerCase())) return true
 
