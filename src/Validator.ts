@@ -938,7 +938,13 @@ export default class Validator {
     if (!input || input.disabled) return true
 
     // Skip inputs not in this form - use static Validator.validateSingle() for standalone inputs
-    if (!this.inputs.includes(input)) return true
+    if (!this.inputs.includes(input)) {
+      console.warn(
+        'Validator.validateSingle(): input is not in this form. Use static Validator.validateSingle() for standalone inputs.',
+        input
+      )
+      return true
+    }
 
     this.clearInputErrors(input)
 
