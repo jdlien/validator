@@ -1,6 +1,7 @@
 import Validator from '../src/Validator'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { setupTestForm } from './utils/setup'
+import { makeFile, setInputFiles } from './utils/files'
 
 describe('Validator', () => {
   let form: HTMLFormElement
@@ -72,6 +73,27 @@ describe('Validator', () => {
       expect(validator.inputErrors[formControl.name]).toContain(errorMessage)
     })
 
+    it('returns false and shows an error if a file input is required and empty', () => {
+      formControl.type = 'file'
+      formControl.required = true
+      setInputFiles(formControl, [])
+
+      const result = (validator as any).validateRequired(formControl)
+      expect(result).toBeFalsy()
+
+      expect(validator.inputErrors[formControl.name]).toContain(validator.messages.ERROR_REQUIRED)
+    })
+
+    it('returns true and shows no error if a required file input has files', () => {
+      formControl.type = 'file'
+      formControl.required = true
+      setInputFiles(formControl, [makeFile(10, 'doc.txt', 'text/plain')])
+
+      const result = (validator as any).validateRequired(formControl)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[formControl.name]).toEqual([])
+    })
+
     it('returns false and shows an error if the input is a single checkbox and not checked', () => {
       formControl.type = 'checkbox'
       formControl.required = true
@@ -139,6 +161,20 @@ describe('Validator', () => {
       expect(validator.inputErrors[radio1.name]).toContain(errorMessage)
       // Check that the message was not duplicated
       expect(validator.inputErrors[radio1.name].length).toBe(1)
+    })
+
+    it('returns true for required values on non-form-control inputs', () => {
+      const fakeControl = {
+        required: true,
+        value: '',
+        name: 'fake-control',
+        id: 'fake-control',
+        dataset: {},
+      }
+
+      const result = (validator as any).validateRequired(fakeControl)
+      expect(result).toBeTruthy()
+      expect(validator.inputErrors[fakeControl.name]).toBeUndefined()
     })
   }) // end validateRequired
 }) // end describe('Validator')

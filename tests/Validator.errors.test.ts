@@ -73,6 +73,25 @@ describe('Validator', () => {
       expect(errorEl.getAttribute('data-flux-error')).toBe('')
     })
 
+    it('falls back when a flux field has no error element', () => {
+      const fluxField = document.createElement('div')
+      fluxField.setAttribute('data-flux-field', '')
+      form.appendChild(fluxField)
+
+      const fluxInput = document.createElement('input')
+      fluxInput.type = 'text'
+      fluxInput.name = 'flux-input'
+      fluxInput.id = 'flux-input-id'
+      fluxField.appendChild(fluxInput)
+
+      const fallbackError = document.createElement('div')
+      fallbackError.id = 'flux-input-id-error'
+      form.appendChild(fallbackError)
+
+      const errorEl = (validator as any).getErrorEl(fluxInput)
+      expect(errorEl).toBe(fallbackError)
+    })
+
     it('returns error element by aria-describedby if not found by name or id', () => {
       const formControl3 = document.createElement('input')
       formControl3.type = 'text'
@@ -91,6 +110,22 @@ describe('Validator', () => {
       expect(errorEl3.id).toBe('form-control-3-error')
     })
 
+    it('falls back when aria-describedby target is missing', () => {
+      const formControl3 = document.createElement('input')
+      formControl3.type = 'text'
+      formControl3.setAttribute('aria-describedby', 'missing-error-id')
+      formControl3.name = 'form-control-3'
+      formControl3.id = 'form-control-3'
+      form.appendChild(formControl3)
+
+      const fallbackError = document.createElement('div')
+      fallbackError.id = 'form-control-3-error'
+      form.appendChild(fallbackError)
+
+      const errorEl3 = (validator as any).getErrorEl(formControl3)
+      expect(errorEl3).toBe(fallbackError)
+    })
+
     it('returns null if the input does not have an error element', () => {
       const formControl3 = document.createElement('input')
       formControl3.type = 'text'
@@ -100,6 +135,24 @@ describe('Validator', () => {
 
       const errorEl2 = (validator as any).getErrorEl(formControl3)
       expect(errorEl2).toBeNull()
+    })
+
+    it('returns error element by name when id-based error element does not exist', () => {
+      // Input has both id and name, but only name-based error element exists
+      const formControl4 = document.createElement('input')
+      formControl4.type = 'text'
+      formControl4.id = 'control-with-different-id'
+      formControl4.name = 'control-by-name'
+      form.appendChild(formControl4)
+
+      // Only create error element for the name, not the id
+      const errorDiv4 = document.createElement('div')
+      errorDiv4.id = 'control-by-name-error'
+      form.appendChild(errorDiv4)
+
+      const errorEl4 = (validator as any).getErrorEl(formControl4)
+      expect(errorEl4).toBeTruthy()
+      expect(errorEl4.id).toBe('control-by-name-error')
     })
 
     it('handles ids with special characters', () => {
@@ -156,6 +209,21 @@ describe('Validator', () => {
       ;(validator as any).addErrorMain()
       const errorEl = document.querySelector('#form-error-main')
       if (errorEl) expect(errorEl.parentNode).toBe(form)
+    })
+
+    it('reuses an existing form-error-main element when present', () => {
+      const existing = document.createElement('div')
+      existing.id = 'form-error-main'
+      existing.classList.add('hidden')
+      form.appendChild(existing)
+
+      const message = 'Existing error element'
+      ;(validator as any).addErrorMain(message)
+
+      const errorEl = form.querySelector('#form-error-main')
+      expect(errorEl).toBe(existing)
+      expect(errorEl?.innerHTML).toBe(message)
+      expect(form.querySelectorAll('#form-error-main')).toHaveLength(1)
     })
   }) // addErrorMain
 
@@ -335,8 +403,7 @@ describe('Validator', () => {
       input1.value = 'abc'
       form.appendChild(input1)
 
-      // Wait 60ms for debounce of init after adding new input
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      validator.init()
 
       valid = await validator.validate()
       ;(validator as any).showFormErrors()
@@ -545,9 +612,109 @@ describe('Validator', () => {
       expect(validator.inputErrors['input-id']).toEqual([])
       // Note: also checks that clearInputErrors will return if there's no errorEl
     })
+
+    it('clears group error styles when a checkable group becomes valid', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'group-radio-1'
+      radio1.name = 'group-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'group-radio-2'
+      radio2.name = 'group-radio'
+      form.appendChild(radio2)
+
+      const groupError = document.createElement('div')
+      groupError.id = 'group-radio-error'
+      groupError.classList.add('hidden')
+      form.appendChild(groupError)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeTruthy()
+        expect(radio2.classList.contains(errorClass)).toBeTruthy()
+      })
+
+      radio1.checked = true
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeFalsy()
+      })
+      expect(groupError.classList.contains('hidden')).toBeTruthy()
+      expect(groupError.textContent).toBe('')
+    })
+
+    it('does not clear group styles when no option is checked', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'unchecked-radio-1'
+      radio1.name = 'unchecked-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'unchecked-radio-2'
+      radio2.name = 'unchecked-radio'
+      form.appendChild(radio2)
+
+      const groupError = document.createElement('div')
+      groupError.id = 'unchecked-radio-error'
+      groupError.classList.add('hidden')
+      form.appendChild(groupError)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeTruthy()
+      })
+    })
+
+    it('clears group styles even when no error element is present', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'no-error-radio-1'
+      radio1.name = 'no-error-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'no-error-radio-2'
+      radio2.name = 'no-error-radio'
+      form.appendChild(radio2)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      radio1.checked = true
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeFalsy()
+      })
+    })
   }) // end clearInputErrors
 
-  describe('clearFormErrors', () => {
+  describe('clearAllErrors', () => {
     it('clears all error messages', () => {
       form.id = 'clear-all-errors-form'
       const formControl1 = document.createElement('input')
@@ -578,7 +745,7 @@ describe('Validator', () => {
 
       expect(validator.inputErrors[formControl1.name]).toContain(validator.messages.ERROR_GENERIC)
       expect(validator.inputErrors[formControl2.name]).toContain(validator.messages.ERROR_GENERIC)
-      ;(validator as any).clearFormErrors()
+      ;(validator as any).clearAllErrors()
 
       // validator.inputErrors should be empty
       expect(Object.values(validator.inputErrors).every((i) => i.length == 0)).toBeTruthy()
@@ -607,11 +774,11 @@ describe('Validator', () => {
 
       const mainError = form.querySelector('#form-error-main')
       expect(mainError).toBeTruthy()
-      ;(validator as any).clearFormErrors()
+      ;(validator as any).clearAllErrors()
 
       const mainErrorClassList = mainError?.classList
       expect(mainErrorClassList?.contains('hidden')).toBeTruthy()
       expect(mainErrorClassList?.contains('opacity-0')).toBeTruthy()
     })
-  }) // end clearFormErrors
+  }) // end clearAllErrors
 }) // describe('Validator')

@@ -9,8 +9,10 @@ lerna-debug.log*
 package-lock.json
 coverage
 demo.css
+demo/*.js
 
 node_modules
+.pnpm-store
 dist
 dist-ssr
 *.local

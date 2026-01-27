@@ -10,12 +10,12 @@ describe('Validator', () => {
       formElement = document.createElement('form')
       formElement.id = 'destroy-test-form'
       document.body.appendChild(formElement)
-      // Init with autoInit: true for observer tests
+      // Init with autoInit: true for baseline teardown tests
       validatorInstance = new Validator(formElement, { autoInit: true })
     })
 
     afterEach(() => {
-      // Clean up the form element from the DOM - auto-destroy will handle validator cleanup
+      validatorInstance.destroy()
       if (document.body.contains(formElement)) {
         document.body.removeChild(formElement)
       }
@@ -46,41 +46,6 @@ describe('Validator', () => {
 
       // Assert: novalidate should remain
       expect(formElement.hasAttribute('novalidate')).toBe(true)
-    })
-
-    it('disconnects the MutationObserver', () => {
-      const observer = (validatorInstance as any).formMutationObserver
-      expect(observer).toBeInstanceOf(MutationObserver)
-      const disconnectSpy = vi.spyOn(observer, 'disconnect')
-
-      validatorInstance.destroy()
-
-      expect(disconnectSpy).toHaveBeenCalledTimes(1)
-      expect((validatorInstance as any).formMutationObserver).toBeNull()
-    })
-
-    it('disconnects the auto-destroy observer', () => {
-      const observer = (validatorInstance as any).autoDestroyObserver
-      expect(observer).toBeInstanceOf(MutationObserver)
-      const disconnectSpy = vi.spyOn(observer, 'disconnect')
-
-      validatorInstance.destroy()
-
-      expect(disconnectSpy).toHaveBeenCalledTimes(1)
-      expect((validatorInstance as any).autoDestroyObserver).toBeNull()
-    })
-
-    it('clears the debounced init timer (timeoutId)', () => {
-      const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout')
-      // Arrange: Simulate an active debounce timer
-      const dummyTimeoutId = setTimeout(() => {}, 100)
-      ;(validatorInstance as any).timeoutId = dummyTimeoutId
-
-      // Act
-      validatorInstance.destroy()
-
-      // Assert: clearTimeout should be called with the correct ID
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(dummyTimeoutId)
     })
 
     it('clears the color sync timer (dispatchTimeout)', async () => {

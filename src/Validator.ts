@@ -1,12 +1,18 @@
-/** Form Validator used by EPL apps and www2. ©2023 JD Lien */
+/** Form Validator ©2026 JD Lien */
 
 // Import the validator utility functions
 import * as utils from '@jdlien/validator-utils'
 
+// CSS.escape polyfill for environments that don't support it (e.g., jsdom)
+const cssEscape =
+  typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    ? (s: string) => CSS.escape(s)
+    : (s: string) => s.replace(/([.#{}()\\?*[\]-])/g, '\\$1')
+
 export type FormControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 
 export interface ValidatorOptions {
-  messages?: object
+  messages?: Record<string, string>
   debug?: boolean
   autoInit?: boolean
   preventSubmit?: boolean
@@ -14,42 +20,101 @@ export interface ValidatorOptions {
   errorMainClasses?: string
   errorInputClasses?: string
   showMainError?: boolean
+  scrollToError?: boolean
+  scrollToErrorDelay?: number
+  validateOnBlur?: boolean
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
+  /** Custom validators available to this instance (highest priority lookup) */
+  validators?: ValidatorRegistry
+}
+
+export interface InputHandler {
+  parse: (value: string, dateFormat?: string) => string
+  isValid: (value: string) => boolean
+  errorKey: string
 }
 
 export interface InputHandlers {
-  [key: string]: {
-    parse: (value: string, dateFormat?: string) => string
-    isValid: (value: string) => boolean
-    error: string
-  }
+  [key: string]: InputHandler
 }
 
-export class ValidationSuccessEvent extends Event {
-  submitEvent: Event
-  constructor(submitEvent: Event) {
-    super('validationSuccess', { cancelable: true })
-    this.submitEvent = submitEvent
-  }
+export type ValidationEventType = 'validationSuccess' | 'validationError'
+
+/** Result returned by a custom validator function */
+export interface ValidationResult {
+  valid: boolean
+  message?: string
+  messages?: string[]
+  error?: boolean
 }
 
-export class ValidationErrorEvent extends Event {
-  submitEvent: Event
-  constructor(submitEvent: Event) {
-    super('validationError', { cancelable: true })
-    this.submitEvent = submitEvent
+/** A custom validator function that validates an input value */
+export type ValidatorFunction = (
+  value: string
+) => boolean | string | ValidationResult | Promise<boolean | string | ValidationResult>
+
+/** A registry mapping validator names to their functions */
+export type ValidatorRegistry = Record<string, ValidatorFunction>
+
+export class ValidationEvent extends Event {
+  constructor(
+    type: ValidationEventType,
+    public submitEvent: Event
+  ) {
+    super(type, { cancelable: true })
   }
 }
 
 export default class Validator {
+  // Static (global) validator registry
+  private static globalValidators: ValidatorRegistry = {}
+
+  /** Register a validator function globally (available to all instances) */
+  public static registerValidator(name: string, fn: ValidatorFunction): void {
+    Validator.globalValidators[name] = fn
+  }
+
+  /** Remove a globally registered validator */
+  public static unregisterValidator(name: string): void {
+    delete Validator.globalValidators[name]
+  }
+
+  /** Get a copy of all globally registered validators */
+  public static getValidators(): Readonly<ValidatorRegistry> {
+    return { ...Validator.globalValidators }
+  }
+
+  /** Remove all globally registered validators */
+  public static clearValidators(): void {
+    Validator.globalValidators = {}
+  }
+
+  /** Validates a single input without needing a Validator instance. */
+  public static async validateSingle(
+    input: FormControl | null,
+    options: ValidatorOptions = {}
+  ): Promise<boolean> {
+    if (!input || input.disabled) return true
+    const temp = new Validator(document.createElement('form'), { autoInit: false, ...options })
+    temp.inputs = [input] // Add input so instance method will validate it
+    return temp.validateSingle(input)
+  }
+
+  /** Clears errors from a single input without needing a Validator instance. */
+  public static clearInputErrors(input: FormControl | null, options: ValidatorOptions = {}): void {
+    if (!input) return
+    const temp = new Validator(document.createElement('form'), { autoInit: false, ...options })
+    temp.clearInputErrors(input)
+  }
+
   form: HTMLFormElement
   inputs: FormControl[] = []
   // Keeps track of error messages accumulated for each input
   inputErrors: { [key: string]: string[] } = {}
 
   // Default error messages.
-  messages = {
+  messages: Record<string, string> = {
     ERROR_MAIN: 'There is a problem with your submission.',
     ERROR_GENERIC: 'Enter a valid value.',
     ERROR_REQUIRED: 'This field is required.',
@@ -57,6 +122,8 @@ export default class Validator {
     CHECKED_REQUIRED: 'This must be checked.',
     ERROR_MAXLENGTH: 'This must be ${val} characters or fewer.',
     ERROR_MINLENGTH: 'This must be at least ${val} characters.',
+    ERROR_MIN_VALUE: 'The value must be at least ${val}.',
+    ERROR_MAX_VALUE: 'The value must be at most ${val}.',
     ERROR_NUMBER: 'This must be a number.',
     ERROR_INTEGER: 'This must be a whole number.',
     ERROR_TEL: 'This is not a valid telephone number.',
@@ -66,12 +133,16 @@ export default class Validator {
     ERROR_DATE: 'This is not a valid date.',
     ERROR_DATE_PAST: 'The date must be in the past.',
     ERROR_DATE_FUTURE: 'The date must be in the future.',
+    ERROR_DATE_TODAY: 'The date must be today.',
     ERROR_DATE_RANGE: 'The date is outside the allowed range.',
     ERROR_DATETIME: 'This is not a valid date and time.',
     ERROR_TIME: 'This is not a valid time.',
-    ERROR_TIME_RANGE: 'The time is outside the allowed range.',
     ERROR_URL: 'This is not a valid URL.',
     ERROR_COLOR: 'This is not a valid CSS colour.',
+    ERROR_FILE_TYPE: 'This file type is not allowed.',
+    ERROR_FILE_MAX_FILES: 'You can upload up to ${val} file(s).',
+    ERROR_FILE_MAX_SIZE: 'Each file must be ${val} or smaller.',
+    ERROR_FILE_MIN_SIZE: 'Each file must be at least ${val}.',
     ERROR_CUSTOM_VALIDATION: 'There was a problem validating this field.',
   }
   // Show debug messages in the console
@@ -84,6 +155,12 @@ export default class Validator {
   hiddenClasses: string
   // Whether to show the main error message
   showMainError: boolean = true
+  // Whether to scroll to the first error on validation failure
+  scrollToError: boolean = false
+  // Delay in ms before scrolling to the first error (allows animations to complete)
+  scrollToErrorDelay: number = 0
+  // Whether to validate inputs when they lose focus (even if unchanged)
+  validateOnBlur: boolean = false
 
   // Classes to apply to the main error message (space-separated)
   errorMainClasses: string
@@ -92,20 +169,19 @@ export default class Validator {
   // Timeout for dispatching events on input (used by syncColorInput)
   private dispatchTimeout: number = 0
 
-  // Timeout ID for debounced functions
-  private timeoutId: number = 0
-  // Instance of the MutationObserver used to re-initialize on DOM changes
-  private formMutationObserver: MutationObserver | null = null
-  // Instance of the MutationObserver used to auto-destroy when form is removed from DOM
-  private autoDestroyObserver: MutationObserver | null = null
-  // Debounced version of the init function
-  private debouncedInit: () => void
+  // Pre-split class arrays for performance (avoid repeated .split(' ') calls)
+  private hiddenClassesArray: string[] = []
+  private errorMainClassesArray: string[] = []
+  private errorInputClassesArray: string[] = []
 
   // Whether the original form has a novalidate attribute
   private originalNoValidate: boolean = false
 
   private validationSuccessCallback: (event: Event) => void
   private validationErrorCallback: (event: Event) => void
+
+  // Instance validator registry (highest priority lookup)
+  private validators: ValidatorRegistry = {}
 
   // Sets defaults and adds event listeners
   constructor(form: HTMLFormElement, options: ValidatorOptions = {}) {
@@ -134,54 +210,31 @@ export default class Validator {
 
     this.errorInputClasses = options.errorInputClasses || 'border-red-600 dark:border-red-500'
     this.showMainError = options.showMainError !== undefined ? options.showMainError : true
+    this.scrollToError = options.scrollToError || false
+    this.scrollToErrorDelay = options.scrollToErrorDelay || 0
+    this.validateOnBlur = options.validateOnBlur || false
+
+    // Pre-split class strings for performance
+    this.hiddenClassesArray = this.hiddenClasses.split(' ').filter(Boolean)
+    this.errorMainClassesArray = this.errorMainClasses.split(' ').filter(Boolean)
+    this.errorInputClassesArray = this.errorInputClasses.split(' ').filter(Boolean)
+
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
 
-    this.debouncedInit = this.debounce(this.init.bind(this), 45)
-    if (this.autoInit) this.init()
-
-    // Re-initialize the form if it altered in the DOM
-    // Store the observer instance so it can be disconnected later.
-    // FIXME: This doesn't seem to work well if I add a lot of things at once. Needs more testing.
-    this.formMutationObserver = new MutationObserver(() => this.autoInit && this.debouncedInit())
-    this.formMutationObserver.observe(form, {
-      childList: true,
-    })
-
-    // Set up automatic cleanup when form is removed from DOM
-    this.setupAutoDestroy()
-  }
-
-  debounce<T extends (...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): (...funcArgs: Parameters<T>) => void {
-    return (...args: Parameters<T>): void => {
-      clearTimeout(this.timeoutId as number)
-      this.timeoutId = window.setTimeout(() => func(...args), wait)
+    // Merge instance validators from options
+    if (options.validators) {
+      Object.assign(this.validators, options.validators)
     }
-  }
 
-  // Sets up automatic destruction when form is removed from DOM
-  private setupAutoDestroy(): void {
-    this.autoDestroyObserver = new MutationObserver(() => {
-      // Check if the form is no longer in the document
-      if (!document.contains(this.form)) {
-        this.destroy()
-      }
-    })
-    
-    // Observe the entire document for removal of the form or its ancestors
-    this.autoDestroyObserver.observe(document.body, {
-      childList: true,
-      subtree: true
-    })
+    if (this.autoInit) this.init()
   }
 
   // Event handler references
   private submitHandlerRef = this.submitHandler.bind(this)
   private inputInputHandlerRef = this.inputInputHandler.bind(this)
   private inputChangeHandlerRef = this.inputChangeHandler.bind(this)
+  private inputBlurHandlerRef = this.inputBlurHandler.bind(this)
   private inputKeydownHandlerRef = this.inputKeydownHandler.bind(this)
 
   public addEventListeners(): void {
@@ -189,6 +242,9 @@ export default class Validator {
     this.form.addEventListener('input', this.inputInputHandlerRef)
     this.form.addEventListener('change', this.inputChangeHandlerRef)
     this.form.addEventListener('keydown', this.inputKeydownHandlerRef)
+    if (this.validateOnBlur) {
+      this.form.addEventListener('blur', this.inputBlurHandlerRef, true)
+    }
   }
 
   public removeEventListeners(): void {
@@ -196,10 +252,14 @@ export default class Validator {
     this.form.removeEventListener('input', this.inputInputHandlerRef)
     this.form.removeEventListener('change', this.inputChangeHandlerRef)
     this.form.removeEventListener('keydown', this.inputKeydownHandlerRef)
+    this.form.removeEventListener('blur', this.inputBlurHandlerRef, true)
   }
 
   // Adds event listeners to all formFields in a specified form
   init(): void {
+    // Reset inputErrors to clear any stale entries from removed inputs
+    this.inputErrors = {}
+
     // Get all the inputs in the form but ensure we don't include button, fieldset, or output elements
     this.inputs = Array.from(this.form.elements).filter(
       (element) =>
@@ -229,8 +289,7 @@ export default class Validator {
     // Scope search to current form. I originally used getElementById to search the
     // entire document, but that caused issues when there were multiple forms on a page.
     const getElById = (id: string): HTMLElement | null => {
-      const escapedId = id.replace(/([.#{}()\\?*[\]-])/g, '\\$1')
-      return this.form.querySelector(`#${escapedId}`) || document.getElementById(id) || null
+      return this.form.querySelector(`#${cssEscape(id)}`) || document.getElementById(id) || null
     }
 
     // Support for Flux-style error messages. Must come before the aria-describedby check,
@@ -268,16 +327,11 @@ export default class Validator {
     }
 
     // Apply classes and message
-    this.errorMainClasses.split(' ').forEach((className) => {
-      errorEl!.classList.add(className)
-    })
-
+    errorEl!.classList.add(...this.errorMainClassesArray)
     errorEl!.innerHTML = message || this.messages.ERROR_MAIN
 
     // Ensure it's visible (might have been hidden previously)
-    this.hiddenClasses.split(' ').forEach((className) => {
-      errorEl!.classList.remove(className)
-    })
+    errorEl!.classList.remove(...this.hiddenClassesArray)
   }
 
   // Helper method to find the main error element
@@ -323,26 +377,23 @@ export default class Validator {
     el.setAttribute('aria-invalid', 'true')
 
     // Apply input classes to indicate an error on the input itself
-    this.errorInputClasses.split(' ').forEach((className) => {
-      el.classList.add(className)
-    })
+    el.classList.add(...this.errorInputClassesArray)
 
     // Add the error messages to the error element and show it
     let errorEl = this.getErrorEl(el)
     if (!errorEl) return
 
     errorEl.innerHTML = errors.join('<br>')
-
-    this.hiddenClasses.split(' ').forEach((className) => {
-      if (errorEl) errorEl.classList.remove(className)
-    })
+    errorEl.classList.remove(...this.hiddenClassesArray)
   }
 
   // Shows all the error messages for all the inputs of the form, and a main error message
-  // TODO: Consider (optionally) scrolling to the first error message
   private showFormErrors(): void {
     // Show any errors from validation
     this.inputs.forEach((el) => this.showInputErrors(el))
+
+    // Find the first input with errors for potential scroll
+    const firstErrorInput = this.inputs.find((el) => this.inputErrors[el.name || el.id]?.length > 0)
 
     // If there are any input errors and we should show the main error
     if (
@@ -356,48 +407,78 @@ export default class Validator {
         if (!mainErrorElement.innerHTML) {
           mainErrorElement.innerHTML = this.messages.ERROR_MAIN
         }
-        this.hiddenClasses.split(' ').forEach((className) => {
-          mainErrorElement!.classList.remove(className)
-        })
+        mainErrorElement.classList.remove(...this.hiddenClassesArray)
       } else {
         // If no main error element exists, add it (which also makes it visible)
         this.addErrorMain()
       }
     }
+
+    // Scroll to first error and focus if enabled
+    if (this.scrollToError && firstErrorInput) {
+      const scrollAndFocus = () => {
+        firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        // Use preventScroll to avoid focus() overriding the smooth scroll
+        firstErrorInput.focus({ preventScroll: true })
+      }
+      if (this.scrollToErrorDelay > 0) {
+        setTimeout(scrollAndFocus, this.scrollToErrorDelay)
+      } else {
+        scrollAndFocus()
+      }
+    }
   }
 
-  // Clears error messages from an input and removes its errors from the inputErrors array
-  private clearInputErrors(el: FormControl): void {
-    this.inputErrors[el.name || el.id] = []
+  /** Clears error messages from an input and removes its errors from the inputErrors array */
+  public clearInputErrors(el: FormControl): void {
+    const key = el.name || el.id
+    this.inputErrors[key] = []
+
+    if (
+      el instanceof HTMLInputElement &&
+      (el.type === 'checkbox' || el.type === 'radio') &&
+      el.name
+    ) {
+      const groupName = cssEscape(el.name)
+      if (this.form.querySelector(`input[name="${groupName}"]:checked`)) {
+        const groupInputs = this.form.querySelectorAll(`input[name="${groupName}"]`)
+        groupInputs.forEach((input) => {
+          input.removeAttribute('aria-invalid')
+          input.classList.remove(...this.errorInputClassesArray)
+        })
+
+        const errorEl = this.getErrorEl(el)
+        if (errorEl) {
+          errorEl.classList.add(...this.hiddenClassesArray)
+          errorEl.textContent = ''
+        }
+        return
+      }
+    }
 
     // Remove the aria-invalid attribute from the input
     el.removeAttribute('aria-invalid')
 
+    // Remove the error style from the input itself (must happen even without errorEl)
+    el.classList.remove(...this.errorInputClassesArray)
+
     let errorEl = this.getErrorEl(el)
     if (!errorEl) return
 
-    // Remove the error style
-    this.errorInputClasses.split(' ').forEach((className) => {
-      el.classList.remove(className)
-    })
-
     // Hide the error element
-    this.hiddenClasses.split(' ').forEach((className) => {
-      if (errorEl) errorEl.classList.add(className)
-    })
+    errorEl.classList.add(...this.hiddenClassesArray)
 
     // Clear the error message
     // TODO: This needs to happen on transitionend if we want to animate the error message out
     errorEl.textContent = ''
   }
 
-  private clearFormErrors(): void {
+  /** Clears the main error banner and all input errors */
+  public clearAllErrors(): void {
     // Find the main error element (form-specific or generic) and hide it
     const mainErrorElement = this._getMainErrorElement()
     if (mainErrorElement) {
-      this.hiddenClasses.split(' ').forEach((className) => {
-        mainErrorElement.classList.add(className)
-      })
+      mainErrorElement.classList.add(...this.hiddenClassesArray)
       // Optionally clear the content after hiding
       // mainErrorElement.innerHTML = ''
     }
@@ -406,20 +487,32 @@ export default class Validator {
     this.inputs.forEach((el) => this.clearInputErrors(el))
   }
 
+  private hasInputValue(el: FormControl): boolean {
+    if (el instanceof HTMLInputElement && el.type === 'file') {
+      return !!el.files && el.files.length > 0
+    }
+    return el.value.length > 0
+  }
+
   // Validates a required input and returns true if it's valid.
   // Shows an error if the input is required and empty.
   private validateRequired(el: FormControl): boolean {
     let valid = true
+    const isCheckable =
+      el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type)
+    const isFileInput = el instanceof HTMLInputElement && el.type === 'file'
+    const isEmpty = isFileInput
+      ? !this.hasInputValue(el)
+      : el.value === '' || (isCheckable && !el.checked)
     if (
       el.required &&
-      (el.value === '' ||
-        (el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type) && !el.checked))
+      isEmpty
     ) {
       // Handle checkboxes and radio buttons. Check that at least one of any name group is checked
       // Check that any checkbox of a group of checkboxes is checked
       // This assumes the checkbox or radio button is in a group... if it's not,
       // we can specify a default error message with error=
-      if (el instanceof HTMLInputElement && ['checkbox', 'radio'].includes(el.type)) {
+      if (isCheckable) {
         let groupChecked = false
         let groupName = el.name
         const groupInputs = this.form.querySelectorAll(`input[name="${groupName}"]`)
@@ -453,6 +546,8 @@ export default class Validator {
     let valid = true
     if (el.disabled) return valid
 
+    if (el instanceof HTMLInputElement && el.type === 'file') return valid
+
     if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.value.length) {
       // prettier-ignore
       let minLength = el.minLength > 0 ? el.minLength
@@ -482,62 +577,105 @@ export default class Validator {
     return valid
   }
 
+  // Validates min/max numeric value constraints
+  private validateValue(el: FormControl): boolean {
+    let valid = true
+    if (el.disabled) return valid
+    if (!(el instanceof HTMLInputElement) || !el.value.length) return valid
+
+    // Only apply to numeric types
+    const numericTypes = ['number', 'integer', 'float', 'decimal']
+    const dataType = el.dataset.type || el.type
+    if (!numericTypes.includes(dataType) && !numericTypes.includes(el.type)) return valid
+
+    const numValue = parseFloat(el.value)
+    if (isNaN(numValue)) return valid // Let type validation handle invalid numbers
+
+    // Get min from data-min, then native min attribute
+    const minAttr = el.dataset.min ?? el.min
+    const maxAttr = el.dataset.max ?? el.max
+
+    if (minAttr !== undefined && minAttr !== '') {
+      const minValue = parseFloat(minAttr)
+      if (!isNaN(minValue) && numValue < minValue) {
+        valid = false
+        this.addInputError(el, this.messages.ERROR_MIN_VALUE.replace('${val}', minAttr))
+      }
+    }
+
+    if (maxAttr !== undefined && maxAttr !== '') {
+      const maxValue = parseFloat(maxAttr)
+      if (!isNaN(maxValue) && numValue > maxValue) {
+        valid = false
+        this.addInputError(el, this.messages.ERROR_MAX_VALUE.replace('${val}', maxAttr))
+      }
+    }
+
+    return valid
+  }
+
   // A map of input handlers that can be used for each type of input.
+  // errorKey references this.messages at validation time to support custom messages
+  // Handler for number types (shared by float/decimal aliases)
+  private numberHandler: InputHandler = {
+    parse: utils.parseNumber,
+    isValid: utils.isNumber,
+    errorKey: 'ERROR_NUMBER',
+  }
+
   private inputHandlers: InputHandlers = {
-    number: {
-      parse: utils.parseNumber,
-      isValid: utils.isNumber,
-      error: this.messages.ERROR_NUMBER,
-    },
+    number: this.numberHandler,
+    float: this.numberHandler,
+    decimal: this.numberHandler,
     integer: {
       parse: utils.parseInteger,
       isValid: utils.isInteger,
-      error: this.messages.ERROR_INTEGER,
+      errorKey: 'ERROR_INTEGER',
     },
     tel: {
       parse: utils.parseNANPTel,
       isValid: utils.isNANPTel,
-      error: this.messages.ERROR_TEL,
+      errorKey: 'ERROR_TEL',
     },
     email: {
       parse: (value: string) => value.trim(),
       isValid: utils.isEmail,
-      error: this.messages.ERROR_EMAIL,
+      errorKey: 'ERROR_EMAIL',
     },
     zip: {
       parse: utils.parseZip,
       isValid: utils.isZip,
-      error: this.messages.ERROR_ZIP,
+      errorKey: 'ERROR_ZIP',
     },
     postal: {
       parse: utils.parsePostalCA,
       isValid: utils.isPostalCA,
-      error: this.messages.ERROR_POSTAL,
+      errorKey: 'ERROR_POSTAL',
     },
     url: {
       parse: utils.parseUrl,
       isValid: utils.isUrl,
-      error: this.messages.ERROR_URL,
+      errorKey: 'ERROR_URL',
     },
     date: {
       parse: utils.parseDateToString,
       isValid: utils.isDate,
-      error: this.messages.ERROR_DATE,
+      errorKey: 'ERROR_DATE',
     },
     datetime: {
       parse: utils.parseDateTimeToString,
       isValid: utils.isDateTime,
-      error: this.messages.ERROR_DATETIME,
+      errorKey: 'ERROR_DATETIME',
     },
     time: {
       parse: utils.parseTimeToString,
       isValid: utils.isTime,
-      error: this.messages.ERROR_TIME,
+      errorKey: 'ERROR_TIME',
     },
     color: {
       parse: (value: string) => value.trim().toLowerCase(),
       isValid: utils.isColor,
-      error: this.messages.ERROR_COLOR,
+      errorKey: 'ERROR_COLOR',
     },
   }
 
@@ -554,7 +692,8 @@ export default class Validator {
       if (parsedValue.length && !nonUpdateableTypes.includes(el.type)) el.value = parsedValue
 
       if (!inputHandler.isValid(el.value)) {
-        this.addInputError(el, inputHandler.error)
+        // Look up error message at validation time to support custom messages
+        this.addInputError(el, this.messages[inputHandler.errorKey])
         return false
       }
     }
@@ -571,6 +710,7 @@ export default class Validator {
         let msg = el.dataset.errorDefault || this.messages.ERROR_DATE_RANGE
         if (range === 'past') msg = this.messages.ERROR_DATE_PAST
         else if (range === 'future') msg = this.messages.ERROR_DATE_FUTURE
+        else if (range === 'today') msg = this.messages.ERROR_DATE_TODAY
         this.addInputError(el, msg)
         return false
       }
@@ -579,15 +719,142 @@ export default class Validator {
     return true
   }
 
+  private parseAcceptList(accept: string): { mimeTypes: string[]; extensions: string[] } {
+    const mimeTypes: string[] = []
+    const extensions: string[] = []
+
+    for (const raw of accept.split(',')) {
+      const token = raw.trim().toLowerCase()
+      if (!token) continue
+      if (token.startsWith('.')) extensions.push(token)
+      else if (token.includes('/')) mimeTypes.push(token)
+    }
+
+    return { mimeTypes, extensions }
+  }
+
+  private validateFileInput(el: HTMLInputElement): boolean {
+    if (el.type !== 'file') return true
+    const files = Array.from(el.files || [])
+    if (!files.length) return true
+
+    let valid = true
+
+    const maxFiles = Number.parseInt(el.dataset.maxFiles || '', 10)
+    if (Number.isFinite(maxFiles) && maxFiles >= 0 && files.length > maxFiles) {
+      this.addInputError(
+        el,
+        this.messages.ERROR_FILE_MAX_FILES.replace('${val}', maxFiles.toString())
+      )
+      valid = false
+    }
+
+    const minSizeAttr = el.dataset.minFileSize || ''
+    if (minSizeAttr) {
+      const minSize = utils.parseBytes(minSizeAttr)
+      if (Number.isNaN(minSize)) {
+        if (this.debug) console.warn(`Validator: Invalid min-file-size "${minSizeAttr}"`)
+        this.addInputError(el, this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', minSizeAttr))
+        valid = false
+      } else {
+        const tooSmall = files.some((file) => file.size < minSize)
+        if (tooSmall) {
+          this.addInputError(
+            el,
+            this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', utils.formatBytes(minSize))
+          )
+          valid = false
+        }
+      }
+    }
+
+    const maxSizeAttr = el.dataset.maxFileSize || ''
+    if (maxSizeAttr) {
+      const maxSize = utils.parseBytes(maxSizeAttr)
+      if (Number.isNaN(maxSize)) {
+        if (this.debug) console.warn(`Validator: Invalid max-file-size "${maxSizeAttr}"`)
+        this.addInputError(el, this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', maxSizeAttr))
+        valid = false
+      } else {
+        const tooLarge = files.some((file) => file.size > maxSize)
+        if (tooLarge) {
+          this.addInputError(
+            el,
+            this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', utils.formatBytes(maxSize))
+          )
+          valid = false
+        }
+      }
+    }
+
+    const accept = (el.dataset.accept ?? el.accept ?? '').trim()
+    if (accept) {
+      const { mimeTypes, extensions } = this.parseAcceptList(accept)
+      if (mimeTypes.length || extensions.length) {
+        const matchesMime = (type: string) =>
+          mimeTypes.some((entry) => {
+            if (entry === '*/*') return true
+            if (entry.endsWith('/*')) return type.startsWith(entry.slice(0, -1))
+            return entry === type
+          })
+
+        const isAllowed = (file: File) => {
+          const type = file.type.toLowerCase()
+          const name = file.name.toLowerCase()
+          const allowedByMime = type && mimeTypes.length ? matchesMime(type) : false
+          const allowedByExt = extensions.length ? extensions.some((ext) => name.endsWith(ext)) : false
+          return allowedByMime || allowedByExt
+        }
+
+        if (files.some((file) => !isAllowed(file))) {
+          this.addInputError(el, this.messages.ERROR_FILE_TYPE)
+          valid = false
+        }
+      }
+    }
+
+    return valid
+  }
+
   // Validates a pattern from data-pattern or pattern; data-pattern takes precedence
+  // Anchors pattern to match HTML5 pattern attribute behavior (full value must match)
   private validatePattern(el: FormControl): boolean {
+    if (el instanceof HTMLInputElement && el.type === 'file') return true
     const pattern = el.dataset.pattern || (el instanceof HTMLInputElement && el.pattern) || null
-    if (pattern && !new RegExp(pattern).test(el.value)) {
+    if (!pattern) return true
+
+    let regex: RegExp
+    try {
+      // Anchor pattern to require full match (HTML5 pattern behavior)
+      regex = new RegExp(`^(?:${pattern})$`)
+    } catch {
+      // Invalid regex pattern - treat as pass-through
+      return true
+    }
+
+    if (!regex.test(el.value)) {
       this.addInputError(el) // Use the default error message
       return false
     }
 
     return true
+  }
+
+  /**
+   * Resolves a validator function by name using three-tier lookup:
+   * 1. Instance registry (this.validators)
+   * 2. Static registry (Validator.globalValidators)
+   * 3. Window object (legacy fallback)
+   */
+  private resolveValidator(name: string): ValidatorFunction | undefined {
+    // 1. Instance registry (highest priority)
+    if (this.validators[name]) return this.validators[name]
+    // 2. Static registry
+    if (Validator.globalValidators[name]) return Validator.globalValidators[name]
+    // 3. Window object (legacy fallback)
+    const windowFn = window[name as keyof Window]
+    if (typeof windowFn === 'function') return windowFn as ValidatorFunction
+    return undefined
   }
 
   /**
@@ -605,8 +872,8 @@ export default class Validator {
     if (el.disabled) return true
     const validation = el.dataset.validation
     if (!validation || typeof validation !== 'string') return true
-    const validationFn: Function = window[validation as keyof Window] as Function
-    if (!validationFn || typeof validationFn !== 'function') return true
+    const validationFn = this.resolveValidator(validation)
+    if (!validationFn) return true
 
     let result: any
     try {
@@ -626,15 +893,20 @@ export default class Validator {
   // Validates an input with a value and returns true if it's valid
   // Checks inputs defined in the inputHandlers map, pattern, and date range,
   private async validateInput(el: FormControl): Promise<boolean> {
-    if (!(el instanceof HTMLInputElement) || !el.value.length) return true
+    if (!(el instanceof HTMLInputElement) || !this.hasInputValue(el)) return true
 
     let valid = true
+    const isFileInput = el.type === 'file'
 
     // Skip disabled inputs
     if (el.disabled) return valid
-    valid = this.validateInputType(el) && valid
-    valid = this.validateDateRange(el) && valid
-    valid = this.validatePattern(el) && valid
+    if (isFileInput) {
+      valid = this.validateFileInput(el) && valid
+    } else {
+      valid = this.validateInputType(el) && valid
+      valid = this.validateDateRange(el) && valid
+      valid = this.validatePattern(el) && valid
+    }
     valid = (await this.validateCustom(el)) && valid
 
     return valid
@@ -650,14 +922,49 @@ export default class Validator {
       if (el.disabled) continue
       valid = this.validateRequired(el) && valid
       valid = this.validateLength(el) && valid
+      valid = this.validateValue(el) && valid
       valid = (await this.validateInput(el)) && valid
       // Validate custom functions here if value is empty, as they won't be
       // evaluated by validateInput, which only checks inputs with a value.
-      if (!el.value.length) valid = (await this.validateCustom(el)) && valid
+      if (!this.hasInputValue(el)) valid = (await this.validateCustom(el)) && valid
     }
 
     return valid
   } //end validate()
+
+  /**
+   * Validates a single input programmatically and displays any error messages.
+   * Useful for validating inputs on demand (e.g., in multi-step forms or custom UI flows).
+   * @param input The input element to validate
+   * @returns A promise that resolves to true if the input is valid, false otherwise
+   */
+  public async validateSingle(input: FormControl | null): Promise<boolean> {
+    // Skip null or disabled inputs
+    if (!input || input.disabled) return true
+
+    // Skip inputs not in this form - use static Validator.validateSingle() for standalone inputs
+    if (!this.inputs.includes(input)) {
+      console.warn(
+        'Validator.validateSingle(): input is not in this form. Use static Validator.validateSingle() for standalone inputs.',
+        input
+      )
+      return true
+    }
+
+    this.clearInputErrors(input)
+
+    let valid = true
+    valid = this.validateRequired(input) && valid
+    valid = this.validateLength(input) && valid
+    valid = this.validateValue(input) && valid
+    valid = (await this.validateInput(input)) && valid
+    // Validate custom functions if value is empty, as validateInput
+    // only checks inputs with a value.
+    if (!this.hasInputValue(input)) valid = (await this.validateCustom(input)) && valid
+
+    this.showInputErrors(input)
+    return valid
+  }
 
   private isSubmitting = false
   private async submitHandler(e: Event): Promise<void> {
@@ -665,27 +972,26 @@ export default class Validator {
     e.preventDefault()
 
     // Clear any error messages
-    this.clearFormErrors()
+    this.clearAllErrors()
     let valid = await this.validate(e)
     // Show messages for any invalid inputs and show a large error message
     this.showFormErrors()
 
     // External functions can prevent the form from submitting
     // by calling e.preventDefault() in the validationSuccess event
-    const validationSuccessEvent = new ValidationSuccessEvent(e)
-    const validationErrorEvent = new ValidationErrorEvent(e)
+    const validationEvent = new ValidationEvent(valid ? 'validationSuccess' : 'validationError', e)
+
+    this.form.dispatchEvent(validationEvent)
 
     if (valid) {
-      this.form.dispatchEvent(validationSuccessEvent)
       if (this.validationSuccessCallback) this.validationSuccessCallback(e)
     } else {
-      this.form.dispatchEvent(validationErrorEvent)
       if (this.validationErrorCallback) this.validationErrorCallback(e)
     }
 
     if (valid && !this.preventSubmit) {
       this.isSubmitting = true
-      if (!validationSuccessEvent.defaultPrevented) this.form.submit()
+      if (!validationEvent.defaultPrevented) this.form.submit()
       this.isSubmitting = false
     }
   }
@@ -699,14 +1005,46 @@ export default class Validator {
   }
 
   private async inputChangeHandler(e: Event): Promise<void> {
-    if (!(e.target instanceof HTMLInputElement) || this.shouldSkipValidation(e.target)) return
+    const target = e.target
+    // Handle all form control types: input, select, and textarea
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) ||
+      this.shouldSkipValidation(target)
+    )
+      return
 
     // Clear and reset error messages for the input
-    this.clearInputErrors(e.target)
-    this.validateLength(e.target)
-    await this.validateInput(e.target)
+    this.clearInputErrors(target)
+    this.validateLength(target)
+    await this.validateInput(target)
     // Show any error messages for the input after validation
-    this.showInputErrors(e.target)
+    this.showInputErrors(target)
+  }
+
+  // Validates on blur even if value unchanged (catches touched-but-empty required fields)
+  private async inputBlurHandler(e: FocusEvent): Promise<void> {
+    const target = e.target
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) ||
+      this.shouldSkipValidation(target)
+    )
+      return
+
+    this.clearInputErrors(target)
+    this.validateRequired(target)
+    this.validateLength(target)
+    this.validateValue(target)
+    await this.validateInput(target)
+    if (!this.hasInputValue(target)) await this.validateCustom(target)
+    this.showInputErrors(target)
   }
 
   private inputInputHandler(e: Event) {
@@ -728,23 +1066,29 @@ export default class Validator {
   // Sync color inputs (data-type="color") with an associated native color input type
   private syncColorInput(e: Event): void {
     let input = e.target as HTMLInputElement
-    let colorInput = input
+    let colorInput: HTMLInputElement | null = input
 
-    if (input.type === 'color')
-      colorInput = this.form.querySelector(`#${input.id.replace(/-color/, '')}`) as HTMLInputElement
+    if (input.type === 'color') {
+      colorInput = this.form.querySelector(`#${cssEscape(input.id.replace(/-color$/, ''))}`)
+      if (!colorInput) return // No paired text input found
+    }
 
-    let colorLabel = this.form.querySelector(`#${colorInput.id}-color-label`) as HTMLInputElement
+    let colorLabel = this.form.querySelector(
+      `#${cssEscape(colorInput.id)}-color-label`
+    ) as HTMLElement | null
 
     // Update the HTML color picker input and its label background when color input changes
     if ((input.dataset.type || '') === 'color') {
-      let colorPicker = this.form.querySelector(`input#${input.id}-color`) as HTMLInputElement
+      let colorPicker = this.form.querySelector(
+        `input#${cssEscape(input.id)}-color`
+      ) as HTMLInputElement
 
       if (!colorPicker || !utils.isColor(input.value)) return
       colorPicker.value = utils.parseColor(input.value)
     }
 
     // Update the color input and label background when the HTML color picker is changed
-    if (input.type === 'color') colorInput.value = input.value
+    if (input.type === 'color' && colorInput) colorInput.value = input.value
 
     if (colorLabel) colorLabel.style.backgroundColor = input.value
 
@@ -756,41 +1100,49 @@ export default class Validator {
     }, 200)
   }
 
-  // Support using arrow keys to cycle through numbers.
-  // Other handling for keyboard events can be done here
+  // Support using arrow keys to increment/decrement numeric fields.
+  // Use data-arrow-step to customize step size, or set to "" to disable.
   private inputKeydownHandler(e: KeyboardEvent) {
     if (!(e.target instanceof HTMLInputElement)) return
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
 
-    if (utils.isType(e.target, 'integer')) {
-      if (e.key === 'ArrowUp') {
-        // Prevent the cursor from moving to the beginning of the input
-        e.preventDefault()
-        if (e.target.value === '') e.target.value = '0'
-        e.target.value = (parseInt(e.target.value) + 1).toString()
-      } else if (e.key === 'ArrowDown') {
-        if (parseInt(e.target.value) > 0) e.target.value = (parseInt(e.target.value) - 1).toString()
-        else e.target.value = '0'
-      }
-    }
+    const el = e.target
+    const isInteger = utils.isType(el, 'integer')
+    const isNumber = utils.isType(el, ['number', 'float', 'decimal'])
+    if (!isInteger && !isNumber) return
+
+    // data-arrow-step="" disables the feature
+    if (el.dataset.arrowStep === '') return
+
+    e.preventDefault()
+
+    const step = parseFloat(el.dataset.arrowStep ?? '1') || 1
+    const current = parseFloat(el.value) || 0
+    const delta = e.key === 'ArrowUp' ? step : -step
+    let newVal = current + delta
+
+    // Get min/max bounds
+    const minAttr = el.dataset.min ?? el.min
+    const maxAttr = el.dataset.max ?? el.max
+    const min = minAttr !== '' ? parseFloat(minAttr) : isInteger ? 0 : -Infinity
+    const max = maxAttr !== '' ? parseFloat(maxAttr) : Infinity
+
+    // Clamp to bounds
+    if (!isNaN(min)) newVal = Math.max(min, newVal)
+    if (!isNaN(max)) newVal = Math.min(max, newVal)
+
+    // Handle floating point precision - use max decimals from step or current value
+    const stepDecimals = (step.toString().split('.')[1] || '').length
+    const valueDecimals = (el.value.split('.')[1] || '').length
+    const decimals = Math.max(stepDecimals, valueDecimals)
+    el.value = isInteger
+      ? Math.round(newVal).toString()
+      : decimals
+        ? newVal.toFixed(decimals)
+        : newVal.toString()
   }
 
   public destroy() {
-    // Disconnect the MutationObserver to prevent memory leaks and stop watching for form changes.
-    // This is crucial if the form element itself is removed or replaced.
-    if (this.formMutationObserver) {
-      this.formMutationObserver.disconnect()
-      this.formMutationObserver = null // Explicitly nullify to aid garbage collection
-    }
-
-    // Disconnect the auto-destroy observer to prevent memory leaks
-    if (this.autoDestroyObserver) {
-      this.autoDestroyObserver.disconnect()
-      this.autoDestroyObserver = null // Explicitly nullify to aid garbage collection
-    }
-
-    // Clear any pending debounced function calls.
-    // Ensures that scheduled tasks (like debounced init or color sync) don't run after destruction.
-    clearTimeout(this.timeoutId)
     clearTimeout(this.dispatchTimeout)
 
     // Remove all event listeners added by this validator instance.

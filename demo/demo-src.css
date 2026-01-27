@@ -1,104 +1,287 @@
+@import url(https://fonts.bunny.net/css?family=alexandria:200,300,400,500,600,700);
+
 @import 'tailwindcss';
 
+/* Dark mode configuration - use class strategy */
+@custom-variant dark (
+  &:where(.dark, .dark *):where(:not(.light, .light *)),
+  &:where(:not(.light, .light *)):where(@media (prefers-color-scheme: dark))
+);
+
+@theme {
+  --font-alexandria: 'Alexandria', sans-serif;
+  --breakpoint-xs: 380px;
+}
+
+/* Custom elements need block display for space-y to work */
+form-field,
+form-card {
+  display: block;
+}
+
 @layer base {
-  [type='text'],
-  [type='email'],
-  [type='url'],
-  [type='password'],
-  [type='number'],
-  [type='date'],
-  [type='datetime-local'],
-  [type='month'],
-  [type='search'],
-  [type='tel'],
-  [type='time'],
-  [type='week'],
-  [type='color'],
-  [multiple],
+  input[type='text'],
+  input[type='email'],
+  input[type='url'],
+  input[type='password'],
+  input[type='number'],
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='month'],
+  input[type='search'],
+  input[type='tel'],
+  input[type='time'],
+  input[type='week'],
+  input[type='color'],
+  select[multiple],
   textarea,
   select {
-    @apply border border-zinc-300 rounded bg-zinc-50 px-2 py-1.5 text-zinc-700
-        placeholder-zinc-500/50 shadow-inner
-        focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/50
-        focus:ring-offset-0 focus:ring-offset-transparent;
+    @apply rounded-lg border border-zinc-300 px-3 py-2 text-zinc-700 placeholder-zinc-500/50 shadow-inner inset-shadow-sm transition-colors duration-200 focus:bg-white focus:ring-2 focus:ring-indigo-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:outline-none;
 
-    @apply dark:border-zinc-500 dark:bg-zinc-900 dark:text-white dark:focus:bg-zinc-800;
+    @apply bg-linear-to-b dark:border-zinc-700/60 dark:from-black/85 dark:to-black/75 dark:text-white dark:focus:bg-zinc-800;
 
-    @apply disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-300;
+    @apply disabled:bg-zinc-200 disabled:text-zinc-600/50 dark:disabled:bg-zinc-200/40 dark:disabled:text-zinc-400;
   }
 
   /* Form input variants (do not apply when disabled) */
-  [type='text']:not([disabled]),
-  [type='email']:not([disabled]),
-  [type='url']:not([disabled]),
-  [type='password']:not([disabled]),
-  [type='number']:not([disabled]),
-  [type='date']:not([disabled]),
-  [type='datetime-local']:not([disabled]),
-  [type='month']:not([disabled]),
-  [type='search']:not([disabled]),
-  [type='tel']:not([disabled]),
-  [type='time']:not([disabled]),
-  [type='week']:not([disabled]),
-  [type='color']:not([disabled]),
-  [multiple]:not([disabled]),
+  input[type='text']:not([disabled]),
+  input[type='email']:not([disabled]),
+  input[type='url']:not([disabled]),
+  input[type='password']:not([disabled]),
+  input[type='number']:not([disabled]),
+  input[type='date']:not([disabled]),
+  input[type='datetime-local']:not([disabled]),
+  input[type='month']:not([disabled]),
+  input[type='search']:not([disabled]),
+  input[type='tel']:not([disabled]),
+  input[type='time']:not([disabled]),
+  input[type='week']:not([disabled]),
+  input[type='color']:not([disabled]),
+  select[multiple]:not([disabled]),
   textarea:not([disabled]),
   select:not([disabled]) {
-    @apply hover:bg-white dark:hover:bg-zinc-800;
+    @apply bg-zinc-50 hover:bg-white dark:bg-indigo-900 dark:hover:bg-zinc-800;
   }
 
-  [type='checkbox'],
-  [type='radio'] {
-    @apply border border-zinc-300 bg-zinc-50 text-blue-600 shadow-sm
-        checked:border checked:border-zinc-400 checked:bg-blue-600 focus:outline-none
-        focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 focus:ring-offset-transparent focus:checked:bg-blue-500;
-
-    @apply dark:border-zinc-500 dark:bg-zinc-400 dark:checked:bg-blue-600 dark:focus:checked:bg-blue-400;
-
-    @apply disabled:opacity-60 disabled:checked:hover:bg-blue-600;
-
-    /* Prevents border change when disabled and hovered */
-    @apply disabled:checked:hover:border-zinc-400 disabled:dark:checked:bg-blue-600 dark:disabled:checked:hover:border-zinc-500;
+  input[type='checkbox'] {
+    @apply h-4 w-4 appearance-none rounded-[0.3rem] border border-zinc-400 bg-zinc-50 shadow-sm transition;
+    @apply checked:border checked:border-indigo-600;
+    @apply focus-visible:ring-2 focus-visible:ring-indigo-400/50 focus-visible:ring-offset-0 focus-visible:outline-none;
   }
 
-  [type='checkbox']:not([disabled]),
-  [type='radio']:not([disabled]) {
-    @apply hover:bg-zinc-200 checked:hover:bg-blue-500
-        dark:hover:bg-zinc-300 dark:hover:checked:bg-blue-400 dark:hover:focus:checked:bg-blue-400;
+  input[type='radio'] {
+    @apply h-4 w-4 appearance-none rounded-full border border-zinc-400 bg-zinc-50 shadow-sm transition;
+    @apply focus-visible:ring-2 focus-visible:ring-indigo-400/50 focus-visible:ring-offset-0 focus-visible:outline-none;
   }
 
-  [type='radio'] {
-    @apply rounded-full;
+  input[type='checkbox']:not([disabled]),
+  input[type='radio']:not([disabled]) {
+    @apply hover:border-indigo-300;
+  }
+
+  input[type='checkbox']:not([disabled]):not(:checked),
+  input[type='radio']:not([disabled]):not(:checked) {
+    @apply hover:bg-indigo-50 dark:hover:bg-indigo-100;
+  }
+
+  input[type='checkbox']:checked {
+    @apply border-indigo-600 bg-indigo-600 text-white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' aria-hidden='true'%3E%3Cpath fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' d='M1.73%2012.91l6.37%206.37L22.79%204.59'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 70%;
+  }
+
+  input[type='checkbox']:checked:hover {
+    @apply border-indigo-500 bg-indigo-500;
+  }
+
+  input[type='radio']:checked {
+    background-image: radial-gradient(
+      circle at center,
+      var(--color-indigo-500) 0 40%,
+      transparent 45%
+    );
+  }
+
+  input[type='radio']:checked:hover {
+    @apply border-indigo-400;
+    background-image: radial-gradient(
+      circle at center,
+      var(--color-indigo-400) 0 40%,
+      transparent 45%
+    );
+  }
+
+  input[type='checkbox']:disabled,
+  input[type='radio']:disabled {
+    @apply cursor-not-allowed opacity-60;
   }
 
   select {
-    @apply pr-6;
-    /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='rgb(120 113 108)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important; */
-    background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(120 113 108)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E') !important;
-    background-size: 1.2rem;
-    background-position: right 0.1rem center;
+    @apply appearance-none border-zinc-300 pr-6 dark:border-zinc-700/60;
+    /* Chevron + gradient as multiple backgrounds (chevron on top) */
+    background-image:
+      url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(120 113 108)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E'),
+      linear-gradient(to bottom, var(--color-zinc-50), var(--color-zinc-100));
+    background-size:
+      1.2rem,
+      100% 100%;
+    background-position:
+      right 0.4rem center,
+      center;
+    background-repeat: no-repeat, no-repeat;
+  }
+
+  /* Dark mode select - class-based */
+  .dark select {
+    background-image:
+      url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(161 161 170)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E'),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.75));
   }
 }
 
 @layer components {
-  .checked-label {
-    @apply ml-1.5 mr-1;
-    /* no styles are directly applied unless this is used with a checked input */
+  .btn {
+    @apply my-4 w-60 rounded-lg border border-zinc-600/50 border-t-zinc-300/70 border-b-zinc-900/40 bg-indigo-300 bg-linear-to-b from-zinc-500/60 to-zinc-700/60 py-2 text-lg text-white shadow-md shadow-zinc-900/20 transition duration-150 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)] hover:from-zinc-400/60 hover:to-zinc-600/60 hover:shadow-lg hover:shadow-zinc-900/30 active:translate-y-0.5 active:from-zinc-600/60 active:to-zinc-800/60;
   }
 
-  input:checked + .checked-label {
-    @apply text-black dark:text-white;
-    /* This is only really visible in dark mode, giving the text a subtle glow */
-    text-shadow: 0 0 5px hsl(0 0% 100%/25%);
+  .btn-primary {
+    @apply my-4 w-60 rounded-lg border border-indigo-600/50 border-t-indigo-300/70 border-b-indigo-900/40 bg-linear-to-b from-indigo-500 to-indigo-700 py-2 text-lg text-white shadow-md shadow-indigo-900/20 transition duration-150 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)] hover:from-indigo-400 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-900/30 active:translate-y-0.5 active:from-indigo-600 active:to-indigo-800;
   }
 
-  /* Apply checked-border to labels for checkboxes and radio buttons for a label that colors up automatically when checked */
-  .checked-border {
-    @apply inline-flex items-center border border-zinc-300/30 bg-zinc-50 px-1 text-zinc-700 shadow-inner;
-    @apply hover:bg-white dark:border-zinc-500/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
+  .code {
+    @apply rounded border border-indigo-400/50 bg-indigo-50/50 px-1 py-0.5 dark:border-indigo-500/50 dark:bg-black/50;
   }
+}
 
-  .checked-border:has([type='checkbox']:checked, [type='radio']:checked) {
-    @apply border-blue-600 text-black hover:border-blue-500 dark:text-white;
+/* Component utilities using Tailwind v4 @utility API */
+.checked-label {
+  @apply mr-1 ml-1.5;
+}
+
+/* Styles for checked-label when preceded by a checked input */
+input:checked + .checked-label {
+  @apply text-black dark:text-white;
+  text-shadow: 0 0 5px hsl(0 0% 100%/25%);
+}
+
+/* Apply checked-border to labels for checkboxes and radio buttons for a label that colors up automatically when checked */
+.checked-border {
+  @apply inline-flex items-center rounded-lg border border-black/20 bg-linear-to-b px-1.5 py-1 text-zinc-700 shadow-inner dark:bg-indigo-900 dark:from-black/70 dark:to-black/60;
+  @apply hover:bg-white/50 dark:border-indigo-300/25 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800;
+}
+
+/* Focus ring on the label when any child input is focused */
+.checked-border:focus-within {
+  @apply ring-2 ring-indigo-400/50 ring-offset-0;
+}
+
+.checked-border:has(input[type='radio']) {
+  @apply rounded-full;
+}
+
+/* Remove focus ring from inputs inside checked-border (the label handles it) */
+.checked-border input[type='checkbox'],
+.checked-border input[type='radio'] {
+  @apply focus:ring-0;
+}
+
+.checked-border:has([type='checkbox']:checked, [type='radio']:checked) {
+  @apply border-indigo-500/70 text-black hover:border-indigo-500/80 dark:border-indigo-400/50 dark:text-white;
+}
+
+/* Error message transitions */
+.error {
+  @apply max-h-20 transition-all duration-200 ease-out;
+}
+
+.error.opacity-0 {
+  @apply max-h-0;
+}
+
+/* Color input wrapper - focus ring around both input and swatch */
+.color-input-wrapper:focus-within {
+  @apply ring-2 ring-indigo-400/50 ring-offset-0;
+}
+
+/* Remove default focus ring from input inside color wrapper */
+.color-input-wrapper input[type='text']:focus {
+  @apply ring-0;
+}
+
+/* ============================================
+   Sidebar Navigation with scroll-target-group
+   ============================================ */
+
+#section-nav {
+  /* Enable scroll-spy: highlights link for currently visible section */
+  scroll-target-group: auto;
+
+  /* CSS custom properties for dark mode support in keyframes */
+  --nav-bg-color: rgb(199 210 254 / 0.6); /* indigo-200 */
+  --nav-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+
+  /* Scroll-driven animation: fade in background as header scrolls away */
+  animation: nav-bg-fade linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 120px;
+}
+
+/* Dark mode custom properties */
+.dark #section-nav {
+  --nav-bg-color: rgb(0 0 0 / 0.45); /* indigo-950 */
+  --nav-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+@keyframes nav-bg-fade {
+  from {
+    background-color: rgb(199 210 254 / 0.25);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
   }
+  to {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
+}
+
+/* Dark mode animation with darker starting tint */
+.dark #section-nav {
+  animation-name: nav-bg-fade-dark;
+}
+
+@keyframes nav-bg-fade-dark {
+  from {
+    background-color: rgb(15 15 30 / 0.3);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  }
+  to {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations */
+@supports not (animation-timeline: scroll()) {
+  #section-nav {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
+}
+
+.nav-link {
+  @apply block rounded-lg px-3 py-1.5 transition-colors duration-150;
+  @apply text-indigo-900/70 hover:bg-indigo-200/50 hover:text-indigo-900;
+  @apply dark:text-indigo-300/70 dark:hover:bg-indigo-800/30 dark:hover:text-indigo-200;
+}
+
+/* Active state for browsers supporting :target-current (Chrome 136+) */
+.nav-link:target-current {
+  @apply bg-indigo-300/60 font-medium text-indigo-900;
+  @apply dark:bg-indigo-700/40 dark:text-indigo-100;
 }

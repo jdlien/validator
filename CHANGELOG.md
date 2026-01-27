@@ -4,6 +4,103 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-26
+
+Major new release with many different features and fixes. Now depends on v2.1 of `@jdlien/validator-utils`. The bundle size has increased slightly (~1.5KB zipped), but there are lots of new features to make the size well worth it!
+
+### Bundle Size
+
+|        | v1.5.0    | v2.0.0    | Change  |
+| ------ | --------- | --------- | ------- |
+| Raw    | 21.60 KiB | 27.24 KiB | +26.1%  |
+| Gzip   | 7.40 KiB  | 8.85 KiB  | +19.6%  |
+| Brotli | 6.59 KiB  | 7.90 KiB  | +19.9%  |
+
+### Added
+- **Hybrid Validator Registry System**: Three-tier validator lookup (instance → static → window)
+  - `validators` option in constructor for instance-scoped validators (highest priority)
+  - `Validator.registerValidator(name, fn)` for global validators shared across instances
+  - `Validator.unregisterValidator(name)` to remove a global validator
+  - `Validator.getValidators()` returns a copy of all global validators
+  - `Validator.clearValidators()` removes all global validators
+- `validateSingle(input)` instance method for programmatic single-input validation on demand
+- **Static methods for standalone validation** (inputs outside forms):
+  - `Validator.validateSingle(input, options?)` - validates any input without needing an instance
+  - `Validator.clearInputErrors(input, options?)` - clears errors from any input without an instance
+- `clearInputErrors(input)` instance method to clear errors from a specific input
+- `clearAllErrors()` instance method to clear all form errors
+- `scrollToError` option to scroll to first invalid input on validation failure
+- `scrollToErrorDelay` option to delay scroll-to-error behavior (useful for animations)
+- Min/max value validation via `data-min`/`data-max` attributes (also respects native `min`/`max`)
+- `ERROR_MIN_VALUE` and `ERROR_MAX_VALUE` error messages
+- `ValidationEvent` unified event class with `ValidationEventType` type
+- Arrow key increment/decrement for `number`, `float`, and `decimal` fields (previously only `integer`)
+- `data-arrow-step` attribute to customize arrow key step size (e.g., `data-arrow-step="0.5"`)
+- Set `data-arrow-step=""` (empty string) to disable arrow key behavior on numeric fields
+- Arrow keys respect `data-min`/`data-max` bounds, clamping values appropriately
+- `validateOnBlur` option to validate fields when they lose focus (even if unchanged)
+- New type exports: `ValidatorFunction`, `ValidationResult`, `ValidatorRegistry`
+
+### Changed
+
+- `messages` option now typed as `Record<string, string>` (was `object`)
+- Integer fields now respect `data-min` for negative values (previously hardcoded to min 0)
+- `validateSingle(input)` instance method now only validates inputs belonging to its form (use static `Validator.validateSingle()` for standalone inputs)
+- Package exports now include explicit ESM/CJS entry points (UMD still available at `dist/validator.js`)
+- Custom validation now uses three-tier lookup: instance registry → static registry → window object
+- Demo page updated to use instance registry instead of window functions
+
+### Removed
+
+- `types.d.ts` file (duplicated Validator.ts exports)
+- `ValidationSuccessEvent` class (use `ValidationEvent` with type `'validationSuccess'`)
+- `ValidationErrorEvent` class (use `ValidationEvent` with type `'validationError'`)
+- Automatic MutationObserver-based re-init and auto-destroy (see Breaking Changes)
+
+### Fixed
+
+- Color sync no longer throws when a `type="color"` input has no paired text input
+- Custom error messages now apply to type validators (number, email, tel, etc.)
+- Error classes on inputs are now removed even when no error element exists
+- Stale `inputErrors` entries are cleared when `init()` is called after removing inputs
+- Pattern validation no longer throws for invalid regex patterns (treats as pass-through)
+- Pattern validation now anchors patterns for full-match behavior (matches HTML5 `pattern` attribute)
+- Error border colors on required multi-check/radio inputs are now cleared when any related input is checked
+
+### Breaking Changes
+
+- **Manual reinitialized required after DOM changes:** Previously, Validator would attempt to reinitialize itself if form elements were added or changed in the DOM using a mutationObserver, but this was inefficient and unreliable and was mostly handling niche cases. If you add/remove inputs dynamically, call `validator.init()` after DOM updates.
+- **Manual cleanup now required when removing forms:** Previously, Validator would attempt to detect if the form were removed and clean itself up. This could be useful in an SPA or a modal dialog that loads different forms to keep accumulating Validator instances. This is considered an edge-case so Validator no longer handles this itself. Now, if you remove a form from the DOM, call `validator.destroy()` before removing it.
+- **Event classes consolidated:** Replace `ValidationSuccessEvent` and `ValidationErrorEvent` with unified `ValidationEvent` class
+
+  ```typescript
+  // Before
+  form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
+
+  // After
+  form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
+  ```
+
+- **`messages` typing:** Now `Record<string, string>` instead of `object`
+- **`types.d.ts` removed:** Import types from `Validator.ts` instead
+
+
+### Migration Guide
+
+No breaking changes. Existing code using window functions continues to work. To migrate:
+
+```javascript
+// Before (still works)
+window.myValidator = (value) => value.length > 3
+
+// After (recommended)
+const validator = new Validator(form, {
+  validators: {
+    myValidator: (value) => value.length > 3,
+  },
+})
+```
+
 ## [1.5.0] - 2025-01-08
 
 ### Added
@@ -16,7 +113,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - **BREAKING CHANGE**: Removed ineffective 'remove' event listener and replaced with robust MutationObserver-based cleanup
-- Enhanced `destroy()` method to properly clean up both `formMutationObserver` and `autoDestroyObserver` 
+- Enhanced `destroy()` method to properly clean up both `formMutationObserver` and `autoDestroyObserver`
 - Simplified test files by removing manual `validator.destroy()` calls from all `afterEach` blocks - auto-destroy now handles cleanup
 - Updated event listener tests to reflect removal of 'remove' event listener (4 listeners instead of 5)
 - Improved TypeScript null assertion handling with proper `!` operators

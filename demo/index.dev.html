@@ -14,10 +14,10 @@
         } catch {}
       })()
     </script>
-    <link rel="stylesheet" href="demo.css" />
-    <script type="module" src="form-field.js"></script>
-    <script type="module" src="form-card.js"></script>
-    <script type="module" src="dark-toggle.js"></script>
+    <link rel="stylesheet" href="demo-src.css" />
+    <script type="module" src="form-field.ts"></script>
+    <script type="module" src="form-card.ts"></script>
+    <script type="module" src="dark-toggle.ts"></script>
   </head>
 
   <body
@@ -437,9 +437,9 @@
       &copy; 2026 JD Lien
     </footer>
 
-    <script src="../dist/validator.js"></script>
-
     <script type="module">
+      import Validator from '../index.ts'
+
       // Custom validation: Check if GitHub username exists
       const validateGitHubUser = async (value) => {
         if (!value) return true // Empty is valid (use required for mandatory)

@@ -13,6 +13,7 @@ describe('Validator', () => {
   })
 
   afterEach(() => {
+    validator.destroy()
     document.body.removeChild(form)
   })
 
@@ -109,24 +110,18 @@ describe('Validator', () => {
     })
   }) // constructor
 
-  describe('Validator observer', () => {
-    it('observer should update inputs on input addition', async () => {
-      let inputCount = validator.inputs.length
+  describe('Validator init', () => {
+    it('updates inputs on input addition after manual init', () => {
+      const inputCount = validator.inputs.length
       // Add a new input to the form
-      let input = document.createElement('input')
+      const input = document.createElement('input')
       input.type = 'text'
       input.name = 'testInput'
       input.value = 'test value'
       form.appendChild(input)
 
-      // The observer should have been triggered, adding a new input to the inputs array
-      await new Promise((resolve) => setTimeout(resolve, 50))
-
-      if (!form.lastChild) throw new Error('lastChild is null')
-
+      validator.init()
       expect(validator.inputs.length).toEqual(inputCount + 1)
-      form.removeChild(form.lastChild)
-      await new Promise((resolve) => setTimeout(resolve, 50))
     })
-  }) // Validator observer
+  }) // Validator init
 }) // end describe('Validator')
