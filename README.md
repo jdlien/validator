@@ -129,7 +129,7 @@ There are a few attributes that Validator looks for on the form element:
 
 - `data-prevent-submit` - If this attribute is present, the form will never be submitted, even if it is valid. This is useful if you want to handle the submission yourself. (By default, the form will be submitted if it is valid and not if it is invalid.)
 
-- `novalidate` - This is a native HTML5 attribute that will disable browser validation on the form. If this attribute is present. Validator adds this by default and removes it if `destroy()` is called. If you add it yourself, it will not be added back by Validator.
+- `novalidate` - This is a native HTML5 attribute that disables browser validation on the form. Validator adds this by default and removes it if `destroy()` is called. If you add it yourself, it will not be added back by Validator.
 
 On input (and sometimes select and textarea) elements, the following attributes are supported:
 
@@ -159,7 +159,7 @@ On input (and sometimes select and textarea) elements, the following attributes 
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
 - `data-max-files` - Applies to file inputs. Limits the number of files a user can upload.
-- `data-min-file-size`/`data-max-file-size` - Applies to file inputs. Enforces min/max size per file. Accepts human-readable sizes like `200kb`, `2mb`, `1.5gb`.
+- `data-min-file-size`/`data-max-file-size` - Applies to file inputs. Enforces min/max size per file. Accepts human-readable sizes like `200kb` (base 10), `2mib` (base 2), `1.5gb`.
 - `accept`/`data-accept` - Applies to file inputs. Restricts allowed file types using MIME types and/or extensions. `data-accept` takes precedence over `accept`.
 
 A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns a string or an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.

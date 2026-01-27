@@ -345,6 +345,36 @@ describe('Validator', () => {
       expect(validator.inputErrors[formControl.name]).toEqual([])
     })
 
+    it('should parse and validate float type (alias for number)', () => {
+      formControl.setAttribute('data-type', 'float')
+      formControl.value = '3.14159'
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(valid).toBeTruthy()
+      expect(formControl.value).toBe('3.14159')
+      expect(validator.inputErrors[formControl.name]).toEqual([])
+
+      formControl.value = 'abc'
+      valid = (validator as any).validateInputType(formControl)
+      expect(valid).toBeFalsy()
+    })
+
+    it('should parse and validate decimal type (alias for number)', () => {
+      formControl.setAttribute('data-type', 'decimal')
+      formControl.value = '-99.5'
+
+      valid = (validator as any).validateInputType(formControl)
+
+      expect(valid).toBeTruthy()
+      expect(formControl.value).toBe('-99.5')
+      expect(validator.inputErrors[formControl.name]).toEqual([])
+
+      formControl.value = 'not a number'
+      valid = (validator as any).validateInputType(formControl)
+      expect(valid).toBeFalsy()
+    })
+
     it('should parse and validate integer type correctly', () => {
       formControl.type = 'text'
       formControl.setAttribute('data-type', 'integer')

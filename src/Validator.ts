@@ -616,12 +616,17 @@ export default class Validator {
 
   // A map of input handlers that can be used for each type of input.
   // errorKey references this.messages at validation time to support custom messages
+  // Handler for number types (shared by float/decimal aliases)
+  private numberHandler: InputHandler = {
+    parse: utils.parseNumber,
+    isValid: utils.isNumber,
+    errorKey: 'ERROR_NUMBER',
+  }
+
   private inputHandlers: InputHandlers = {
-    number: {
-      parse: utils.parseNumber,
-      isValid: utils.isNumber,
-      errorKey: 'ERROR_NUMBER',
-    },
+    number: this.numberHandler,
+    float: this.numberHandler,
+    decimal: this.numberHandler,
     integer: {
       parse: utils.parseInteger,
       isValid: utils.isInteger,
