@@ -26,7 +26,7 @@ Validator includes the following built-in validation types:
 - Date and time
 - Time of day
 - URLs
-- Files (type, size, count; see file validation attributes below)
+- Files (type, size, count)
 
 You can also add custom validation and customize error messages per field or for the whole form.
 
@@ -36,10 +36,6 @@ Validator is compatible with all modern browsers. It has no dependencies (other 
 
 ```bash
 npm install @jdlien/validator
-
-# or
-
-yarn add @jdlien/validator
 
 # or
 
@@ -95,16 +91,16 @@ Then, create a new Validator instance and pass it the form element as the first 
 </form>
 
 <!-- Choose one of the following script tags if you are not using a bundler -->
-<!-- UMD (global Validator) -->
-<script src="https://unpkg.com/@jdlien/validator/dist/validator.js"></script>
-<script>
+<!-- ESM - recommended for modern browsers -->
+<script type="module">
+  import Validator from 'https://unpkg.com/@jdlien/validator/dist/validator.mjs'
   const form = document.getElementById('myForm')
   const validator = new Validator(form)
 </script>
 
-<!-- ESM (module) -->
-<script type="module">
-  import Validator from 'https://unpkg.com/@jdlien/validator/dist/validator.mjs'
+<!-- UMD - for legacy browser support (exposes global Validator) -->
+<script src="https://unpkg.com/@jdlien/validator/dist/validator.js"></script>
+<script>
   const form = document.getElementById('myForm')
   const validator = new Validator(form)
 </script>
