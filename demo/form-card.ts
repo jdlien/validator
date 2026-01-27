@@ -29,6 +29,7 @@ class FormCard extends HTMLElement {
     const sectionId = this.getAttribute('id')
 
     // Remove id from custom element to put on section
+    if (title) this.removeAttribute('title')
     if (sectionId) this.removeAttribute('id')
 
     // Create section element

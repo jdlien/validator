@@ -612,6 +612,106 @@ describe('Validator', () => {
       expect(validator.inputErrors['input-id']).toEqual([])
       // Note: also checks that clearInputErrors will return if there's no errorEl
     })
+
+    it('clears group error styles when a checkable group becomes valid', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'group-radio-1'
+      radio1.name = 'group-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'group-radio-2'
+      radio2.name = 'group-radio'
+      form.appendChild(radio2)
+
+      const groupError = document.createElement('div')
+      groupError.id = 'group-radio-error'
+      groupError.classList.add('hidden')
+      form.appendChild(groupError)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeTruthy()
+        expect(radio2.classList.contains(errorClass)).toBeTruthy()
+      })
+
+      radio1.checked = true
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeFalsy()
+      })
+      expect(groupError.classList.contains('hidden')).toBeTruthy()
+      expect(groupError.textContent).toBe('')
+    })
+
+    it('does not clear group styles when no option is checked', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'unchecked-radio-1'
+      radio1.name = 'unchecked-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'unchecked-radio-2'
+      radio2.name = 'unchecked-radio'
+      form.appendChild(radio2)
+
+      const groupError = document.createElement('div')
+      groupError.id = 'unchecked-radio-error'
+      groupError.classList.add('hidden')
+      form.appendChild(groupError)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeTruthy()
+      })
+    })
+
+    it('clears group styles even when no error element is present', () => {
+      const radio1 = document.createElement('input')
+      radio1.type = 'radio'
+      radio1.id = 'no-error-radio-1'
+      radio1.name = 'no-error-radio'
+      form.appendChild(radio1)
+
+      const radio2 = document.createElement('input')
+      radio2.type = 'radio'
+      radio2.id = 'no-error-radio-2'
+      radio2.name = 'no-error-radio'
+      form.appendChild(radio2)
+
+      validator.init()
+
+      ;(validator as any).addInputError(radio1, validator.messages.OPTION_REQUIRED)
+      ;(validator as any).showInputErrors(radio1)
+      ;(validator as any).showInputErrors(radio2)
+
+      radio1.checked = true
+      ;(validator as any).clearInputErrors(radio1)
+
+      validator.errorInputClasses.split(' ').forEach((errorClass) => {
+        expect(radio1.classList.contains(errorClass)).toBeFalsy()
+        expect(radio2.classList.contains(errorClass)).toBeFalsy()
+      })
+    })
   }) // end clearInputErrors
 
   describe('clearFormErrors', () => {

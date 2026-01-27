@@ -413,7 +413,30 @@ export default class Validator {
 
   // Clears error messages from an input and removes its errors from the inputErrors array
   private clearInputErrors(el: FormControl): void {
-    this.inputErrors[el.name || el.id] = []
+    const key = el.name || el.id
+    this.inputErrors[key] = []
+
+    if (
+      el instanceof HTMLInputElement &&
+      (el.type === 'checkbox' || el.type === 'radio') &&
+      el.name
+    ) {
+      const groupName = cssEscape(el.name)
+      if (this.form.querySelector(`input[name="${groupName}"]:checked`)) {
+        const groupInputs = this.form.querySelectorAll(`input[name="${groupName}"]`)
+        groupInputs.forEach((input) => {
+          input.removeAttribute('aria-invalid')
+          input.classList.remove(...this.errorInputClassesArray)
+        })
+
+        const errorEl = this.getErrorEl(el)
+        if (errorEl) {
+          errorEl.classList.add(...this.hiddenClassesArray)
+          errorEl.textContent = ''
+        }
+        return
+      }
+    }
 
     // Remove the aria-invalid attribute from the input
     el.removeAttribute('aria-invalid')
