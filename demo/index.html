@@ -68,19 +68,19 @@
       <main
         class="mx-4 mb-6 max-w-3xl rounded-xl border border-indigo-100 bg-indigo-200 p-8 shadow-xl md:mx-0 md:mr-4 md:ml-0 md:max-w-none dark:border-indigo-100/10 dark:bg-black/50"
       >
-        <div class="mb-6">
+        <section class="mb-6">
           <p class="mb-4">
-            Validator has been applied to this form to help sanitize and validate user input.<br />
-            This form won't submit if any fields are invalid and helpful errors will be shown or
-            hidden as the user changes fields.
+            Validator help sanitize and validate input into this form. This form won't submit if any
+            fields are invalid. Instead, helpful errors will be shown or hidden as the user changes
+            fields.
           </p>
           <p>
             With <code class="code">scrollToError: true</code>, the page will scroll to the first
             error on submit.
           </p>
-        </div>
+        </section>
 
-        <div class="text-center">
+        <section class="text-center">
           <div class="mb-1 text-lg text-indigo-800 dark:text-indigo-200">
             Install Validator through npm or pnpm:
           </div>
@@ -99,7 +99,8 @@
               >github.com/jdlien/validator</a
             >.
           </p>
-        </div>
+        </section>
+
         <form id="demo-form" class="mx-auto mb-6 space-y-8">
           <form-card
             id="section-core"
