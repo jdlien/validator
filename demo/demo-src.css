@@ -184,7 +184,7 @@ input:checked + .checked-label {
 /* Remove focus ring from inputs inside checked-border (the label handles it) */
 .checked-border input[type='checkbox'],
 .checked-border input[type='radio'] {
-  @apply focus:ring-0;
+  @apply mr-1 focus:ring-0;
 }
 
 .checked-border:has([type='checkbox']:checked, [type='radio']:checked) {
