@@ -293,7 +293,7 @@ class FormField extends HTMLElement {
       ...validationAttrs,
     })
 
-    const wrapper = el('div', { className: 'flex relative sm:max-w-sm' }, [input])
+    const wrapper = el('div', { className: 'flex relative' }, [input])
     this.appendChild(this.buildWrapper(id, label, wrapper))
   }
 
@@ -332,11 +332,10 @@ class FormField extends HTMLElement {
       [colorInput]
     )
 
-    const wrapper = el(
-      'div',
-      { className: 'color-input-wrapper flex relative sm:max-w-sm rounded-lg' },
-      [textInput, colorLabel]
-    )
+    const wrapper = el('div', { className: 'color-input-wrapper flex relative rounded-lg' }, [
+      textInput,
+      colorLabel,
+    ])
     this.appendChild(this.buildWrapper(id, label, wrapper))
 
     // Set up color sync with direct references (no querying needed!)
@@ -407,7 +406,7 @@ class FormField extends HTMLElement {
     const select = el(
       'select',
       {
-        className: 'block w-full sm:max-w-sm',
+        className: 'block w-full',
         id,
         name,
         'aria-describedby': `${id}-error`,
@@ -452,7 +451,7 @@ class FormField extends HTMLElement {
     })
 
     const wrapper = el('div', { className: 'flex relative sm:max-w-sm' }, [
-      el('div', { className: 'mb-3 sm:col-span-2 space-y-3' }, optionElements),
+      el('div', { className: 'mb-3 sm:col-span-2 space-y-4' }, optionElements),
     ])
 
     this.appendChild(this.buildWrapper(id, label, wrapper))
