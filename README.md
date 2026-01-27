@@ -26,6 +26,7 @@ Validator includes the following built-in validation types:
 - Date and time
 - Time of day
 - URLs
+- Files (type, size, count; see file validation attributes below)
 
 You can also add custom validation and customize error messages per field or for the whole form.
 
@@ -155,12 +156,15 @@ On input (and sometimes select and textarea) elements, the following attributes 
   - `color` - The input must be a valid CSS color. (This can be used in conjunction with a native color input - see Color Picker Support for details.)
 
 - `data-date-format`/`data-time-format` - Applies formatting to date, time, or datetime inputs (these are interchangeable). The format must be a valid moment.js format string. See [moment.js docs](https://momentjs.com/docs/#/displaying/format/) for more information.
-- `data-date-range` - Applies to date input types. Supported values are `past` and `future`.
+- `data-date-range` - Applies to date input types. Supported values are `past`, `future`, and `today`.
 - `data-min`/`data-max` - Applies to numeric input types (`number`, `integer`, `float`, `decimal`). Validates that the numeric value is within the specified range. Also respects the native `min`/`max` attributes, but `data-` attributes take precedence.
 - `data-arrow-step` - Applies to numeric input types (`number`, `integer`, `float`, `decimal`). Sets the arrow key step size (defaults to `1`). Set `data-arrow-step=""` to disable arrow key handling for the field.
 - `data-error-default` - A custom error message to display if the input is invalid. This will be used for required, pattern, and date-range validation failures.
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
+- `data-max-files` - Applies to file inputs. Limits the number of files a user can upload.
+- `data-min-file-size`/`data-max-file-size` - Applies to file inputs. Enforces min/max size per file. Accepts human-readable sizes like `200kb`, `2mb`, `1.5gb`.
+- `accept`/`data-accept` - Applies to file inputs. Restricts allowed file types using MIME types and/or extensions. `data-accept` takes precedence over `accept`.
 
 A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns a string or an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
 
@@ -314,6 +318,10 @@ messages = {
   ERROR_TIME: 'This is not a valid time.',
   ERROR_URL: 'This is not a valid URL.',
   ERROR_COLOR: 'This is not a valid CSS colour.',
+  ERROR_FILE_TYPE: 'This file type is not allowed.',
+  ERROR_FILE_MAX_FILES: 'You can upload up to ${val} file(s).',
+  ERROR_FILE_MAX_SIZE: 'Each file must be ${val} or smaller.',
+  ERROR_FILE_MIN_SIZE: 'Each file must be at least ${val}.',
   ERROR_CUSTOM_VALIDATION: 'There was a problem validating this field.',
 }
 ```
@@ -355,9 +363,11 @@ const myValidator = new Validator(myForm, {
 
 ## Methods
 
-### `validateSingle(input): Promise<boolean>`
+### Instance Methods
 
-Validates a single input programmatically and displays any error messages. Returns `true` if the input is valid, `false` otherwise.
+#### `validateSingle(input): Promise<boolean>`
+
+Validates a single input that belongs to the form and displays any error messages. Returns `true` if the input is valid, `false` otherwise.
 
 This is useful for:
 
@@ -382,18 +392,73 @@ if (isValid) {
 
 Notes:
 
-- Returns `true` for inputs not part of the form or disabled inputs
+- Only validates inputs that belong to the validator's form
+- Returns `true` for inputs not in the form or disabled inputs (use `Validator.validateSingle()` for standalone inputs)
 - Clears previous errors before validating
 - Displays error messages in the associated error element
 - Works with all form control types (input, select, textarea)
 
-### `init()`
+#### `clearInputErrors(input): void`
+
+Clears validation errors from a specific input element.
+
+```javascript
+validator.clearInputErrors(emailInput)
+```
+
+#### `clearAllErrors(): void`
+
+Clears all validation errors from the form, including the main error message and all input errors.
+
+```javascript
+validator.clearAllErrors()
+```
+
+#### `init(): void`
 
 Re-initializes the validator, refreshing the list of form inputs. Call this after dynamically adding or removing inputs.
 
-### `destroy()`
+#### `destroy(): void`
 
 Removes all event listeners and restores the form's original `novalidate` state. Call this before removing the form from the DOM.
+
+### Static Methods
+
+These methods allow validation without creating a Validator instance, useful for standalone inputs outside of forms.
+
+#### `Validator.validateSingle(input, options?): Promise<boolean>`
+
+Validates any input element without needing a Validator instance. Useful for standalone fields outside of forms.
+
+```javascript
+// Validate a standalone input (not in a form)
+const standaloneInput = document.getElementById('standalone-email')
+const isValid = await Validator.validateSingle(standaloneInput)
+
+// With custom options
+const isValid = await Validator.validateSingle(standaloneInput, {
+  validators: {
+    customCheck: (value) => value.length > 5 || 'Too short',
+  },
+})
+```
+
+#### `Validator.clearInputErrors(input, options?): void`
+
+Clears validation errors from any input element without needing a Validator instance.
+
+```javascript
+Validator.clearInputErrors(standaloneInput)
+```
+
+## Events
+
+Validator dispatches two custom events on the form during submission validation:
+
+- `validationSuccess` - Fired when the form is valid.
+- `validationError` - Fired when the form is invalid.
+
+Both events are instances of `ValidationEvent` and include the original submit event as `submitEvent`.
 
 ## Dynamic Forms and Cleanup
 

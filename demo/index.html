@@ -62,6 +62,7 @@
           <li><a href="#section-selections" class="nav-link">Selections</a></li>
           <li><a href="#section-custom" class="nav-link">Custom Validation</a></li>
           <li><a href="#section-textarea" class="nav-link">Long Form</a></li>
+          <li><a href="#section-single" class="nav-link">Single Validation</a></li>
         </ul>
       </nav>
 
@@ -395,95 +396,173 @@
           </form-card>
 
           <div class="text-center">
-            <input class="btn" type="submit" />
+            <input class="btn-primary" type="submit" />
           </div>
         </form>
 
-        <p class="text-center text-indigo-900/70 dark:text-indigo-200/70">
+        <p class="mb-10 text-center text-indigo-900/70 dark:text-indigo-200/70">
           If the form is invalid when submitted, the <code class="code">form-error-main</code> div
           will be displayed above.
         </p>
 
-        <script src="../dist/validator.js"></script>
+        <form-card
+          id="section-single"
+          title="Single Field Validation"
+          lead="Use <code class='code'>validateSingle()</code> to validate individual fields programmatically without submitting the form. This even works on fields not inside an actual form."
+        >
+          <form-field
+            name="input-single-demo"
+            label="Validate Email"
+            type="email"
+            required
+            placeholder="Enter an email address"
+            hint="Click the button below to validate this field independently"
+          ></form-field>
 
-        <script type="module">
-          // Custom validation: Check if GitHub username exists
-          const validateGitHubUser = async (value) => {
-            if (!value) return true // Empty is valid (use required for mandatory)
-            if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
-              return { valid: false, message: 'Invalid GitHub username format' }
-            }
-            try {
-              const res = await fetch(`https://api.github.com/users/${encodeURIComponent(value)}`)
-              if (res.status === 404) {
-                return { valid: false, message: `GitHub user "${value}" not found` }
-              }
-              if (res.status === 403) {
-                return { valid: true } // Rate limited - assume valid
-              }
-              return res.ok
-            } catch {
-              return true // Network error - assume valid
-            }
-          }
+          <div class="mt-4 flex flex-wrap justify-center gap-3">
+            <button type="button" id="btn-validate-single" class="btn">
+              Validate Single Field
+            </button>
+            <button type="button" id="btn-clear-single" class="btn">Clear &amp; Reset</button>
+          </div>
 
-          // Custom validation: Luhn checksum for credit card numbers
-          const validateLuhn = (value) => {
-            if (!value) return true // Empty is valid
-            const digits = value.replace(/[\s-]/g, '')
-            if (!/^\d+$/.test(digits)) {
-              return { valid: false, message: 'Card number must contain only digits' }
-            }
-            if (digits.length < 13 || digits.length > 19) {
-              return { valid: false, message: 'Card number must be 13-19 digits' }
-            }
-            // Luhn algorithm
-            let sum = 0
-            let isEven = false
-            for (let i = digits.length - 1; i >= 0; i--) {
-              let digit = parseInt(digits[i], 10)
-              if (isEven) {
-                digit *= 2
-                if (digit > 9) digit -= 9
-              }
-              sum += digit
-              isEven = !isEven
-            }
-            if (sum % 10 !== 0) {
-              return { valid: false, message: 'Invalid card number (checksum failed)' }
-            }
-            return true
-          }
-
-          // Wait for custom elements to be defined before initializing validator
-          await Promise.all([
-            customElements.whenDefined('form-field'),
-            customElements.whenDefined('form-card'),
-          ])
-          const form = document.getElementById('demo-form')
-          // scrollToError: true will scroll to and focus the first invalid input on validation failure
-          // Custom validators are passed via the validators option (instance registry)
-          const validator = new Validator(form, {
-            debug: true,
-            scrollToError: true,
-            scrollToErrorDelay: 200,
-            hiddenClasses: 'opacity-0 max-h-0 overflow-hidden',
-            errorMainClasses:
-              'm-2 border border-pink-500 bg-pink-200/50 text-pink-700 p-3 py-4 dark:bg-pink-900/80 dark:text-pink-200 text-center rounded-lg',
-            errorInputClasses: 'border-pink-500 dark:border-pink-400',
-            validators: {
-              validateGitHubUser,
-              validateLuhn,
-            },
-          })
-          window.validator = validator // for debugging
-        </script>
+          <div id="single-result" class="mt-4 hidden rounded-lg border p-4 text-center"></div>
+        </form-card>
       </main>
     </div>
+
     <footer
       class="mt-6 bg-white/40 p-4 text-center text-sm text-indigo-900 dark:bg-black/50 dark:text-indigo-300"
     >
       &copy; 2026 JD Lien
     </footer>
+
+    <script src="../dist/validator.js"></script>
+
+    <script type="module">
+      // Custom validation: Check if GitHub username exists
+      const validateGitHubUser = async (value) => {
+        if (!value) return true // Empty is valid (use required for mandatory)
+        if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
+          return { valid: false, message: 'Invalid GitHub username format' }
+        }
+        try {
+          const res = await fetch(`https://api.github.com/users/${encodeURIComponent(value)}`)
+          if (res.status === 404) {
+            return { valid: false, message: `GitHub user "${value}" not found` }
+          }
+          if (res.status === 403) {
+            return { valid: true } // Rate limited - assume valid
+          }
+          return res.ok
+        } catch {
+          return true // Network error - assume valid
+        }
+      }
+
+      // Custom validation: Luhn checksum for credit card numbers
+      const validateLuhn = (value) => {
+        if (!value) return true // Empty is valid
+        const digits = value.replace(/[\s-]/g, '')
+        if (!/^\d+$/.test(digits)) {
+          return { valid: false, message: 'Card number must contain only digits' }
+        }
+        if (digits.length < 13 || digits.length > 19) {
+          return { valid: false, message: 'Card number must be 13-19 digits' }
+        }
+        // Luhn algorithm
+        let sum = 0
+        let isEven = false
+        for (let i = digits.length - 1; i >= 0; i--) {
+          let digit = parseInt(digits[i], 10)
+          if (isEven) {
+            digit *= 2
+            if (digit > 9) digit -= 9
+          }
+          sum += digit
+          isEven = !isEven
+        }
+        if (sum % 10 !== 0) {
+          return { valid: false, message: 'Invalid card number (checksum failed)' }
+        }
+        return true
+      }
+
+      // Wait for custom elements to be defined before initializing validator
+      await Promise.all([
+        customElements.whenDefined('form-field'),
+        customElements.whenDefined('form-card'),
+      ])
+      const form = document.getElementById('demo-form')
+      // scrollToError: true will scroll to and focus the first invalid input on validation failure
+      // Custom validators are passed via the validators option (instance registry)
+      const validator = new Validator(form, {
+        debug: true,
+        scrollToError: true,
+        scrollToErrorDelay: 200,
+        hiddenClasses: 'opacity-0 max-h-0 overflow-hidden',
+        errorMainClasses:
+          'm-2 border border-pink-500 bg-pink-200/50 text-pink-700 p-3 py-4 dark:bg-pink-900/80 dark:text-pink-200 text-center rounded-lg',
+        errorInputClasses: 'border-pink-500 dark:border-pink-400',
+        validators: {
+          validateGitHubUser,
+          validateLuhn,
+        },
+      })
+      window.validator = validator // for debugging
+
+      // validateSingle demo
+      const resultDiv = document.getElementById('single-result')
+      const btnValidate = document.getElementById('btn-validate-single')
+      const btnClear = document.getElementById('btn-clear-single')
+
+      btnValidate.addEventListener('click', async () => {
+        // Query document since this input is outside the form - use static method for standalone inputs
+        const singleInput = document.querySelector('input[name="input-single-demo"]')
+        const result = await Validator.validateSingle(singleInput)
+        resultDiv.classList.remove(
+          'hidden',
+          'bg-green-200/50',
+          'text-green-800',
+          'bg-pink-200',
+          'text-pink-800',
+          'dark:bg-green-900',
+          'dark:text-green-200',
+          'dark:bg-pink-900',
+          'dark:text-pink-200',
+          'border-green-800/50'
+        )
+        if (result) {
+          resultDiv.classList.add(
+            'bg-green-200/50',
+            'text-green-800',
+            'dark:bg-green-900',
+            'dark:text-green-200',
+            'border-green-800/50'
+          )
+          resultDiv.textContent = 'Field is valid!'
+        } else {
+          resultDiv.classList.add(
+            'bg-pink-200/50',
+            'dark:bg-pink-900/80',
+            'text-pink-800',
+            'dark:bg-pink-900',
+            'dark:text-pink-200',
+            'border-pink-500',
+            'dark:border-pink-400'
+          )
+          resultDiv.textContent = 'Field is invalid'
+        }
+      })
+
+      btnClear.addEventListener('click', () => {
+        const singleInput = document.querySelector('input[name="input-single-demo"]')
+        if (singleInput) {
+          singleInput.value = ''
+          Validator.clearInputErrors(singleInput)
+        }
+        resultDiv.classList.add('hidden')
+      })
+    </script>
   </body>
 </html>

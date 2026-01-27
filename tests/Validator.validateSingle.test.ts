@@ -24,9 +24,10 @@ describe('Validator.validateSingle', () => {
       expect(result).toBe(true)
     })
 
-    it('should return true for input not in form', async () => {
+    it('should skip input not in form', async () => {
       const externalInput = document.createElement('input')
       externalInput.required = true
+      // Instance method skips inputs not in form - use static Validator.validateSingle() for standalone
       const result = await validator.validateSingle(externalInput)
       expect(result).toBe(true)
     })

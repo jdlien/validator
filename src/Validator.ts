@@ -90,6 +90,24 @@ export default class Validator {
     Validator.globalValidators = {}
   }
 
+  /** Validates a single input without needing a Validator instance. */
+  public static async validateSingle(
+    input: FormControl | null,
+    options: ValidatorOptions = {}
+  ): Promise<boolean> {
+    if (!input || input.disabled) return true
+    const temp = new Validator(document.createElement('form'), { autoInit: false, ...options })
+    temp.inputs = [input] // Add input so instance method will validate it
+    return temp.validateSingle(input)
+  }
+
+  /** Clears errors from a single input without needing a Validator instance. */
+  public static clearInputErrors(input: FormControl | null, options: ValidatorOptions = {}): void {
+    if (!input) return
+    const temp = new Validator(document.createElement('form'), { autoInit: false, ...options })
+    temp.clearInputErrors(input)
+  }
+
   form: HTMLFormElement
   inputs: FormControl[] = []
   // Keeps track of error messages accumulated for each input
@@ -411,8 +429,8 @@ export default class Validator {
     }
   }
 
-  // Clears error messages from an input and removes its errors from the inputErrors array
-  private clearInputErrors(el: FormControl): void {
+  /** Clears error messages from an input and removes its errors from the inputErrors array */
+  public clearInputErrors(el: FormControl): void {
     const key = el.name || el.id
     this.inputErrors[key] = []
 
@@ -455,7 +473,8 @@ export default class Validator {
     errorEl.textContent = ''
   }
 
-  private clearFormErrors(): void {
+  /** Clears the main error banner and all input errors */
+  public clearAllErrors(): void {
     // Find the main error element (form-specific or generic) and hide it
     const mainErrorElement = this._getMainErrorElement()
     if (mainErrorElement) {
@@ -914,12 +933,12 @@ export default class Validator {
    * @param input The input element to validate
    * @returns A promise that resolves to true if the input is valid, false otherwise
    */
-  public async validateSingle(input: FormControl): Promise<boolean> {
-    // If the input isn't part of this form's inputs, consider it valid
-    if (!this.inputs.includes(input)) return true
+  public async validateSingle(input: FormControl | null): Promise<boolean> {
+    // Skip null or disabled inputs
+    if (!input || input.disabled) return true
 
-    // Skip disabled inputs
-    if (input.disabled) return true
+    // Skip inputs not in this form - use static Validator.validateSingle() for standalone inputs
+    if (!this.inputs.includes(input)) return true
 
     this.clearInputErrors(input)
 
@@ -942,7 +961,7 @@ export default class Validator {
     e.preventDefault()
 
     // Clear any error messages
-    this.clearFormErrors()
+    this.clearAllErrors()
     let valid = await this.validate(e)
     // Show messages for any invalid inputs and show a large error message
     this.showFormErrors()

@@ -714,7 +714,7 @@ describe('Validator', () => {
     })
   }) // end clearInputErrors
 
-  describe('clearFormErrors', () => {
+  describe('clearAllErrors', () => {
     it('clears all error messages', () => {
       form.id = 'clear-all-errors-form'
       const formControl1 = document.createElement('input')
@@ -745,7 +745,7 @@ describe('Validator', () => {
 
       expect(validator.inputErrors[formControl1.name]).toContain(validator.messages.ERROR_GENERIC)
       expect(validator.inputErrors[formControl2.name]).toContain(validator.messages.ERROR_GENERIC)
-      ;(validator as any).clearFormErrors()
+      ;(validator as any).clearAllErrors()
 
       // validator.inputErrors should be empty
       expect(Object.values(validator.inputErrors).every((i) => i.length == 0)).toBeTruthy()
@@ -774,11 +774,11 @@ describe('Validator', () => {
 
       const mainError = form.querySelector('#form-error-main')
       expect(mainError).toBeTruthy()
-      ;(validator as any).clearFormErrors()
+      ;(validator as any).clearAllErrors()
 
       const mainErrorClassList = mainError?.classList
       expect(mainErrorClassList?.contains('hidden')).toBeTruthy()
       expect(mainErrorClassList?.contains('opacity-0')).toBeTruthy()
     })
-  }) // end clearFormErrors
+  }) // end clearAllErrors
 }) // describe('Validator')

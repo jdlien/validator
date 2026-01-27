@@ -143,6 +143,10 @@ form-card {
 
 @layer components {
   .btn {
+    @apply my-4 w-60 rounded-lg border border-zinc-600/50 border-t-zinc-300/70 border-b-zinc-900/40 bg-indigo-300 bg-linear-to-b from-zinc-500/60 to-zinc-700/60 py-2 text-lg text-white shadow-md shadow-zinc-900/20 transition duration-150 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)] hover:from-zinc-400/60 hover:to-zinc-600/60 hover:shadow-lg hover:shadow-zinc-900/30 active:translate-y-0.5 active:from-zinc-600/60 active:to-zinc-800/60;
+  }
+
+  .btn-primary {
     @apply my-4 w-60 rounded-lg border border-indigo-600/50 border-t-indigo-300/70 border-b-indigo-900/40 bg-linear-to-b from-indigo-500 to-indigo-700 py-2 text-lg text-white shadow-md shadow-indigo-900/20 transition duration-150 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)] hover:from-indigo-400 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-900/30 active:translate-y-0.5 active:from-indigo-600 active:to-indigo-800;
   }
 

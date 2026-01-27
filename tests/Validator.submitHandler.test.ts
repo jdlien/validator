@@ -30,11 +30,11 @@ describe('Validator', () => {
       expect(form.submit).not.toHaveBeenCalled()
     })
 
-    it('calls clearFormErrors method before validation', () => {
-      vi.spyOn(validator as any, 'clearFormErrors')
+    it('calls clearAllErrors method before validation', () => {
+      vi.spyOn(validator as any, 'clearAllErrors')
       vi.spyOn(form, 'submit').mockImplementation(() => {})
       ;(validator as any).submitHandler(new Event('submit'))
-      expect((validator as any).clearFormErrors).toHaveBeenCalled()
+      expect((validator as any).clearAllErrors).toHaveBeenCalled()
     })
 
     it('calls showFormErrors method after validation', async () => {
