@@ -139,11 +139,15 @@ const INPUT_MODE_MAP: Record<string, string> = {
 }
 
 class FormField extends HTMLElement {
+  private rendered = false
+
   static get observedAttributes(): string[] {
     return ['value', 'disabled']
   }
 
   connectedCallback(): void {
+    if (this.rendered) return
+    this.rendered = true
     this.render()
   }
 

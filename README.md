@@ -166,7 +166,72 @@ A validation function will be called with the input value as the argument. The f
 
 You may also use a promise that resolves to such an object for asynchronous validation.
 
-An example of such a function is:
+### Registering Custom Validators
+
+There are three ways to register custom validators, listed in order of lookup priority:
+
+#### 1. Instance Registry (Recommended)
+
+Pass validators directly to the Validator constructor. This is the recommended approach as it provides the best type safety and keeps validators scoped to specific forms.
+
+```javascript
+const validator = new Validator(form, {
+  validators: {
+    validateUsername: (value) => {
+      if (value.length < 3) return 'Username must be at least 3 characters'
+      return true
+    },
+    validateEmail: async (value) => {
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(value)}`)
+      return res.ok ? true : 'Email already taken'
+    },
+  },
+})
+```
+
+#### 2. Static Registry (For Shared Validators)
+
+Use `Validator.registerValidator()` to make validators available to all Validator instances. Useful for reusable validators across your application.
+
+```javascript
+// Register globally (available to all forms)
+Validator.registerValidator('validatePhone', (value) => {
+  return /^\d{10}$/.test(value) ? true : 'Enter a 10-digit phone number'
+})
+
+// Later, in any form...
+const validator = new Validator(form)
+// Input with data-validation="validatePhone" will use the registered validator
+
+// Other static methods:
+Validator.unregisterValidator('validatePhone') // Remove a validator
+Validator.getValidators() // Get all registered validators (returns a copy)
+Validator.clearValidators() // Remove all registered validators
+```
+
+#### 3. Window Object (Legacy)
+
+For backward compatibility, validators can be defined on the window object. This is not recommended for new code.
+
+```javascript
+window.validateCustom = (value) => {
+  return value === 'valid' ? true : 'Invalid value'
+}
+```
+
+### Lookup Priority
+
+When resolving a validator by name, Validator checks in this order:
+
+1. **Instance registry** (validators passed to constructor)
+2. **Static registry** (Validator.registerValidator)
+3. **Window object** (legacy fallback)
+
+This allows you to override global validators for specific forms when needed.
+
+### Validator Function Examples
+
+A simple synchronous validator:
 
 ```javascript
 function customValidation(value) {
@@ -176,16 +241,13 @@ function customValidation(value) {
 }
 ```
 
-Here is an example of a custom validation function that uses a promise:
+An async validator using fetch:
 
 ```javascript
-function customValidationPromise(value) {
-  return fetch(`https://api.example.com/validate-username?username=${value}`)
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.valid) return true
-      else return 'Email is invalid'
-    })
+async function customValidationPromise(value) {
+  const response = await fetch(`https://api.example.com/validate-username?username=${value}`)
+  const result = await response.json()
+  return result.valid ? true : 'Email is invalid'
 }
 ```
 
@@ -268,6 +330,7 @@ messages = {
 - `validateOnBlur` - A boolean indicating whether to validate fields when they lose focus, even if the value hasn't changed. Useful for showing errors on touched-but-empty required fields. Defaults to `false`.
 - `validationSuccessCallback` - A function to be called when validation is successful.
 - `validationErrorCallback` - A function to be called when validation fails.
+- `validators` - An object mapping validator names to functions. These validators have the highest lookup priority (see Registering Custom Validators).
 
 ### Example:
 

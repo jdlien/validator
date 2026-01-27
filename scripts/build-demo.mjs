@@ -42,6 +42,7 @@ const devHtml = await readFile(devHtmlPath, 'utf8')
 let outHtml = devHtml
   .replace(/demo-src\.css/g, 'demo.css')
   .replace(/form-field\.ts/g, 'form-field.js')
+  .replace(/form-card\.ts/g, 'form-card.js')
   .replace(/dark-toggle\.ts/g, 'dark-toggle.js')
 
 outHtml = outHtml.replace(

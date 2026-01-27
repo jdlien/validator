@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-01-26
+
+### Added
+
+- **Hybrid Validator Registry System**: Three-tier validator lookup (instance → static → window)
+  - `validators` option in constructor for instance-scoped validators (highest priority)
+  - `Validator.registerValidator(name, fn)` for global validators shared across instances
+  - `Validator.unregisterValidator(name)` to remove a global validator
+  - `Validator.getValidators()` returns a copy of all global validators
+  - `Validator.clearValidators()` removes all global validators
+- New type exports: `ValidatorFunction`, `ValidationResult`, `ValidatorRegistry`
+
+### Changed
+
+- Custom validation now uses three-tier lookup: instance registry → static registry → window object
+- Demo page updated to use instance registry instead of window functions
+
+### Migration Guide
+
+No breaking changes. Existing code using window functions continues to work. To migrate:
+
+```javascript
+// Before (still works)
+window.myValidator = (value) => value.length > 3
+
+// After (recommended)
+const validator = new Validator(form, {
+  validators: {
+    myValidator: (value) => value.length > 3,
+  },
+})
+```
+
 ## [2.0.0] - 2026-01-25
 
 ### Bundle Size

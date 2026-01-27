@@ -25,6 +25,8 @@ export interface ValidatorOptions {
   validateOnBlur?: boolean
   validationSuccessCallback?: (event: Event) => void
   validationErrorCallback?: (event: Event) => void
+  /** Custom validators available to this instance (highest priority lookup) */
+  validators?: ValidatorRegistry
 }
 
 export interface InputHandler {
@@ -39,6 +41,22 @@ export interface InputHandlers {
 
 export type ValidationEventType = 'validationSuccess' | 'validationError'
 
+/** Result returned by a custom validator function */
+export interface ValidationResult {
+  valid: boolean
+  message?: string
+  messages?: string[]
+  error?: boolean
+}
+
+/** A custom validator function that validates an input value */
+export type ValidatorFunction = (
+  value: string
+) => boolean | string | ValidationResult | Promise<boolean | string | ValidationResult>
+
+/** A registry mapping validator names to their functions */
+export type ValidatorRegistry = Record<string, ValidatorFunction>
+
 export class ValidationEvent extends Event {
   constructor(
     type: ValidationEventType,
@@ -49,18 +67,33 @@ export class ValidationEvent extends Event {
 }
 
 export default class Validator {
+  // Static (global) validator registry
+  private static globalValidators: ValidatorRegistry = {}
+
+  /** Register a validator function globally (available to all instances) */
+  public static registerValidator(name: string, fn: ValidatorFunction): void {
+    Validator.globalValidators[name] = fn
+  }
+
+  /** Remove a globally registered validator */
+  public static unregisterValidator(name: string): void {
+    delete Validator.globalValidators[name]
+  }
+
+  /** Get a copy of all globally registered validators */
+  public static getValidators(): Readonly<ValidatorRegistry> {
+    return { ...Validator.globalValidators }
+  }
+
+  /** Remove all globally registered validators */
+  public static clearValidators(): void {
+    Validator.globalValidators = {}
+  }
+
   form: HTMLFormElement
   inputs: FormControl[] = []
   // Keeps track of error messages accumulated for each input
   inputErrors: { [key: string]: string[] } = {}
-
-  // Hoisted multiplier maps for parseBytes (avoid per-call allocation)
-  private static readonly SI_MULT: Record<string, number> = {
-    '': 1, K: 1000, M: 1e6, G: 1e9, T: 1e12
-  }
-  private static readonly BINARY_MULT: Record<string, number> = {
-    '': 1, K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4
-  }
 
   // Default error messages.
   messages: Record<string, string> = {
@@ -82,6 +115,7 @@ export default class Validator {
     ERROR_DATE: 'This is not a valid date.',
     ERROR_DATE_PAST: 'The date must be in the past.',
     ERROR_DATE_FUTURE: 'The date must be in the future.',
+    ERROR_DATE_TODAY: 'The date must be today.',
     ERROR_DATE_RANGE: 'The date is outside the allowed range.',
     ERROR_DATETIME: 'This is not a valid date and time.',
     ERROR_TIME: 'This is not a valid time.',
@@ -128,6 +162,9 @@ export default class Validator {
   private validationSuccessCallback: (event: Event) => void
   private validationErrorCallback: (event: Event) => void
 
+  // Instance validator registry (highest priority lookup)
+  private validators: ValidatorRegistry = {}
+
   // Sets defaults and adds event listeners
   constructor(form: HTMLFormElement, options: ValidatorOptions = {}) {
     if (!form) throw new Error('Validator requires a form to be passed as the first argument.')
@@ -166,6 +203,11 @@ export default class Validator {
 
     this.validationSuccessCallback = options.validationSuccessCallback || (() => {})
     this.validationErrorCallback = options.validationErrorCallback || (() => {})
+
+    // Merge instance validators from options
+    if (options.validators) {
+      Object.assign(this.validators, options.validators)
+    }
 
     if (this.autoInit) this.init()
   }
@@ -619,54 +661,15 @@ export default class Validator {
       // only validate the date range if it's a valid date
       if (!isNaN(date.getTime()) && !utils.isDateInRange(date, range)) {
         let msg = el.dataset.errorDefault || this.messages.ERROR_DATE_RANGE
-        if (range === 'past') {
-          msg = this.messages.ERROR_DATE_PAST
-        }
-        if (range === 'future') {
-          msg = this.messages.ERROR_DATE_FUTURE
-        }
+        if (range === 'past') msg = this.messages.ERROR_DATE_PAST
+        else if (range === 'future') msg = this.messages.ERROR_DATE_FUTURE
+        else if (range === 'today') msg = this.messages.ERROR_DATE_TODAY
         this.addInputError(el, msg)
         return false
       }
     }
 
     return true
-  }
-
-  // Parses human-readable byte strings: "500000", "5M", "5MB", "5MiB", "2GB", "1KiB", etc.
-  private parseBytes(value: string): number {
-    const str = value.trim()
-    // Accept: 500, 5B, 5K, 5KB, 5KiB, 5Ki, 5M, 5MB, 5MiB, etc.
-    const match = str.match(/^(\d+(?:\.\d+)?)\s*(B|Ki?B?|Mi?B?|Gi?B?|Ti?B?)?$/i)
-    if (!match) return NaN
-
-    const num = Number.parseFloat(match[1])
-    const rawUnit = match[2]?.toUpperCase() || ''
-    const isBinary = rawUnit.includes('I')
-    const prefix = rawUnit.replace(/I?B$/i, '').replace(/I$/i, '') || ''
-    const mult = isBinary ? Validator.BINARY_MULT : Validator.SI_MULT
-    return num * mult[prefix]
-  }
-
-  // Formats bytes as human-readable string. decimal=true uses SI units (1000-based).
-  private formatBytes(bytes: number, decimal = true): string {
-    const base = decimal ? 1000 : 1024
-    const units = ['B', 'KB', 'MB', 'GB', 'TB']
-    if (bytes < base) return `${bytes} B`
-
-    let i = 0
-    let val = bytes
-    while (val >= base && i < units.length - 1) {
-      val /= base
-      i++
-    }
-    let rounded = Math.round(val * 10) / 10
-    // If rounding pushed us to next unit threshold, bump up
-    if (rounded >= base && i < units.length - 1) {
-      rounded = 1
-      i++
-    }
-    return `${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)} ${units[i]}`
   }
 
   private parseAcceptList(accept: string): { mimeTypes: string[]; extensions: string[] } {
@@ -701,17 +704,17 @@ export default class Validator {
 
     const minSizeAttr = el.dataset.minFileSize || ''
     if (minSizeAttr) {
-      const minSize = this.parseBytes(minSizeAttr)
+      const minSize = utils.parseBytes(minSizeAttr)
       if (Number.isNaN(minSize)) {
         if (this.debug) console.warn(`Validator: Invalid min-file-size "${minSizeAttr}"`)
         this.addInputError(el, this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', minSizeAttr))
         valid = false
-      } else if (minSize >= 0) {
+      } else {
         const tooSmall = files.some((file) => file.size < minSize)
         if (tooSmall) {
           this.addInputError(
             el,
-            this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', this.formatBytes(minSize))
+            this.messages.ERROR_FILE_MIN_SIZE.replace('${val}', utils.formatBytes(minSize))
           )
           valid = false
         }
@@ -720,17 +723,17 @@ export default class Validator {
 
     const maxSizeAttr = el.dataset.maxFileSize || ''
     if (maxSizeAttr) {
-      const maxSize = this.parseBytes(maxSizeAttr)
+      const maxSize = utils.parseBytes(maxSizeAttr)
       if (Number.isNaN(maxSize)) {
         if (this.debug) console.warn(`Validator: Invalid max-file-size "${maxSizeAttr}"`)
         this.addInputError(el, this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', maxSizeAttr))
         valid = false
-      } else if (maxSize >= 0) {
+      } else {
         const tooLarge = files.some((file) => file.size > maxSize)
         if (tooLarge) {
           this.addInputError(
             el,
-            this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', this.formatBytes(maxSize))
+            this.messages.ERROR_FILE_MAX_SIZE.replace('${val}', utils.formatBytes(maxSize))
           )
           valid = false
         }
@@ -791,6 +794,23 @@ export default class Validator {
   }
 
   /**
+   * Resolves a validator function by name using three-tier lookup:
+   * 1. Instance registry (this.validators)
+   * 2. Static registry (Validator.globalValidators)
+   * 3. Window object (legacy fallback)
+   */
+  private resolveValidator(name: string): ValidatorFunction | undefined {
+    // 1. Instance registry (highest priority)
+    if (this.validators[name]) return this.validators[name]
+    // 2. Static registry
+    if (Validator.globalValidators[name]) return Validator.globalValidators[name]
+    // 3. Window object (legacy fallback)
+    const windowFn = window[name as keyof Window]
+    if (typeof windowFn === 'function') return windowFn as ValidatorFunction
+    return undefined
+  }
+
+  /**
    * Specify a custom function in data-validation and it gets called to validate the input
    * The custom function can return
    * - a boolean
@@ -805,8 +825,8 @@ export default class Validator {
     if (el.disabled) return true
     const validation = el.dataset.validation
     if (!validation || typeof validation !== 'string') return true
-    const validationFn: Function = window[validation as keyof Window] as Function
-    if (!validationFn || typeof validationFn !== 'function') return true
+    const validationFn = this.resolveValidator(validation)
+    if (!validationFn) return true
 
     let result: any
     try {

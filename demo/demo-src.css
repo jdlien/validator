@@ -13,8 +13,9 @@
   --breakpoint-xs: 380px;
 }
 
-/* Custom element needs block display for space-y to work */
-form-field {
+/* Custom elements need block display for space-y to work */
+form-field,
+form-card {
   display: block;
 }
 
@@ -36,7 +37,7 @@ form-field {
   textarea,
   select {
     @apply border border-zinc-300 rounded-lg px-3 py-2 text-zinc-700
-        placeholder-zinc-500/50 shadow-inner
+        placeholder-zinc-500/50 shadow-inner transition-colors duration-200
         focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/50
         focus:ring-offset-0 focus:ring-offset-transparent inset-shadow-sm;
 
@@ -104,12 +105,11 @@ form-field {
     background-repeat: no-repeat, no-repeat;
   }
 
-  @media (prefers-color-scheme: dark) {
-    select {
-      background-image:
-        url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(161 161 170)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E'),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.75));
-    }
+  /* Dark mode select - class-based */
+  .dark select {
+    background-image:
+      url('data:image/svg+xml,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke-width=%221.5%22 stroke=%22rgb(161 161 170)%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19.5 8.25l-7.5 7.5-7.5-7.5%22 %2F%3E%3C%2Fsvg%3E'),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.75));
   }
 }
 
@@ -122,17 +122,8 @@ form-field {
         active:translate-y-0.5 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)];
   }
 
-  .form-card {
-    @apply rounded-xl border border-indigo-100/80 p-5 shadow-sm bg-linear-120 from-indigo-50/70 to-indigo-100/80;
-    @apply dark:border-indigo-400/10  dark:from-indigo-950/60 dark:to-indigo-950/10;
-  }
-
-  .form-card-title {
-    @apply text-lg font-semibold tracking-wide text-indigo-800/90 dark:text-indigo-200/90;
-  }
-
-  .form-card-lead {
-    @apply text-sm leading-relaxed text-indigo-900/70 dark:text-indigo-200/70;
+  .code {
+    @apply rounded border border-indigo-400/50 bg-indigo-50/50 px-1 py-0.5 dark:border-indigo-500/50 dark:bg-black/50;
   }
 }
 
@@ -198,6 +189,61 @@ input:checked + .checked-label {
 #section-nav {
   /* Enable scroll-spy: highlights link for currently visible section */
   scroll-target-group: auto;
+
+  /* CSS custom properties for dark mode support in keyframes */
+  --nav-bg-color: rgb(199 210 254 / 0.6); /* indigo-200 */
+  --nav-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+
+  /* Scroll-driven animation: fade in background as header scrolls away */
+  animation: nav-bg-fade linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 120px;
+}
+
+/* Dark mode custom properties */
+.dark #section-nav {
+  --nav-bg-color: rgb(0 0 0 / 0.45); /* indigo-950 */
+  --nav-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+@keyframes nav-bg-fade {
+  from {
+    background-color: rgb(199 210 254 / 0.25);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+  }
+  to {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
+}
+
+/* Dark mode animation with darker starting tint */
+.dark #section-nav {
+  animation-name: nav-bg-fade-dark;
+}
+
+@keyframes nav-bg-fade-dark {
+  from {
+    background-color: rgb(15 15 30 / 0.3);
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  }
+  to {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations */
+@supports not (animation-timeline: scroll()) {
+  #section-nav {
+    background-color: var(--nav-bg-color);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--nav-shadow);
+  }
 }
 
 .nav-link {

@@ -16,76 +16,96 @@
     </script>
     <link rel="stylesheet" href="demo.css" />
     <script type="module" src="form-field.js"></script>
+    <script type="module" src="form-card.js"></script>
     <script type="module" src="dark-toggle.js"></script>
   </head>
 
   <body
-    class="font-alexandria font-light bg-indigo-300 dark:bg-indigo-950 dark:text-white"
+    class="font-alexandria bg-indigo-300 font-light dark:bg-indigo-950 dark:text-white"
     style="
       background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2240%22 viewBox=%220 0 100 40%22><path d=%22M0 20 Q25 0 50 20 T100 20%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221.5%22 stroke-opacity=%220.06%22/><path d=%22M0 30 Q25 10 50 30 T100 30%22 fill=%22none%22 stroke=%22%234338ca%22 stroke-width=%221%22 stroke-opacity=%220.08%22/></svg>');
     "
   >
     <header
-      class="relative mb-4 bg-linear-0 from-white/50 to-white/20 shadow-xl dark:from-black/50 dark:to-black/20 p-4"
+      class="relative mb-6 bg-linear-0 from-white/50 to-white/20 p-4 shadow-xl dark:from-black/50 dark:to-black/20"
     >
-      <div class="absolute right-4 inset-y-0 items-center hidden xs:flex">
+      <div class="xs:flex absolute inset-y-0 right-4 hidden items-center">
         <dark-toggle orientation="vertical"></dark-toggle>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-medium text-center">
+      <h1 class="text-center text-3xl font-medium sm:text-4xl">
         <span class="text-indigo-900/80 dark:text-indigo-200/80"
           >@jdlien<span class="tracking-widest">/</span></span
         ><span class="text-indigo-900 dark:text-indigo-200">Validator</span>
       </h1>
       <div
-        class="mx-auto my-3 mx-4 h-px w-full max-w-96 bg-indigo-500/60 dark:bg-indigo-300/50"
+        class="mx-4 mx-auto my-3 h-px w-full max-w-96 bg-indigo-500/60 dark:bg-indigo-300/50"
       ></div>
       <div
-        class="text-center text-sm uppercase tracking-[0.35em] text-indigo-800/80 dark:text-indigo-300/80"
+        class="text-center text-sm tracking-[0.35em] text-indigo-800/80 uppercase dark:text-indigo-300/80"
       >
         Easy, Powerful Form Validation
       </div>
     </header>
 
-    <main
-      class="max-w-3xl md:mx-auto bg-indigo-200 dark:bg-black/50 rounded-xl p-8 shadow-xl border border-indigo-100 dark:border-indigo-100/10 mx-4"
-    >
-      <div class="text-left">
-        <p class="mb-8 text-indigo-950/90 dark:text-indigo-100/90">
-          Validator has been applied to this form to help sanitize and validate user input.<br />
-          This form won't submit if any fields are invalid and helpful errors will be shown or
-          hidden as the user changes fields.<br />
-          With <code>scrollToError: true</code>, the page will scroll to the first error on submit.
-        </p>
+    <div class="md:mx-auto md:grid md:max-w-5xl md:grid-cols-[11rem_1fr] md:gap-4 md:pl-4">
+      <!-- Sidebar Navigation -->
+      <nav
+        id="section-nav"
+        class="sticky top-4 hidden h-fit w-44 self-start rounded-xl p-2 text-sm md:block"
+      >
+        <ul class="space-y-1">
+          <li><a href="#section-core" class="nav-link">Core Inputs</a></li>
+          <li><a href="#section-numbers" class="nav-link">Numbers</a></li>
+          <li><a href="#section-dates" class="nav-link">Dates &amp; Time</a></li>
+          <li><a href="#section-contact" class="nav-link">Contact &amp; Formats</a></li>
+          <li><a href="#section-files" class="nav-link">File Uploads</a></li>
+          <li><a href="#section-selections" class="nav-link">Selections</a></li>
+          <li><a href="#section-custom" class="nav-link">Custom Validation</a></li>
+          <li><a href="#section-textarea" class="nav-link">Long Form</a></li>
+        </ul>
+      </nav>
 
-        <div class="text-indigo-800/80 dark:text-indigo-200/80">
-          Install this Validator through npm:
+      <main
+        class="mx-4 mb-6 max-w-3xl rounded-xl border border-indigo-100 bg-indigo-200 p-8 shadow-xl md:mx-0 md:mr-4 md:ml-0 md:max-w-none dark:border-indigo-100/10 dark:bg-black/50"
+      >
+        <div class="mb-6">
+          <p class="mb-4">
+            Validator has been applied to this form to help sanitize and validate user input.<br />
+            This form won't submit if any fields are invalid and helpful errors will be shown or
+            hidden as the user changes fields.
+          </p>
+          <p>
+            With <code class="code">scrollToError: true</code>, the page will scroll to the first
+            error on submit.
+          </p>
         </div>
 
-        <div>
-          <code class="text-indigo-900/90 dark:text-indigo-100/90">
-            npm install @jdlien/validator
-          </code>
-        </div>
-
-        <p class="my-8 text-indigo-900/80 dark:text-indigo-200/80">
-          Source code and documentation at
-          <a
-            href="https://github.com/jdlien/validator/"
-            class="text-indigo-700 dark:text-indigo-300 hover:underline"
-            >github.com/jdlien/validator</a
-          >.
-        </p>
-      </div>
-      <form id="demo-form" class="space-y-8 mx-auto mb-12">
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Core Inputs</h2>
-            <p class="form-card-lead">
-              Fields can be required, have a minimum or maximum length, or a pattern. Numeric inputs
-              won't even allow invalid values to be typed in.
-            </p>
+        <div class="text-center">
+          <div class="mb-1 text-lg text-indigo-800 dark:text-indigo-200">
+            Install Validator through npm or pnpm:
           </div>
-          <div class="space-y-3">
+
+          <div>
+            <code class="code text-indigo-900/90 dark:text-indigo-100/90">
+              npm install @jdlien/validator
+            </code>
+          </div>
+
+          <p class="my-8">
+            Source code and documentation at
+            <a
+              href="https://github.com/jdlien/validator/"
+              class="text-indigo-700 hover:underline dark:text-indigo-300"
+              >github.com/jdlien/validator</a
+            >.
+          </p>
+        </div>
+        <form id="demo-form" class="mx-auto mb-6 space-y-8">
+          <form-card
+            id="section-core"
+            title="Core Inputs"
+            lead="Fields can be required, have a minimum or maximum length, or a pattern. Numeric inputs won't even allow invalid values to be typed in."
+          >
             <form-field
               name="input-required"
               label="Required"
@@ -127,17 +147,13 @@
               type="text"
               data-max-length="3"
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Number Inputs</h2>
-            <p class="form-card-lead">
-              Numeric inputs prevent invalid values and support range constraints.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-numbers"
+            title="Number Inputs"
+            lead="Numeric inputs prevent invalid values and support range constraints."
+          >
             <form-field
               name="input-integer"
               label="Positive Integers"
@@ -160,23 +176,13 @@
               max="100"
               hint="Value must be between 0 and 100 (uses <code>data-min</code> and <code>data-max</code>)"
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Dates &amp; Time</h2>
-            <p class="form-card-lead">
-              Dates can be entered in flexible formats and normalized to the configured format.
-              These features are compatible with datepickers like
-              <a
-                href="https://flatpickr.js.org/"
-                class="text-indigo-700 dark:text-indigo-400 hover:underline"
-                >Flatpickr</a
-              >.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-dates"
+            title="Dates &amp; Time"
+            lead="Dates can be entered in flexible formats and normalized to the configured format. These features are compatible with datepickers like <a href='https://flatpickr.js.org/' class='text-indigo-700 hover:underline dark:text-indigo-400'>Flatpickr</a>."
+          >
             <form-field
               name="input-date"
               label="Date"
@@ -227,6 +233,16 @@
             ></form-field>
 
             <form-field
+              name="input-datetime-custom"
+              label="Date Range (±2 Weeks)"
+              type="date"
+              date-format="YYYY-MMM-DD"
+              date-range="-2w:+2w"
+              placeholder="YYYY-Mmm-D"
+              hint="You can use a custom date range like <code>-2w:+2w</code>"
+            ></form-field>
+
+            <form-field
               name="input-time"
               label="Time of Day"
               type="time"
@@ -234,18 +250,13 @@
               placeholder="H:MM AM"
               hint="Anything resembling a time will be converted into the specified format"
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Contact &amp; Formats</h2>
-            <p class="form-card-lead">
-              Common formats like URLs, phone numbers, and postal codes are validated and
-              normalized.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-contact"
+            title="Contact &amp; Formats"
+            lead="Common formats like URLs, phone numbers, and postal codes are validated and normalized."
+          >
             <form-field
               name="input-url"
               label="Web Address"
@@ -284,17 +295,13 @@
               value="#888888"
               hint="The label will show a swatch of any valid color"
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">File Uploads</h2>
-            <p class="form-card-lead">
-              File inputs support type, size, and count limits using accept and data attributes.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-files"
+            title="File Uploads"
+            lead="File inputs support type, size, and count limits using accept and data attributes."
+          >
             <form-field
               name="input-file-1"
               label="Images or PDF"
@@ -314,17 +321,13 @@
               required
               hint="Single file of any kind, required."
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Selections</h2>
-            <p class="form-card-lead">
-              Selects, radio buttons, and checkbox groups can all be required.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-selections"
+            title="Selections"
+            lead="Selects, radio buttons, and checkbox groups can all be required."
+          >
             <form-field
               name="input-select"
               label="Select an Option"
@@ -349,17 +352,36 @@
               required
               options="red,green,indigo"
             ></form-field>
-          </div>
-        </section>
+          </form-card>
 
-        <section class="form-card space-y-4">
-          <div class="card-header">
-            <h2 class="form-card-title">Long Form</h2>
-            <p class="form-card-lead">
-              Textarea elements can have min and max lengths as well as be required.
-            </p>
-          </div>
-          <div class="space-y-3">
+          <form-card
+            id="section-custom"
+            title="Custom Validation"
+            lead="Use <code class='code'>data-validation</code> to specify a custom function for sync or async validation. Functions can return booleans, promises, or objects with custom error messages."
+          >
+            <form-field
+              name="input-github"
+              label="GitHub Username"
+              type="text"
+              data-validation="validateGitHubUser"
+              hint="Checks if the username exists on GitHub (async API call)"
+            ></form-field>
+
+            <form-field
+              name="input-credit-card"
+              label="Credit Card Number"
+              type="text"
+              data-validation="validateLuhn"
+              placeholder="4111 1111 1111 1111"
+              hint="Validates using Luhn checksum (try 4111111111111111)"
+            ></form-field>
+          </form-card>
+
+          <form-card
+            id="section-textarea"
+            title="Long Form"
+            lead="Textarea elements can have min and max lengths as well as be required."
+          >
             <form-field
               name="input-textarea"
               label="Multiple Text Lines"
@@ -369,39 +391,98 @@
               max-length="50"
               placeholder="Between 2 and 50 characters"
             ></form-field>
+          </form-card>
+
+          <div class="text-center">
+            <input class="btn" type="submit" />
           </div>
-        </section>
+        </form>
 
-        <div class="text-center">
-          <input
-            class="bg-linear-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 active:from-indigo-600 active:to-indigo-800 text-white text-lg w-60 py-3 my-4 rounded-lg border border-indigo-600/50 border-t-indigo-300/70 border-b-indigo-900/40 shadow-md shadow-indigo-900/20 hover:shadow-lg hover:shadow-indigo-900/30 transition duration-150 active:translate-y-0.5 [text-shadow:0_1px_1px_rgba(15,23,42,0.35)]"
-            type="submit"
-          />
-        </div>
-      </form>
+        <p class="text-center text-indigo-900/70 dark:text-indigo-200/70">
+          If the form is invalid when submitted, the <code class="code">form-error-main</code> div
+          will be displayed above.
+        </p>
 
-      <p class="text-center text-indigo-900/70 dark:text-indigo-200/70">
-        If the form is invalid when submitted, 'form-error-main' will be displayed above.
-      </p>
+        <script src="../dist/validator.js"></script>
 
-      <script src="../dist/validator.js"></script>
+        <script type="module">
+          // Custom validation: Check if GitHub username exists
+          const validateGitHubUser = async (value) => {
+            if (!value) return true // Empty is valid (use required for mandatory)
+            if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
+              return { valid: false, message: 'Invalid GitHub username format' }
+            }
+            try {
+              const res = await fetch(`https://api.github.com/users/${encodeURIComponent(value)}`)
+              if (res.status === 404) {
+                return { valid: false, message: `GitHub user "${value}" not found` }
+              }
+              if (res.status === 403) {
+                return { valid: true } // Rate limited - assume valid
+              }
+              return res.ok
+            } catch {
+              return true // Network error - assume valid
+            }
+          }
 
-      <script type="module">
-        // Wait for custom element to be defined before initializing validator
-        await customElements.whenDefined('form-field')
-        const form = document.getElementById('demo-form')
-        // scrollToError: true will scroll to and focus the first invalid input on validation failure
-        const validator = new Validator(form, {
-          debug: true,
-          scrollToError: true,
-          scrollToErrorDelay: 200,
-          hiddenClasses: 'opacity-0 max-h-0 overflow-hidden',
-          errorMainClasses:
-            'm-2 border border-pink-500 bg-pink-200/50 text-pink-700 p-3 py-4 dark:bg-pink-900/80 dark:text-pink-200 text-center rounded-lg',
-          errorInputClasses: 'border-pink-500 dark:border-pink-400',
-        })
-        window.validator = validator // for debugging
-      </script>
-    </main>
+          // Custom validation: Luhn checksum for credit card numbers
+          const validateLuhn = (value) => {
+            if (!value) return true // Empty is valid
+            const digits = value.replace(/[\s-]/g, '')
+            if (!/^\d+$/.test(digits)) {
+              return { valid: false, message: 'Card number must contain only digits' }
+            }
+            if (digits.length < 13 || digits.length > 19) {
+              return { valid: false, message: 'Card number must be 13-19 digits' }
+            }
+            // Luhn algorithm
+            let sum = 0
+            let isEven = false
+            for (let i = digits.length - 1; i >= 0; i--) {
+              let digit = parseInt(digits[i], 10)
+              if (isEven) {
+                digit *= 2
+                if (digit > 9) digit -= 9
+              }
+              sum += digit
+              isEven = !isEven
+            }
+            if (sum % 10 !== 0) {
+              return { valid: false, message: 'Invalid card number (checksum failed)' }
+            }
+            return true
+          }
+
+          // Wait for custom elements to be defined before initializing validator
+          await Promise.all([
+            customElements.whenDefined('form-field'),
+            customElements.whenDefined('form-card'),
+          ])
+          const form = document.getElementById('demo-form')
+          // scrollToError: true will scroll to and focus the first invalid input on validation failure
+          // Custom validators are passed via the validators option (instance registry)
+          const validator = new Validator(form, {
+            debug: true,
+            scrollToError: true,
+            scrollToErrorDelay: 200,
+            hiddenClasses: 'opacity-0 max-h-0 overflow-hidden',
+            errorMainClasses:
+              'm-2 border border-pink-500 bg-pink-200/50 text-pink-700 p-3 py-4 dark:bg-pink-900/80 dark:text-pink-200 text-center rounded-lg',
+            errorInputClasses: 'border-pink-500 dark:border-pink-400',
+            validators: {
+              validateGitHubUser,
+              validateLuhn,
+            },
+          })
+          window.validator = validator // for debugging
+        </script>
+      </main>
+    </div>
+    <footer
+      class="mt-6 bg-white/40 p-4 text-center text-sm text-indigo-900 dark:bg-black/50 dark:text-indigo-300"
+    >
+      &copy; 2026 JD Lien
+    </footer>
   </body>
 </html>
