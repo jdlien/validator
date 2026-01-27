@@ -21,6 +21,9 @@ class FormCard extends HTMLElement {
   }
 
   private render(): void {
+    // Guard against double render
+    if (this.querySelector(':scope > section')) return
+
     const title = this.getAttribute('title')
     const lead = this.getAttribute('lead')
     const sectionId = this.getAttribute('id')
@@ -31,17 +34,20 @@ class FormCard extends HTMLElement {
     // Create section element
     const section = document.createElement('section')
     if (sectionId) section.id = sectionId
-    section.className =
-      'space-y-4 scroll-mt-4 rounded-xl border border-indigo-100/80 bg-linear-120 from-indigo-50/70 to-indigo-100/80 p-5 shadow-sm dark:border-indigo-400/10 dark:from-indigo-950/60 dark:to-indigo-950/10'
+    section.className = `space-y-4 scroll-mt-4 rounded-xl border border-indigo-100/80
+      bg-linear-120 from-indigo-50/70 to-indigo-100/80 shadow-sm dark:border-indigo-400/10
+      dark:from-indigo-950/60 dark:to-indigo-950/10`
 
     // Only add header if title or lead exists
     if (title || lead) {
       const header = document.createElement('div')
+      header.className =
+        'rounded-t-xl mb-8 p-5 pt-4 border-b border-indigo-600/10 bg-linear-180 from-white/20 to-white/50 dark:from-transparent dark:to-black/15'
 
       if (title) {
         const h2 = document.createElement('h2')
         h2.className =
-          'text-lg font-semibold tracking-wide text-indigo-800/90 dark:text-indigo-200/90'
+          'text-lg font-semibold tracking-wide text-indigo-800/90 dark:text-indigo-200/90 mb-2'
         h2.textContent = title
         header.appendChild(h2)
       }
@@ -50,6 +56,7 @@ class FormCard extends HTMLElement {
         const p = document.createElement('p')
         p.className = 'text-sm leading-relaxed text-indigo-900/70 dark:text-indigo-200/70'
         p.innerHTML = lead
+
         header.appendChild(p)
       }
 
@@ -58,7 +65,7 @@ class FormCard extends HTMLElement {
 
     // Create content wrapper and move children
     const content = document.createElement('div')
-    content.className = 'space-y-3'
+    content.className = 'space-y-3 px-5 pb-5'
 
     // Move all child nodes to content wrapper
     while (this.firstChild) {
