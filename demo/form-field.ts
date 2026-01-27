@@ -8,7 +8,7 @@
  *   <form-field name="choice" label="Choose" type="radio" options="a,b,c" required></form-field>
  */
 
-import './file-drop'
+import './file-drop.js'
 
 // Types
 type Attrs = Record<string, string | boolean | undefined>
