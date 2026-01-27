@@ -54,7 +54,7 @@ class FormCard extends HTMLElement {
 
       if (lead) {
         const p = document.createElement('p')
-        p.className = 'text-sm leading-relaxed text-indigo-900/70 dark:text-indigo-200/70'
+        p.className = 'leading-relaxed text-indigo-900/70 dark:text-indigo-200/70'
         p.innerHTML = lead
 
         header.appendChild(p)

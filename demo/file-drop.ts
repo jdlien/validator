@@ -13,12 +13,15 @@ class FileDrop extends HTMLElement {
   private fileListEl!: HTMLDivElement
   private selectedFiles: File[] = []
   private isInternalChange = false
+  private rendered = false
 
   static get observedAttributes(): string[] {
     return ['disabled']
   }
 
   connectedCallback(): void {
+    if (this.rendered) return
+    this.rendered = true
     this.render()
   }
 

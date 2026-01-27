@@ -439,7 +439,7 @@ class FormField extends HTMLElement {
               name,
               type,
               value: opt.value,
-              className: 'block transition',
+              className: 'block transition size-5',
               'aria-describedby': `${id}-error`,
               ...(isRequired ? { required: true } : {}),
               ...(errorMsg ? { 'data-error-default': errorMsg } : {}),
