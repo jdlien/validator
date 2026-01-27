@@ -1,12 +1,12 @@
-# Validator - HTML Form Validation Made Easy
+# Validator - Easy, Powerful Form Validation
 
 ## Introduction
 
-Validator is a utility class that adds automatic validation to your HTML forms that works much like
+Validator is a lightweight utility class that adds automatic validation to your HTML forms that works much like
 the HTML5 form validation provided by browsers, but it is much more powerful, flexible, and
 customizable.
 
-It can sanitize and check user input in forms, resulting in clean, consistent submissions that
+It can normalize and check user input in forms, resulting in clean, consistent submissions that
 are very user-friendly without unnecessarily constraining the user from entering data in ways that
 are convenient for them.
 
@@ -159,7 +159,7 @@ On input (and sometimes select and textarea) elements, the following attributes 
 - `data-validation` - The name of a custom validation function.
 - `data-novalidate` - If this attribute is present, the input will not be validated when `input` or `change` events are triggered on it.
 - `data-max-files` - Applies to file inputs. Limits the number of files a user can upload.
-- `data-min-file-size`/`data-max-file-size` - Applies to file inputs. Enforces min/max size per file. Accepts human-readable sizes like `200kb` (base 10), `2mib` (base 2), `1.5gb`.
+- `data-min-file-size`/`data-max-file-size` - Applies to file inputs. Enforces min/max size per file. Accepts human-readable sizes like `200kb` (base 10), `2mib` (base 2), `1.5g`.
 - `accept`/`data-accept` - Applies to file inputs. Restricts allowed file types using MIME types and/or extensions. `data-accept` takes precedence over `accept`.
 
 A validation function will be called with the input value as the argument. The function may either return a boolean (true/false) or an object with a `valid` property that is a boolean. If the function returns a string or an object with a `message` property, that will be used as the error message for the input. A `messages` array may also be specified which will be used to display multiple error messages for the input.
@@ -231,29 +231,42 @@ This allows you to override global validators for specific forms when needed.
 
 ### Validator Function Examples
 
-A simple synchronous validator:
+Custom validators are functions you can write that receive the input value and can return:
+
+- `true` — valid
+- `false` — invalid (uses default error message)
+- `string` — invalid with custom error message
+- `{ valid: boolean, message?: string, messages?: string[] }` — structured result
+
+All return types can be wrapped in a `Promise` for async validation.
 
 ```javascript
+// Simple synchronous validator:
 function customValidation(value) {
   if (value === 'foo') return 'The value cannot be foo.'
-
   return true
 }
-```
 
-An async validator using fetch:
-
-```javascript
+// Async validator using fetch:
 async function customValidationPromise(value) {
-  const response = await fetch(`https://api.example.com/validate-username?username=${value}`)
-  const result = await response.json()
-  return result.valid ? true : 'Email is invalid'
+  const response = await fetch(`/api/validate-username?username=${value}`)
+  const { valid, error } = await response.json()
+  return valid ? true : error
+}
+
+// Structured result with multiple errors:
+function validatePassword(value) {
+  const errors = []
+  if (value.length < 8) errors.push('Must be at least 8 characters')
+  if (!/[A-Z]/.test(value)) errors.push('Must contain an uppercase letter')
+  if (!/[0-9]/.test(value)) errors.push('Must contain a number')
+  return errors.length ? { valid: false, messages: errors } : true
 }
 ```
 
 ## Displaying Error Messages
 
-If any form validation fails on submission, Validator displays a main error message near the top of the form. By default, it looks for an element with the ID `form-error-main`. However, if the form itself has an `id` attribute (e.g., `<form id="contact-form">`), Validator will first look for a main error element with the ID `{form.id}-error-main` (e.g., `contact-form-error-main`). If that form-specific element is not found, it falls back to looking for `form-error-main`.
+If any form validation fails on submission, Validator displays a main error message directly beneath the form. By default, it looks for an element with the ID `form-error-main`. However, if the form itself has an `id` attribute (e.g., `<form id="contact-form">`), Validator will first look for a main error element with the ID `{form.id}-error-main` (e.g., `contact-form-error-main`). If that form-specific element is not found, it falls back to looking for `form-error-main`.
 
 This allows for more targeted styling and placement of the main error message per form. You can disable the display of this main error message entirely by setting the `showMainError` option to `false`.
 
@@ -267,7 +280,7 @@ You can customize the class(es) that Validator uses to hide the error messages b
 
 ## Color Picker Support
 
-If you need to allow a user to pick a color, you can use data-type="color" and the input will be required to be any valid CSS color supported by the browser. This type can also work in conjunction with a native color input. If you do this, you will need to add an input with `type="color"` and the name of the data-color input + `-color`. This should be inside a linked label, which will become the color preview swatch. Such a label should have an ID of the color input's name + `-color-label` so that Validator can change the background to the specified color.
+Use data-type="color" and the input must contain any valid CSS color supported by the browser. To use this with a native color input, add an input with `type="color"` and the ID of the data-color input + `-color`. This should be inside a linked label, which will become the color preview swatch. Such a label should have an ID of the color input's name + `-color-label` so that Validator can change the background to the specified color.
 
 A basic example that would work:
 
@@ -389,10 +402,10 @@ if (isValid) {
 Notes:
 
 - Only validates inputs that belong to the validator's form
-- Returns `true` for inputs not in the form or disabled inputs (use `Validator.validateSingle()` for standalone inputs)
+- Returns `true` for inputs not in the form (with console warning) or disabled inputs (use `Validator.validateSingle()` for standalone inputs)
 - Clears previous errors before validating
 - Displays error messages in the associated error element
-- Works with all form control types (input, select, textarea)
+- Works with all form control types (input, select, textarea) except radio/checkbox groups
 
 #### `clearInputErrors(input): void`
 
@@ -491,37 +504,67 @@ import { parseDate, formatDateTime } from '@jdlien/validator-utils'
 
 Here is a list of the utility functions:
 
-- **isFormControl**: Determines if an element is an HTML input, select, or textarea element.
-- **isType**: Checks if an element has a type or data-type attribute matching one of the passed values.
-- **momentToFPFormat**: Converts a moment.js-style format string to the flatpickr format.
-- **monthToNumber**: Converts month string or number to a zero-based month number (January == 0).
-- **yearToFull**: Converts a year string or number to a 4-digit year.
+**Date & Time:**
 - **parseDate**: Parses a date string or Date object into a Date object.
+- **parseDateTime**: Parses a datetime string (e.g., "tomorrow 3pm") into a Date object.
 - **parseTime**: Parses a time string into an object with hour, minute, and second properties.
-- **parseTimeToString**: Parses a time string into a formatted string.
-- **formatDateTime**: Formats a date string or Date object into a string with a specified format.
-- **parseDateToString**: Parses a date string or Date object into a formatted string with the specified moment.js-style date format.
+- **parseRelativeDate**: Parses relative date strings like "+3d", "-1w", "+2m" into a Date object.
+- **parseDateToString**: Formats a date into a string with the specified moment.js-style format.
+- **parseDateTimeToString**: Formats a datetime into a string with the specified format.
+- **parseTimeToString**: Formats a time string into a formatted string.
+- **formatDateTime**: Formats a Date object into a string with a specified format.
+- **momentToFPFormat**: Converts a moment.js-style format string to flatpickr format.
+- **monthToNumber**: Converts month string or number to zero-based month number (January = 0).
+- **yearToFull**: Converts a 2-digit year to a 4-digit year.
 - **isDate**: Determines if a value is a valid date.
-- **isDateInRange**: Determines if a date falls within a specified range (either past or future).
+- **isDateTime**: Determines if a value is a valid datetime.
 - **isTime**: Determines if a value is a valid time.
-- **isEmail**: Determines if a value is a valid email address.
-- **parseNANPTel**: Parses a North American phone number string into a standardized format.
-- **isNANPTel**: Determines if a value is a valid North American phone number.
-- **parseInteger**: Parses an integer string into a standardized format.
+- **isMeridiem**: Determines if a value is "am" or "pm".
+- **isDateInRange**: Determines if a date falls within a specified range (past, future, or custom).
+
+**Numbers & Bytes:**
+- **parseNumber**: Parses a number string, stripping non-numeric characters.
+- **parseInteger**: Parses an integer string, stripping non-digit characters.
+- **parseBytes**: Parses human-readable byte sizes ("1.5MB", "2GiB") into bytes.
+- **formatBytes**: Formats bytes into human-readable string (e.g., "1.5 MB").
 - **isNumber**: Determines if a value is a valid number.
-- **parseNumber**: Parses a number string into a standardized format.
 - **isInteger**: Determines if a value is a valid integer.
-- **parseUrl**: Parses a URL string into a standardized format.
-- **isUrl**: Determines if a value is a valid URL.
-- **parseZip**: Parses a zip code string into a standardized format.
-- **isZip**: Determines if a value is a valid zip code.
-- **parsePostalCA**: Parses a Canadian postal code string into a standardized format.
+
+**Contact & Location:**
+- **parseNANPTel**: Parses a North American phone number into standardized format.
+- **isNANPTel**: Determines if a value is a valid North American phone number.
+- **isEmail**: Determines if a value is a valid email address.
+- **parseZip**: Parses a US zip code into standardized format.
+- **isZip**: Determines if a value is a valid US zip code.
+- **parsePostalCA**: Parses a Canadian postal code into standardized format.
 - **isPostalCA**: Determines if a value is a valid Canadian postal code.
-- **isColor**: Determines if a value is a valid color.
-- **parseColor**: Parses a color string into a standardized format.
-- **normalizeValidationResult**: Normalizes a validation result (like a boolean or string) into an object with a valid property and a messages array of strings.
+- **parseUrl**: Parses a URL, adding https:// if missing.
+- **isUrl**: Determines if a value is a valid URL.
+
+**Color:**
+- **parseColor**: Parses any CSS color into a normalized format.
+- **isColor**: Determines if a value is a valid CSS color.
+
+**Utilities:**
+- **isFormControl**: Determines if an element is an input, select, or textarea.
+- **isType**: Checks if an element's type or data-type matches specified values.
+- **normalizeValidationResult**: Normalizes validation results (boolean/string/object) into a standard format.
 
 ## Breaking Changes in v2.0.0
+
+### Manual Lifecycle Management Required
+
+Previously, Validator used MutationObservers to automatically reinitialize when inputs changed and clean up
+when forms were removed. This was inefficient and unreliable, so it has been removed.
+
+Now, if you're dynamically changing forms/form elements in a webpage, you must run the following:
+```javascript
+// After dynamically adding/removing inputs:
+validator.init()
+
+// Before removing a form from the DOM:
+validator.destroy()
+```
 
 ### Event Classes Consolidated
 
@@ -529,20 +572,26 @@ The separate `ValidationSuccessEvent` and `ValidationErrorEvent` classes have be
 
 ```javascript
 // Before (v1.x)
-import type { ValidationSuccessEvent, ValidationErrorEvent } from '@jdlien/validator'
 form.addEventListener('validationSuccess', (e: ValidationSuccessEvent) => { ... })
 
 // After (v2.0)
-import type { ValidationEvent } from '@jdlien/validator'
 form.addEventListener('validationSuccess', (e: ValidationEvent) => { ... })
-form.addEventListener('validationError', (e: ValidationEvent) => { ... })
 ```
 
 The `ValidationEvent` class has a `type` property that is either `'validationSuccess'` or `'validationError'`, and a `submitEvent` property containing the original form submission event.
 
-### Types File Removed
+### TypeScript Changes
 
-The separate `types.d.ts` file has been removed. All types are now exported directly from the main module.
+- **`messages` option typing:** Now `Record<string, string>` instead of `object`
+- **`types.d.ts` removed:** Import types directly from the package instead:
+
+```typescript
+// Before
+import type { ValidatorOptions } from '@jdlien/validator/types'
+
+// After
+import type { ValidatorOptions } from '@jdlien/validator'
+```
 
 ## Contributing
 
@@ -552,11 +601,14 @@ Install dev dependencies:
 pnpm install
 ```
 
-When running Vite, you may get an error like
+Run tests with coverage (100% required for release):
 
-```
-Module did not self-register: '...\node_modules\canvas\build\Release\canvas.node'
+```bash
+pnpm coverage
 ```
 
-If that happens, you
-need to install the canvas module manually: `pnpm rebuild canvas --update-binary`
+Build the project and demo page for testing/release:
+
+```bash
+pnpm build
+```
