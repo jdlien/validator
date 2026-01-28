@@ -43,7 +43,7 @@ class FormCard extends HTMLElement {
     if (title || lead) {
       const header = document.createElement('div')
       header.className =
-        'rounded-t-xl mb-8 p-5 pt-4 border-b border-indigo-600/10 bg-linear-180 from-white/20 to-white/50 dark:from-transparent dark:to-black/15'
+        'rounded-t-xl mb-8 p-3 sm:p-5 sm:pt-4 border-b border-indigo-600/10 bg-linear-180 from-white/20 to-white/50 dark:from-transparent dark:to-black/15'
 
       if (title) {
         const h2 = document.createElement('h2')
@@ -66,7 +66,7 @@ class FormCard extends HTMLElement {
 
     // Create content wrapper and move children
     const content = document.createElement('div')
-    content.className = 'space-y-3 px-5 pb-5'
+    content.className = 'space-y-3 px-3 pb-3 sm:px-5 sm:pb-5'
 
     // Move all child nodes to content wrapper
     while (this.firstChild) {
