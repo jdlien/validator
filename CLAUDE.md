@@ -26,4 +26,4 @@ When completing edits or new features:
 9. Commit and push all changes to git
 10. Tag the release to match `package.json` version: `git tag v2.x.x && git push --tags`
 11. Publish to npm: `pnpm publish` (may require `npm login` first)
-12. Update live demo at https://jdlien.com/validator/: pull and `pnpm build` on server
+12. Verify the live demo at https://validator.jdlien.com/ (Vercel auto-deploys on push to `main`)

@@ -118,7 +118,7 @@ If you wish to customize the default error message, you can also set one for a f
 
 ## Demo
 
-[Working demo on jdlien.com](https://jdlien.com/validator/demo/).
+[Live demo at validator.jdlien.com](https://validator.jdlien.com/).
 
 ## Supported Input Types and Attributes
 
@@ -626,4 +626,4 @@ pnpm build
 9. Commit and push all changes to git
 10. Tag the release to match `package.json` version: `git tag v2.x.x && git push --tags`
 11. Publish to npm: `pnpm publish` (may require `npm login` first)
-12. Update live demo at https://jdlien.com/validator/: pull and `pnpm build` on server
+12. Verify the live demo at https://validator.jdlien.com/ (Vercel auto-deploys on push to `main`)
