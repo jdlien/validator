@@ -19,10 +19,9 @@ export default defineConfig(({ mode }) => {
           return 'validator.js'
         },
       },
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           exports: isCompatBuild ? 'default' : 'named',
-          manualChunks: undefined,
         },
       },
     },

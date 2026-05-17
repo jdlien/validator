@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-05-16
+
+Maintenance release: dependency updates and tooling modernization. No public API changes.
+
+### Changed
+
+- Updated `@jdlien/validator-utils` 2.1.0 → 2.2.1
+- Upgraded build tooling: Vite 7 → 8 (now uses Rolldown), TypeScript 5.9 → 6, Vitest 4.0 → 4.1, jsdom 27 → 29, Tailwind CSS 4.1 → 4.3, and other patch updates across devDependencies
+- Migrated `tsconfig.json` and `vite.config.js` for TypeScript 6 + Vite 8 compatibility
+- ES module bundle is ~14% smaller thanks to Rolldown's improved tree-shaking
+
+### Removed
+
+- Unused devDependencies: `undici-types`, `jsdom-global`
+
+### Infrastructure
+
+- Live demo migrated from `https://jdlien.com/validator/` to `https://validator.jdlien.com/` (auto-deployed via Vercel on push to `main`)
+
+### Bundle Size
+
+|        | v2.0.0    | v2.0.1    | Change |
+| ------ | --------- | --------- | ------ |
+| Raw    | 27.46 KiB | 27.48 KiB | +0.07% |
+| Gzip   | 8.92 KiB  | 8.88 KiB  | −0.45% |
+| Brotli | 7.96 KiB  | 7.89 KiB  | −0.88% |
+
+ESM bundle (`validator.mjs`): 11.59 KiB gzip → 9.87 KiB gzip (−14.8%)
+
 ## [2.0.0] - 2026-01-26
 
 Major new release with many different features and fixes. Now depends on v2.1 of `@jdlien/validator-utils`. The bundle size has increased slightly (~1.5KB zipped), but there are lots of new features to make the size well worth it!

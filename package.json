@@ -1,6 +1,6 @@
 {
   "name": "@jdlien/validator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "packageManager": "pnpm@10.11.0",
   "main": "dist/validator.cjs",
@@ -30,7 +30,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "build:demo": "tsc demo/form-field.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc demo/form-card.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc demo/dark-toggle.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && node scripts/build-demo.mjs",
+    "build:demo": "tsc --ignoreConfig demo/form-field.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc --ignoreConfig demo/form-card.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && tsc --ignoreConfig demo/dark-toggle.ts --outDir demo --target ES2020 --module ES2020 --skipLibCheck && node scripts/build-demo.mjs",
     "prepublishOnly": "pnpm build:lib"
   },
   "repository": {
@@ -60,23 +60,21 @@
   },
   "homepage": "https://github.com/jdlien/validator#readme",
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "@types/jsdom": "^27.0.0",
-    "@vitest/coverage-v8": "^4.0.18",
-    "canvas": "^3.2.1",
-    "jsdom": "^27.4.0",
-    "jsdom-global": "^3.0.2",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3",
-    "undici-types": "^7.19.1",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.18"
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/jsdom": "^28.0.3",
+    "@vitest/coverage-v8": "^4.1.6",
+    "canvas": "^3.2.3",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.6"
   },
   "sideEffects": false,
   "dependencies": {
-    "@jdlien/validator-utils": "^2.1.0"
+    "@jdlien/validator-utils": "^2.2.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
